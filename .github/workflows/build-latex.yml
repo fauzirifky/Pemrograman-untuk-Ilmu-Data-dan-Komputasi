@@ -1,0 +1,56 @@
+name: Build LaTeX
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect LaTeX roots
+        id: roots
+        shell: bash
+        run: |
+          {
+            echo 'files<<EOF'
+            echo 'Lembar_Kerja/lembar_kerja_PIDK.tex'
+            find Materi -mindepth 2 -maxdepth 2 -type f -name '*.tex' | sort
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Compile all documents
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: ${{ steps.roots.outputs.files }}
+          work_in_root_file_dir: true
+          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
+
+      - name: Collect PDFs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p generated/Lembar_Kerja generated/Materi
+          if [ -f Lembar_Kerja/lembar_kerja_PIDK.pdf ]; then
+            cp Lembar_Kerja/lembar_kerja_PIDK.pdf generated/Lembar_Kerja/
+          fi
+          while IFS= read -r pdf; do
+            d="$(dirname "$pdf")"
+            m="$(basename "$d")"
+            mkdir -p "generated/Materi/$m"
+            cp "$pdf" "generated/Materi/$m/"
+          done < <(find Materi -mindepth 2 -maxdepth 2 -type f -name '*.pdf' | sort)
+
+      - name: Upload generated PDFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PIDK-generated-PDF
+          path: generated/**/*.pdf
+          if-no-files-found: warn

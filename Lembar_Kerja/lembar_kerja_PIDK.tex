@@ -1,0 +1,768 @@
+\documentclass[9pt,a4paper]{article}
+\usepackage[a4paper,margin=1.18cm,top=1.25cm,bottom=1.35cm]{geometry}
+\usepackage{multicol,graphicx,amsmath,amssymb,mathtools,booktabs,tabularx,array,xcolor,enumitem,fancyhdr,listings,microtype,hyperref}
+\usepackage[most]{tcolorbox}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{ragged2e}
+\graphicspath{{00_Lembar_Kerja/assets/}{assets/}}
+\setlength{\columnsep}{0.62cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+
+\definecolor{iteraBlue}{RGB}{11,65,101}
+\definecolor{iteraLight}{RGB}{232,241,247}
+\definecolor{softgray}{RGB}{247,247,247}
+\definecolor{darkgray}{RGB}{70,70,70}
+\definecolor{accent}{RGB}{33,111,148}
+
+\hypersetup{colorlinks=true,linkcolor=iteraBlue,urlcolor=iteraBlue}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\scriptsize\color{iteraBlue}Pemrograman untuk Ilmu Data dan Komputasi \;|\; Program Studi Matematika ITERA \;|\; Hal. \thepage}
+
+\setlist[itemize]{leftmargin=*,nosep}
+\setlist[enumerate]{leftmargin=*,itemsep=1.5pt,topsep=2pt}
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{softgray},
+  frame=single,
+  rulecolor=\color{gray!35},
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  aboveskip=3pt,belowskip=3pt
+}
+\lstset{style=py}
+
+\newcommand{\leveltag}[1]{\tcbox[on line,boxrule=0pt,arc=1mm,left=1.5mm,right=1.5mm,top=.5mm,bottom=.5mm,colback=iteraBlue!10,coltext=iteraBlue,fontupper=\bfseries\scriptsize]{#1}}
+
+\newtcolorbox{qbox}[2][]{
+  enhanced,breakable,
+  colback=white,colframe=iteraBlue!50,
+  boxrule=.45pt,arc=1.2mm,
+  left=2.1mm,right=2.1mm,top=1.5mm,bottom=1.5mm,
+  before skip=3pt,after skip=3pt,
+  title={\textbf{#2}\hfill\leveltag{#1}},
+  colbacktitle=iteraLight,coltitle=black,
+  fonttitle=\small,
+  attach boxed title to top left={xshift=0mm,yshift=0mm},
+  boxed title style={boxrule=0pt,arc=1mm}
+}
+
+\newtcolorbox{conceptbox}[1]{
+  enhanced,breakable,colback=iteraLight!55,colframe=iteraBlue!55,
+  boxrule=.5pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={\textbf{#1}},colbacktitle=iteraBlue,coltitle=white,fonttitle=\small
+}
+
+\newcommand{\bab}[2]{%
+  \vspace{2pt}
+  {\color{iteraBlue}\Large\bfseries #1}\par
+  {\color{darkgray}\small #2}\par\vspace{3pt}
+}
+
+\begin{document}
+
+% ---------- COVER / IDENTITAS ----------
+\thispagestyle{fancy}
+\begin{minipage}[c]{0.18\textwidth}
+\centering
+\includegraphics[width=0.78\linewidth]{itera_logo.png}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.79\textwidth}
+{\Large\bfseries\color{iteraBlue} LEMBAR KERJA MANDIRI DAN BANK SOAL}\par
+{\large\bfseries Pemrograman untuk Ilmu Data dan Komputasi}\par
+\vspace{1mm}
+\begin{tabular}{@{}ll}
+Mata Kuliah & : MA25-21008, 3 SKS \\
+Program Studi & : Matematika, Fakultas Sains, ITERA \\
+Semester & : Ganjil 2026/2027 \\
+Cakupan UTS & : M1-M7 \\
+Dosen & : Rifky Fauzi; Triyana Muliawati, S.Si., M.Si. \\
+\end{tabular}
+\end{minipage}
+
+\vspace{2mm}\hrule\vspace{2mm}
+\begin{tabularx}{\textwidth}{@{}lXlX@{}}
+Nama & \dotfill & NIM & \dotfill\\
+Kelas & \dotfill & Tanggal & \dotfill
+\end{tabularx}
+
+\begin{conceptbox}{Tujuan dan penggunaan}
+Lembar kerja mandiri ini disusun sebagai bank latihan resmi untuk materi M1-M7. Asisten praktikum akan memilih soal pre-test dari bank soal ini. Angka, data, atau konteks boleh diubah menyesuaikan kebutuhan latihan karena kompetensi yang diuji harus tetap sama. Soal juga dapat digunakan sebagai bahan latihan dan \textit{mockup} UTS (kisi-kisi). Mahasiswa diharapkan menuliskan prediksi atau analisis terlebih dahulu, kemudian mencoba kode untuk memeriksa hasilnya.
+\end{conceptbox}
+
+\begin{conceptbox}{Peta materi dan sumber utama}
+\renewcommand{\arraystretch}{1.13}
+\begin{tabularx}{\linewidth}{@{}p{.09\linewidth}X p{.31\linewidth}@{}}
+\toprule
+\textbf{M} & \textbf{Fokus} & \textbf{Rujukan utama}\\
+\midrule
+M1 & Tipe data, variabel, operasi, I/O, kondisional, pengulangan & Miller-Ranum Ch. 1; Pine Ch. 2 dan 5; McKinney Ch. 2\\
+M2 & Fungsi, parameter, return, tuple/unpacking, scope, fungsi sebagai objek, lambda & Pine Ch. 7; McKinney Ch. 3\\
+M3 & Representasi algoritma, list, dictionary, array NumPy, comprehension & Miller-Ranum Ch. 1; Pine Ch. 3 dan 5; McKinney Ch. 3--4\\
+M4 & Exception handling, debugging, testing, terminasi, rekursi, Newton & Miller-Ranum Ch. 4; Pine Ch. 2 dan 7; McKinney Ch. 3 dan Appendix B\\
+M5 & Analisis algoritma dan kompleksitas Big-O & Miller-Ranum Ch. 2\\
+M6 & Searching, sorting, tracing algoritma, benchmark & Miller-Ranum Ch. 5\\
+M7 & Vektor, matriks, transpose, invers, SPL, norma, nilai eigen, data sebagai matriks & Pine Ch. 9; McKinney Ch. 4\\
+\bottomrule
+\end{tabularx}
+\end{conceptbox}
+
+{\small\textbf{Sumber utama:}}
+\begin{enumerate}
+\item Brad Miller dan David Ranum, \textit{Problem Solving with Algorithms and Data Structures Using Python}, Release 3.0.
+\item David J. Pine, \textit{Introduction to Python for Science and Engineering}, CRC Press, 2019.
+\item Wes McKinney, \textit{Python for Data Analysis: Data Wrangling with pandas, NumPy, and Jupyter}, 3rd ed., O'Reilly, 2022.
+\end{enumerate}
+
+\vspace{1mm}
+\begin{center}
+\small\color{darkgray}\textit{Catatan: beberapa soal diadaptasi dari ide, contoh, self-check, dan latihan pada tiga sumber di atas. Soal dirancang ulang untuk konteks mahasiswa Matematika tahun kedua.}
+\end{center}
+
+
+\begin{conceptbox}{Cakupan konsep inti muncul pada kuis, tugas atau UTS}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.08\linewidth}X p{.23\linewidth}@{}}
+\toprule
+\textbf{No.} & \textbf{Konsep} & \textbf{Latihan terkait}\\
+\midrule
+1 & Tipe data dan konversi tipe & M1.1\\
+2 & Tuple dan unpacking & M2.3\\
+3 & Dictionary & M3.3, M3.8\\
+4 & \texttt{None} dan data tidak tersedia & M1.7\\
+5 & \texttt{break} dan \texttt{continue} & M1.7\\
+6 & Loop bersarang & M1.8, M3.6\\
+7 & Multiple return & M2.3\\
+8 & Fungsi sebagai objek & M2.5, M2.7\\
+9 & Lambda dan bentuk Pythonic & M2.6\\
+10 & Exception handling & M4.2\\
+11 & Debugging & M4.3--M4.5\\
+12 & \texttt{print}, \texttt{return}, dan \texttt{None} & M2.1\\
+13 & Testing dengan \texttt{assert} & M4.6\\
+14 & Terminasi program & M4.7\\
+15 & Rekursi & M4.8--M4.10\\
+16 & Kompleksitas algoritma & M5.1--M5.10\\
+17 & Searching & M6.1--M6.2, M6.6\\
+18 & Sorting & M6.3--M6.8\\
+19 & Benchmark implementasi & M6.9--M6.10\\
+20 & Data sebagai matriks & M7.10\\
+\bottomrule
+\end{tabularx}
+\end{conceptbox}
+
+
+\begin{multicols}{2}
+
+% ================= M1 =================
+\bab{M1: Python Dasar dan Alur Logika}{Konsep algoritma, tipe data, variabel, operasi, input/output, kondisional, dan pengulangan}
+
+\begin{qbox}[L1]{M1.1: Prediksi tipe data dan hasil}
+Tanpa menjalankan Python terlebih dahulu, tentukan apakah setiap ekspresi menghasilkan nilai, menghasilkan \texttt{True/False}, atau menimbulkan error. Jika menghasilkan nilai, tuliskan nilai dan tipenya. Setelah itu verifikasi dengan Python.
+\begin{lstlisting}
+1 + True
+True + True
+'1' + '0'
+'1' + 0
+int('1') + 0
+3 / 2
+3 // 2
+2**3.0
+bool(0), bool(-2), bool('0')
+\end{lstlisting}
+Jelaskan mengapa \texttt{1 + True} dan \texttt{'1' + 0} berperilaku berbeda.
+\end{qbox}
+
+\begin{qbox}[L1]{M1.2: Bilangan dan representasi}
+Tuliskan program yang menerima bilangan bulat positif $n$ dan mencetak: nilai binernya. Uji untuk $n=13$, $31$, dan $255$. Jelaskan hubungan banyak bit minimum dengan nilai $n$. Kemudian buat program untuk mengubah bilangan biner ke bilangan desimal.
+\end{qbox}
+
+\begin{qbox}[L2]{M1.3: Ekspresi matematika}
+Untuk $x=2.4$ dan $y=-1.2$, tuliskan satu ekspresi Python untuk menghitung
+\[
+f(x,y)=\frac{e^{x-y}+\sqrt{x^2+y^2}}{1+|xy|}.
+\]
+Bandingkan hasil menggunakan \texttt{math} dan NumPy. Prediksi tipe hasilnya.
+\end{qbox}
+
+\begin{qbox}[L2]{M1.4: Diskriminan persamaan kuadrat}
+Buat program yang menerima $a,b,c$ untuk $ax^2+bx+c=0$. Program harus menentukan apakah akar real berbeda, real kembar, atau kompleks berdasarkan $D=b^2-4ac$. Setelah klasifikasi, hitung akar yang sesuai. Uji minimal tiga kasus yang mewakili ketiga kondisi.
+\end{qbox}
+
+\begin{qbox}[L2]{M1.5: Fungsi sesepenggal}
+Diberikan
+\[
+f(x)=\begin{cases}
+x^2+1,&x<0,\\
+2x+1,&0\le x<3,\\
+\sqrt{x+6},&x\ge 3.
+\end{cases}
+\]
+Tuliskan program yang menerima $x$ dan menghitung $f(x)$. Uji tepat di sekitar batas $x=0$ dan $x=3$. Mengapa pengujian pada batas penting?
+\end{qbox}
+
+\begin{qbox}[L2]{M1.6: Pengulangan pada list}
+Diberikan \texttt{data = [3, -2, 0, 7, -5, 4, 9]}. Dengan \texttt{for}, hitung: jumlah elemen positif, jumlah kuadrat elemen negatif, dan rata-rata semua elemen nonnol. Jangan gunakan NumPy.
+\end{qbox}
+
+\begin{qbox}[L3]{M1.7: break dan continue}
+Diberikan list
+\begin{lstlisting}
+data = [12, 7, None, 8, -3, 0, 11, 5]
+\end{lstlisting}
+Tulis loop yang mengabaikan \texttt{None} dengan \texttt{continue}, berhenti ketika menemukan 0 dengan \texttt{break}, lalu menghitung jumlah nilai yang sempat diproses. Prediksi output sebelum menjalankan kode.
+\end{qbox}
+
+\begin{qbox}[L3]{M1.8: Segitiga bintang dan loop bersarang}
+Untuk bilangan bulat $n\ge 1$, buat keluaran
+\begin{lstlisting}
+*
+**
+***
+...
+\end{lstlisting}
+hingga $n$ baris menggunakan loop bersarang. Setelah itu modifikasi menjadi segitiga siku-siku terbalik. Berapa banyak karakter \texttt{*} yang dicetak sebagai fungsi dari $n$? Nyatakan dengan rumus.
+\end{qbox}
+
+\begin{qbox}[L4]{M1.9: Faktor dan bilangan prima}
+Buat program yang menerima $n>1$ dan mencari faktor positif terkecil selain 1 menggunakan \texttt{while}. Gunakan faktor tersebut untuk menentukan apakah $n$ prima. Jelaskan mengapa loop pasti berhenti. Uji $n=101$, $221$, dan $997$.
+\end{qbox}
+
+\begin{qbox}[L4]{M1.10: Pendekatan numerik ke $\pi$}
+Keliling poligon beraturan $n$ sisi yang terinskripsi pada lingkaran berjari-jari $1/2$ adalah
+\[
+p_n=n\sin\left(\frac{\pi}{n}\right).
+\]
+Hitung $p_n$ untuk $n=3,4,10,100,10^4,10^6$. Amati kecenderungannya. Tulis loop dan jelaskan apa yang terjadi secara matematis ketika $n$ membesar.
+\end{qbox}
+
+
+
+
+% ================= M2 =================
+\bab{M2: Fungsi, Scope, dan Gaya Pythonic}{Subprogram, argumen, return, tuple/unpacking, fungsi sebagai objek, fungsi lambda, dan modularisasi}
+
+\begin{qbox}[L1]{M2.1: Empat bentuk fungsi dan makna return}
+Buat empat fungsi berikut:
+\begin{enumerate}
+\item tanpa argumen dan tanpa \texttt{return};
+\item tanpa argumen tetapi memiliki \texttt{return};
+\item memiliki dua argumen dan tanpa \texttt{return};
+\item memiliki tiga argumen dan memiliki \texttt{return}.
+\end{enumerate}
+Gunakan konteks matematika sederhana. Untuk setiap fungsi, prediksi nilai yang dikembalikan Python. Jelaskan perbedaan antara menampilkan nilai dengan \texttt{print} dan mengembalikan nilai dengan \texttt{return}.
+\end{qbox}
+
+\begin{qbox}[L2]{M2.2: Argumen posisi, keyword, dan nilai default}
+Definisikan
+\begin{lstlisting}
+def kuadrat(x, a=1.0, b=0.0, c=0.0):
+    return a*x**2 + b*x + c
+\end{lstlisting}
+Hitung hasil beberapa pemanggilan dengan argumen posisi dan keyword. Buat satu contoh pemanggilan yang salah karena urutan atau nama argumen. Jelaskan kapan nilai default membantu membuat fungsi lebih mudah digunakan.
+\end{qbox}
+
+\begin{qbox}[L2]{M2.3: Multiple return, tuple, dan unpacking}
+Tulis fungsi \texttt{stat\_ringkas(a,b,c,d)} yang mengembalikan empat nilai sekaligus: minimum, maksimum, rata-rata, dan rentang. Gunakan
+\begin{lstlisting}
+minimum, maksimum, rata, rentang = stat_ringkas(a,b,c,d)
+\end{lstlisting}
+untuk unpacking. Tunjukkan tipe objek yang sebenarnya dikembalikan fungsi. Apa yang terjadi jika hasil empat elemen tersebut ditampung hanya ke dua nama variabel saja?
+\end{qbox}
+
+\begin{qbox}[L2]{M2.4: Variabel lokal dan global}
+Prediksi output sebelum menjalankan program.
+\begin{lstlisting}
+x = 10
+
+def f(a):
+    x = a + 2
+    return x
+
+print(f(5))
+print(x)
+\end{lstlisting}
+Buat versi kedua yang menggunakan \texttt{global x}. Bandingkan kedua desain. Jelaskan mengapa fungsi yang mengubah variabel global biasanya lebih sulit diuji.
+\end{qbox}
+
+\begin{qbox}[L3]{M2.5: Fungsi sebagai objek dan sebagai argumen}
+Gunakan pola berikut.
+\begin{lstlisting}
+def proses(x, f):
+    return f(x)
+
+def kuadrat(x):
+    return x**2
+\end{lstlisting}
+Tambahkan fungsi \texttt{kubik} dan \texttt{tambah1}. Terapkan fungsi-fungsi tersebut pada nilai yang sama melalui \texttt{proses}. Kemudian simpan objek fungsi ke dalam sebuah list dan panggil semuanya di dalam loop. Bedakan \texttt{kuadrat(5)} dengan objek fungsi \texttt{kuadrat}.
+\end{qbox}
+
+\begin{qbox}[L3]{M2.6: Lambda}
+Definisikan
+\[
+f(x)=3x^2-2x+1
+\]
+dengan \texttt{lambda}. Evaluasi pada $x=-3,-2,\ldots,3$. Tulis juga versi menggunakan fungsi bernama \texttt{def}. Bandingkan keterbacaan keduanya dan berikan satu contoh keadaan ketika lambda sebaiknya tidak digunakan.
+\end{qbox}
+
+\begin{qbox}[L3]{M2.7: Komposisi fungsi}
+Diberikan $f(x)=x^2+1$ dan $g(x)=2x-3$. Tulis
+\begin{lstlisting}
+def komposisi(f, g, x):
+    ...
+\end{lstlisting}
+untuk menghitung $(f\circ g)(x)$. Hitung juga $(g\circ f)(x)$ untuk beberapa nilai $x$ dan tunjukkan bahwa komposisi fungsi tidak selalu komutatif.
+\end{qbox}
+
+\begin{qbox}[L4]{M2.8: Fungsi matematika dengan pemeriksaan domain}
+Tulis fungsi untuk
+\[
+h(x)=\frac{\sqrt{x+2}}{x-1}.
+\]
+Sebelum melakukan perhitungan, fungsi harus memeriksa domain dan mengembalikan \texttt{None} jika $x<-2$ atau $x=1$. Uji pada nilai batas dan nilai di luar domain. Pada minggu berikutnya, fungsi semacam ini akan diperbaiki lagi menggunakan exception handling.
+\end{qbox}
+
+% ================= M3 =================
+\bab{M3: Representasi Algoritma, Collection, dan Array NumPy}{Pseudocode, list, dictionary, comprehension, nested iteration, dan komputasi array}
+
+\begin{conceptbox}{Template pseudocode yang digunakan}
+\begin{lstlisting}[language={}]
+ALGORITMA NamaAlgoritma
+INPUT:  data masukan dan syaratnya
+OUTPUT: keluaran yang diharapkan
+BEGIN
+    inisialisasi
+    langkah-langkah
+    IF kondisi THEN
+        ...
+    ELSE
+        ...
+    ENDIF
+    FOR / WHILE ...
+        ...
+    ENDFOR / ENDWHILE
+    RETURN hasil
+END
+\end{lstlisting}
+Pseudocode tidak harus mengikuti sintaks Python. Input, output, kondisi, pengulangan, dan urutan langkah harus dapat ditelusuri dengan jelas.
+\end{conceptbox}
+
+\begin{qbox}[L1]{M3.1: Dari masalah ke pseudocode}
+Tuliskan pseudocode untuk mencari nilai maksimum dan indeks kemunculan pertamanya dari sekumpulan bilangan tanpa menggunakan \texttt{max}. Setelah itu implementasikan dalam Python dan uji pada \texttt{[4,1,9,2,9,3]}.
+\end{qbox}
+
+\begin{qbox}[L2]{M3.2: Pseudocode algoritma Euclid}
+Tuliskan pseudocode algoritma Euclid untuk mencari \textit{Great Common Divisor} (GCD) dua bilangan$\gcd(a,b)$. Implementasikan dengan \texttt{while}. Gunakan untuk menghitung $\gcd(252,105)$ dan catat urutan pasangan $(a,b)$ sampai algoritma berhenti.
+\end{qbox}
+
+\begin{qbox}[L2]{M3.3: Iterasi list dan dictionary}
+Buat contoh \texttt{for} yang mengiterasi list dan dictionary. Gunakan dictionary nilai mahasiswa dengan struktur \texttt{nama:nilai}. Iterasi pasangan \texttt{key,value}, hitung rata-rata, dan tentukan nama dengan nilai tertinggi.
+\end{qbox}
+
+\begin{qbox}[L2]{M3.4: List comprehension sebagai operasi vektor}
+Diberikan $x=[-2,-1,0,1,2]$. Dengan list comprehension buat
+\[
+y_i=3x_i^2-2x_i+1,\qquad z_i=x_i y_i.
+\]
+Hitung $\sum_i z_i$. Tulis versi loop biasa dan bandingkan struktur keduanya.
+\end{qbox}
+
+\begin{qbox}[L3]{M3.5: List comprehension pada matriks}
+Diberikan
+\begin{lstlisting}
+A = [[1,2,3],
+     [4,5,6],
+     [7,8,9]]
+\end{lstlisting}
+Tanpa NumPy: ambil kolom terakhir, diagonal utama, dan bentuk list berisi dua kali kuadrat elemen kolom tengah menggunakan comprehension.
+\end{qbox}
+
+\begin{qbox}[L3]{M3.6: Membentuk matriks dengan loop bersarang}
+Dengan dua \texttt{for}, bentuk matriks $A\in\mathbb{R}^{4\times4}$ dengan
+\[
+a_{ij}=i+j+ij,\qquad i,j=1,2,3,4.
+\]
+Simpan sebagai list of lists. Tentukan diagonal utama dan periksa secara algoritmik apakah $A$ simetris. Setelah itu konversi ke NumPy array dan periksa $A=A^T$.
+\end{qbox}
+
+\begin{qbox}[L2]{M3.7: Tipe data pada NumPy array}
+Konversi \texttt{[1,4.,-2,7]} menjadi NumPy array dan periksa \texttt{dtype}. Jelaskan mengapa seluruh elemen menjadi satu tipe. Buat array integer dan float, kemudian bandingkan hasil pembagian dan operasi element-wise sederhana.
+\end{qbox}
+
+\begin{qbox}[L3]{M3.8: Dictionary dan standardisasi}
+Diberikan
+\begin{lstlisting}
+nilai = {'A':82, 'B':71, 'C':95, 'D':64}
+\end{lstlisting}
+Hitung rata-rata dan simpangan baku populasi. Bentuk dictionary baru dengan
+\[
+z_i=\frac{x_i-\bar x}{s}.
+\]
+Cetak key, nilai asli, dan skor $z$. Verifikasi bahwa rata-rata skor $z$ mendekati nol.
+\end{qbox}
+
+\begin{qbox}[L3]{M3.9: Loop Python dan NumPy vectorization}
+Ambil 1000 titik $x_i$ pada $[0,2\pi]$. Hitung
+\[
+y_i=\sin(x_i)+x_i^2
+\]
+dengan loop Python dan dengan operasi NumPy. Periksa bahwa hasil keduanya sama sampai toleransi tertentu. Fokus soal ini adalah kesetaraan hasil, bukan pengukuran waktu.
+\end{qbox}
+
+\begin{qbox}[L4]{M3.10: Slicing dan beda hingga}
+Diberikan posisi $y_i$ dan waktu $t_i$ dalam dua NumPy array dengan panjang sama. Bentuk
+\[
+v_i=\frac{y_{i+1}-y_i}{t_{i+1}-t_i}
+\]
+tanpa loop eksplisit, hanya menggunakan slicing. Jelaskan mengapa panjang array $v$ satu lebih kecil dari $y$ dan $t$.
+\end{qbox}
+
+% ================= M4 =================
+\bab{M4: Exception, Debugging, Testing, Terminasi, dan Rekursi}{Kesalahan program, penanganan exception, assert, base case, recursive case, dan iterasi Newton}
+
+\begin{conceptbox}{Halt atau terminasi}
+Suatu program atau algoritma dikatakan \textit{halt} untuk sebuah input jika eksekusinya berhenti setelah sejumlah langkah yang berhingga. Pada loop atau rekursi, pertanyaan pentingnya adalah: apakah keadaan program bergerak menuju kondisi berhenti untuk setiap input yang diizinkan?
+\end{conceptbox}
+
+\begin{qbox}[L1]{M4.1: Tiga jenis masalah pada program}
+Untuk setiap kasus berikut, klasifikasikan sebagai syntax error, runtime error, atau logical error. Berikan alasan dan perbaikan singkat.
+\begin{lstlisting}
+# A
+if x > 0
+    print(x)
+
+# B
+x = 3 / 0
+
+# C
+def rata(data):
+    return sum(data) / (len(data) + 1)
+\end{lstlisting}
+Tambahkan satu contoh buatan sendiri untuk masing-masing jenis kesalahan.
+\end{qbox}
+
+\begin{qbox}[L2]{M4.2: Exception handling dan validasi input}
+Buat fungsi \texttt{rasio(a,b)} yang mencoba mengubah $a$ dan $b$ menjadi \texttt{float}, lalu menghitung $a/b$. Tangani secara terpisah \texttt{ValueError}, \texttt{TypeError}, dan \texttt{ZeroDivisionError}. Uji pada
+\begin{lstlisting}
+('3.5','2'), ('abc',2), (3,0), (None,4)
+\end{lstlisting}
+Jelaskan mengapa \texttt{except:} tanpa jenis exception dapat menyembunyikan bug.
+\end{qbox}
+
+\begin{qbox}[L2]{M4.3: Debugging return yang terlalu dini}
+Fungsi berikut dimaksudkan menghitung rata-rata.
+\begin{lstlisting}
+def rata(data):
+    total = 0
+    for x in data:
+        total += x
+        return total / len(data)
+\end{lstlisting}
+Prediksi hasil untuk \texttt{[2,4,6,8]}, temukan kesalahan logikanya, lalu perbaiki. Tambahkan perlakuan untuk data kosong.
+\end{qbox}
+
+\begin{qbox}[L3]{M4.4: Debugging algoritma Newton}
+Fungsi berikut merupakan iterasi Newton untuk menghitung akar kadang bermasalah.
+\begin{lstlisting}
+def akar(n, tol=1e-10):
+    x = 0.0
+    while abs(x*x - n) > tol:
+        x = 0.5 * (x + n/x)
+    return x
+\end{lstlisting}
+Identifikasi penyebab kegagalan. Pilih initial guess yang lebih baik, tangani $n=0$ dan $n<0$, lalu uji pada beberapa nilai yang jawabannya diketahui.
+\end{qbox}
+
+\begin{qbox}[L3]{M4.5: Debugging kondisi batas}
+Diberikan fungsi yang menentukan apakah bilangan bulat positif $n$ prima dengan mencoba pembagi $2,3,\ldots,\lfloor\sqrt n\rfloor$. Buat implementasi yang sengaja salah pada satu kondisi batas, tunjukkan test case yang membongkar bug tersebut, lalu perbaiki.
+\end{qbox}
+
+\begin{qbox}[L3]{M4.6: Testing dengan assert}
+Tulis fungsi jarak Euclid dua vektor berdimensi sama. Gunakan \texttt{assert} untuk menguji: dua vektor sama, dimensi satu, komponen negatif, simetri $d(x,y)=d(y,x)$, dan $d((0,0),(3,4))=5$. Tambahkan pemeriksaan bahwa panjang dua vektor harus sama.
+\end{qbox}
+
+\begin{qbox}[L3]{M4.7: Terminasi loop}
+Untuk setiap potongan kode, tentukan apakah loop halt untuk setiap bilangan bulat positif $n$.
+\begin{lstlisting}
+# A
+i = n
+while i > 0:
+    i = i // 2
+
+# B
+i = n
+while i != 1:
+    i = i - 2
+
+# C
+i = n
+while i > 0:
+    i = i + 1
+\end{lstlisting}
+Untuk B, klasifikasikan input yang halt dan yang tidak. Untuk A, berikan ukuran bilangan bulat nonnegatif yang turun menuju kondisi berhenti.
+\end{qbox}
+
+\begin{qbox}[L2]{M4.8: Rekursi factorial}
+Tulis \texttt{factorial(n)} secara rekursif dan iteratif. Tandai base case dan recursive case. Telusuri call stack untuk $n=5$. Bandingkan kebutuhan penyimpanan keadaan pada kedua versi.
+\end{qbox}
+
+\begin{qbox}[L3]{M4.9: Rekursi barisan}
+Didefinisikan
+\[
+a_0=2,\qquad a_n=3a_{n-1}-2,\quad n\ge1.
+\]
+Tulis fungsi rekursif, hitung $a_0$ sampai $a_6$, tebak rumus eksplisit $a_n$, lalu verifikasi hasil rekursif terhadap rumus tersebut.
+\end{qbox}
+
+\begin{qbox}[L4]{M4.10: Rekursi dan perhitungan berulang}
+Diberikan
+\[
+u_0=1,\qquad u_1=3,\qquad u_n=u_{n-1}+2u_{n-2}.
+\]
+Tulis fungsi rekursif dan gambar pohon pemanggilan untuk $u_5$. Tandai submasalah yang dihitung berulang. Jelaskan secara kualitatif mengapa implementasi rekursif langsung dapat menjadi mahal.
+\end{qbox}
+
+% ================= M5 =================
+\bab{M5: Kompleksitas Algoritma Big-O}{Ukuran input, jumlah operasi, orde pertumbuhan, dan time-space trade-off}
+
+\begin{qbox}[L1]{M5.1: Urutkan orde pertumbuhan}
+Urutkan dari pertumbuhan paling lambat ke paling cepat:
+\[
+1,\quad \log n,\quad n,\quad n\log n,\quad n^2,\quad n^3,\quad 2^n,\quad n!.
+\]
+Untuk $n=10$ dan $n=100$, bandingkan secara numerik beberapa orde yang masih masuk akal dihitung.
+\end{qbox}
+
+\begin{qbox}[L2]{M5.2: Big-O nested loop}
+Tentukan Big-O dan jelaskan dari banyak eksekusi baris terdalam.
+\begin{lstlisting}
+test = 0
+for i in range(n):
+    for j in range(n):
+        test = test + i*j
+\end{lstlisting}
+Pilihan: $O(n)$, $O(n^2)$, $O(\log n)$, $O(n^3)$.
+\end{qbox}
+
+\begin{qbox}[L2]{M5.3: Dua loop berurutan}
+Tentukan Big-O.
+\begin{lstlisting}
+test = 0
+for i in range(n):
+    test = test + 1
+for j in range(n):
+    test = test - 1
+\end{lstlisting}
+Mengapa dua loop $O(n)$ yang berurutan tidak menjadi $O(n^2)$?
+\end{qbox}
+
+\begin{qbox}[L2]{M5.4: Loop membagi dua}
+Tentukan Big-O dan jumlah iterasi sebagai fungsi dari $n$.
+\begin{lstlisting}
+i = n
+while i > 0:
+    k = 2 + 2
+    i = i // 2
+\end{lstlisting}
+Hubungkan jumlah iterasi dengan $\lfloor\log_2 n\rfloor$.
+\end{qbox}
+
+\begin{qbox}[L3]{M5.5: Menghitung T(n)}
+Untuk kode berikut, hitung jumlah eksekusi \texttt{s += 1}.
+\begin{lstlisting}
+s = 0
+for i in range(n):
+    for j in range(i + 1):
+        s += 1
+\end{lstlisting}
+Tunjukkan bahwa banyak operasi adalah $1+2+\cdots+n$ dan simpulkan Big-O.
+\end{qbox}
+
+\begin{qbox}[L3]{M5.6: Loop versus rumus tertutup}
+Bandingkan dua algoritma untuk $S(n)=1+2+\cdots+n$: satu menggunakan loop dan satu menggunakan $n(n+1)/2$. Tentukan kompleksitas masing-masing. Rancang eksperimen waktu sederhana dan jelaskan mengapa waktu aktual saja tidak cukup untuk mendefinisikan kompleksitas.
+\end{qbox}
+
+\begin{qbox}[L3]{M5.7: Kompleksitas operasi list}
+Klasifikasikan secara kualitatif terhadap panjang list $n$: indexing \texttt{x[i]}, \texttt{append}, \texttt{pop()}, \texttt{pop(0)}, \texttt{v in x}, dan sorting. Verifikasi minimal dua klaim dengan \texttt{timeit}.
+\end{qbox}
+
+\begin{qbox}[L4]{M5.8: Time-space trade-off}
+Dua algoritma mendeteksi anagram. Algoritma A menyortir kedua string. Algoritma B menghitung frekuensi karakter dengan array penghitung. Bandingkan waktu dan memori. Untuk alfabet berukuran tetap, tentukan kompleksitas waktu Algoritma B terhadap panjang string $n$.
+\end{qbox}
+
+\begin{qbox}[L4]{M5.9: Model biaya komputasi}
+Misalkan
+\[
+T_1(n)=7n^2+3n+40,\qquad T_2(n)=0.001n^3+100n.
+\]
+Tentukan Big-O masing-masing. Gunakan Python untuk mencari kisaran $n$ ketika $T_1(n)<T_2(n)$ dan sebaliknya. Jelaskan perbedaan antara pernyataan asimtotik dan keputusan praktis pada ukuran input terbatas.
+\end{qbox}
+
+\begin{qbox}[L4]{M5.10: Eksperimen pertumbuhan}
+Rancang eksperimen untuk membedakan secara empiris fungsi yang kira-kira $O(n)$ dan $O(n^2)$. Pilih urutan nilai $n$, tentukan apa yang diukur, dan jelaskan pola rasio waktu yang diharapkan ketika $n$ digandakan.
+\end{qbox}
+
+% ================= M6 =================
+\bab{M6: Searching, Sorting, dan Analisis Kinerja}{Tracing binary search, selection sort, merge sort, dan hubungan teori dengan benchmark}
+
+\begin{qbox}[L2]{M6.1: Recursive binary search, key ditemukan}
+Diberikan list terurut
+\[
+[3,5,6,8,11,12,14,15,17,18].
+\]
+Dengan recursive binary search, urutan perbandingan mana yang benar untuk mencari key 8?
+\begin{enumerate}
+\item 11, 5, 6, 8
+\item 12, 6, 11, 8
+\item 3, 5, 6, 8
+\item 18, 12, 6, 8
+\end{enumerate}
+Tunjukkan indeks kiri, kanan, dan tengah pada setiap langkah.
+\end{qbox}
+
+\begin{qbox}[L2]{M6.2: Recursive binary search, key tidak ada}
+Gunakan list yang sama. Tentukan urutan perbandingan untuk key 16 dan jelaskan kapan algoritma menyimpulkan bahwa 16 tidak ada.
+\begin{enumerate}
+\item 11, 14, 17
+\item 18, 17, 15
+\item 14, 17, 15
+\item 12, 17, 15
+\end{enumerate}
+\end{qbox}
+
+\begin{qbox}[L3]{M6.3: Selection sort setelah tiga pass}
+Diberikan
+\[
+[11,7,12,14,19,1,6,18,8,20].
+\]
+Lakukan selection sort secara manual. Tuliskan keadaan list setelah pass ke-1, ke-2, dan ke-3. Nyatakan dengan jelas definisi satu \emph{pass} pada implementasi Anda.
+\end{qbox}
+
+\begin{qbox}[L3]{M6.4: Trace merge sort}
+Untuk
+\[
+[21,1,26,45,29,28,2,9,16,49,39,27,43,34,46,40],
+\]
+gambar tiga tingkat awal pohon rekursi merge sort. Setelah tiga pemanggilan rekursif pada cabang paling kiri, sublist mana yang sedang diproses?
+\end{qbox}
+
+\begin{qbox}[L3]{M6.5: Merge pertama}
+Untuk list pada M6.4, tentukan dua list pertama yang digabung kembali. Tunjukkan hasil merge tersebut, lalu lanjutkan satu tahap merge berikutnya.
+\end{qbox}
+
+\begin{qbox}[L3]{M6.6: Sequential versus binary search}
+Implementasikan \texttt{sequential\_search} dan \texttt{binary\_search} untuk list terurut. Catat banyak perbandingan untuk key di awal, tengah, akhir, dan tidak ada. Hubungkan hasil dengan $O(n)$ dan $O(\log n)$.
+\end{qbox}
+
+\begin{qbox}[L3]{M6.7: Sorting dan orde pertumbuhan}
+Pasangkan algoritma berikut dengan kompleksitas worst-case: bubble sort, selection sort, insertion sort, merge sort, dan quicksort standar. Jelaskan algoritma mana pada daftar tersebut yang dijamin $O(n\log n)$ pada worst-case.
+\end{qbox}
+
+\begin{qbox}[L4]{M6.8: Invariant pada selection sort}
+Nyatakan invariant sederhana untuk selection sort: setelah pass ke-$k$, bagian mana dari list yang sudah berada pada posisi final? Gunakan invariant tersebut untuk menjelaskan mengapa algoritma menghasilkan list terurut.
+\end{qbox}
+
+\begin{qbox}[L4]{M6.9: Benchmark insertion sort dan merge sort}
+Rancang benchmark yang adil untuk membandingkan insertion sort dan merge sort. Gunakan ukuran input meningkat, data acak yang sama untuk kedua algoritma, dan pengulangan pengukuran. Laporkan median atau rata-rata waktu dan jelaskan mengapa satu pengukuran tidak cukup.
+\end{qbox}
+
+\begin{qbox}[L4]{M6.10: Membaca benchmark dengan hati-hati}
+Buat tiga jenis input: acak, terurut, dan hampir terurut. Bandingkan insertion sort dan merge sort secara empiris. Jelaskan mengapa hasil benchmark dapat dipengaruhi ukuran input, konstanta implementasi, dan struktur data, walaupun Big-O tetap memberi informasi asimtotik.
+\end{qbox}
+
+% ================= M7 =================
+\bab{M7: Aljabar Linier Komputasional}{Array 1D dan 2D, operasi matriks, transpose, invers, SPL, norma, nilai eigen, dan data sebagai matriks}
+
+\begin{qbox}[L1]{M7.1: Vektor sebagai list dan NumPy array}
+Diberikan $x=(1,-2,3)$ dan $y=(4,0,-1)$. Hitung manual $x+y$, $2x-y$, $x\cdot y$, $\|x\|_2$, dan $\|x-y\|_2$. Implementasikan dengan Python list dan NumPy array. Catat operasi yang berbeda perilakunya.
+\end{qbox}
+
+\begin{qbox}[L2]{M7.2: Element-wise dan perkalian matriks}
+Diberikan
+\[
+A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\qquad
+B=\begin{pmatrix}2&0\\1&5\end{pmatrix}.
+\]
+Hitung manual $A\odot B$ dan $AB$. Implementasikan dengan NumPy. Jelaskan perbedaan \texttt{A*B} dan \texttt{A@B}.
+\end{qbox}
+
+\begin{qbox}[L2]{M7.3: Perkalian matriks manual}
+Tulis \texttt{matmul\_manual(A,B)} untuk list of lists menggunakan tiga loop. Fungsi harus memeriksa kesesuaian dimensi. Uji matriks $2\times3$ dikali $3\times2$ dan bandingkan dengan NumPy.
+\end{qbox}
+
+\begin{qbox}[L2]{M7.4: Transpose tiga cara}
+Untuk
+\begin{lstlisting}
+A = [[1,2,3],
+     [4,5,6]]
+\end{lstlisting}
+buat transpose dengan loop bersarang, list comprehension, dan \texttt{np.array(A).T}. Jelaskan perubahan ukuran dari $m\times n$ menjadi $n\times m$.
+\end{qbox}
+
+\begin{qbox}[L3]{M7.5: Invers matriks 2x2}
+Tulis fungsi berdasarkan
+\[
+\begin{pmatrix}a&b\\c&d\end{pmatrix}^{-1}
+=\frac{1}{ad-bc}\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.
+\]
+Fungsi harus menolak matriks singular. Bandingkan dengan \texttt{np.linalg.inv} dan verifikasi $AA^{-1}\approx I$.
+\end{qbox}
+
+\begin{qbox}[L3]{M7.6: SPL dan determinan}
+Diberikan
+\[
+A=\begin{pmatrix}2&1\\5&3\end{pmatrix},\qquad
+b=\begin{pmatrix}1\\4\end{pmatrix}.
+\]
+Periksa determinan. Jika $\det(A)\ne0$, selesaikan $Ax=b$ dengan invers manual, \texttt{np.linalg.inv}, dan \texttt{np.linalg.solve}. Bandingkan hasil dan metode.
+\end{qbox}
+
+\begin{qbox}[L3]{M7.7: Residual dan norma}
+Untuk solusi numerik $\hat x$ dari $Ax=b$, definisikan $r=b-A\hat x$. Tulis fungsi yang mengembalikan $\|r\|_2$. Uji pada solusi benar dan pada solusi yang diganggu sebesar $10^{-3}$ pada satu komponen.
+\end{qbox}
+
+\begin{qbox}[L3]{M7.8: SPL 3x3}
+Selesaikan
+\[
+\begin{aligned}
+2x_1+4x_2+6x_3&=4,\\
+x_1-3x_2-9x_3&=-11,\\
+8x_1+5x_2-7x_3&=1.
+\end{aligned}
+\]
+Bentuk array $A$ dan $b$, gunakan \texttt{np.linalg.solve}, lalu verifikasi dengan residual. Jelaskan mengapa menyelesaikan sistem langsung umumnya lebih disukai daripada membentuk $A^{-1}$ terlebih dahulu.
+\end{qbox}
+
+\begin{qbox}[L4]{M7.9: Nilai eigen dan verifikasi}
+Untuk
+\[
+A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
+\]
+hitung nilai eigen secara manual dari $\det(A-\lambda I)=0$. Gunakan \texttt{np.linalg.eig}. Untuk setiap pasangan $(\lambda,v)$, verifikasi numerik $Av\approx\lambda v$ menggunakan norma selisih.
+\end{qbox}
+
+\begin{qbox}[L4]{M7.10: Data sebagai matriks}
+Data empat observasi dengan tiga fitur ditulis
+\[
+X=\begin{pmatrix}
+1&2&0\\
+2&1&1\\
+4&3&2\\
+3&4&1
+\end{pmatrix}.
+\]
+Hitung vektor rata-rata kolom $\bar x$, centered matrix $X_c=X-\mathbf{1}\bar x^T$, dan Gram matrix $G=X_c^T X_c$. Kerjakan terlebih dahulu dengan loop/list, lalu dengan NumPy. Periksa bahwa $G$ simetris dan jelaskan hubungan $X_c^T X_c$ dengan variasi antarfitur.
+\end{qbox}
+
+\end{multicols}
+
+
+
+\end{document}

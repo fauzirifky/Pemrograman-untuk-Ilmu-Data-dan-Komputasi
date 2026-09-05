@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+__MACOSX/
+
+# LaTeX temporary files
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.vrb
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.xdv
+
+# Local generated output
+generated/**/*.pdf
+
+# Backups / editors
+*~
+*.swp
+*.swo
+*.bak
+*.backup_*.tex
