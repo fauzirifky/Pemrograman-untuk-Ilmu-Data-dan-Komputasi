@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# Jangan biarkan dua workflow build menulis PDF ke main secara bersamaan.
+concurrency:
+  group: latex-build-main
+  cancel-in-progress: false
+
 jobs:
   build:
     if: github.actor != 'github-actions[bot]'
@@ -24,28 +29,73 @@ jobs:
       - name: Compile all LaTeX roots
         shell: bash
         run: |
+          set -euo pipefail
           docker run --rm \
             -v "$PWD:/workspace" \
             -w /workspace \
             ghcr.io/xu-cheng/texlive-full:latest \
             sh tools/build.sh
 
-      - name: Commit PDFs beside TeX files
+      - name: Commit and push PDFs safely
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          while IFS= read -r -d '' pdf; do
-            git add -- "$pdf"
-          done < <(find Lembar_Kerja Materi -type f -name '*.pdf' -print0)
+          stage_pdfs() {
+            while IFS= read -r -d '' pdf; do
+              git add -- "$pdf"
+            done < <(find Lembar_Kerja Materi -type f -name '*.pdf' -print0)
+          }
 
+          rebuild() {
+            docker run --rm \
+              -v "$PWD:/workspace" \
+              -w /workspace \
+              ghcr.io/xu-cheng/texlive-full:latest \
+              sh tools/build.sh
+          }
+
+          stage_pdfs
           if git diff --cached --quiet; then
-            echo "PDF tidak berubah."
+            echo "PDF tidak berubah. Selesai."
             exit 0
           fi
 
           git commit -m "Build PDFs [skip ci]"
-          git pull --rebase origin main
-          git push origin main
+
+          # Runner bersifat sementara. Buang file build non-PDF/ignored agar rebase selalu clean.
+          git reset --hard HEAD
+          git clean -fdX
+
+          # Biasanya attempt pertama langsung berhasil. Retry hanya jika main bergerak
+          # saat workflow sedang compile, misalnya ada Push baru dari Overleaf.
+          for attempt in 1 2 3; do
+            echo "==> Push attempt $attempt/3"
+            git fetch origin main
+            git rebase origin/main
+
+            # Jika rebase membawa source TeX baru, build ulang supaya PDF cocok
+            # dengan source pada commit yang benar-benar akan dipush.
+            rebuild
+            stage_pdfs
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+
+            git reset --hard HEAD
+            git clean -fdX
+
+            if git push origin HEAD:main; then
+              echo "PDF berhasil dipush ke main."
+              exit 0
+            fi
+
+            echo "Remote bergerak lagi. Ulangi setelah jeda singkat."
+            sleep 3
+          done
+
+          echo "Gagal push setelah 3 percobaan." >&2
+          exit 1

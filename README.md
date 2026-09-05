@@ -45,3 +45,8 @@ PC <-> GitHub <-> Overleaf
 ```
 
 Jika edit dilakukan di Overleaf: lakukan GitHub Push dari Overleaf. Setelah perubahan masuk GitHub, GitHub Actions otomatis compile dan memperbarui PDF di folder yang sama dengan `.tex`.
+
+## Materi tambahan
+
+- `Materi/M02/slides_M02.tex`: Pertemuan 2, Fungsi dan Struktur Kontrol.
+- `Materi/M02/slides_M02.pdf`: hasil compile Pertemuan 2.
