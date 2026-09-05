@@ -1,185 +1,206 @@
-
-\documentclass[aspectratio=169,10pt]{beamer}
-\usepackage[T1]{fontenc}
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[indonesian]{babel}
-\usepackage{amsmath,amssymb}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
 
-\definecolor{pidknavy}{HTML}{123C63}
-\definecolor{pidkblue}{HTML}{E8F3FB}
-\definecolor{pidkteal}{HTML}{3BA7A9}
-\definecolor{pidkgray}{HTML}{263238}
-\definecolor{codebg}{HTML}{F7F9FB}
-\definecolor{codeframe}{HTML}{BAC8D3}
-\definecolor{coderule}{HTML}{0B5D89}
+\graphicspath{{assets/}{../M01/assets/}}
 
-\usetheme{default}
-\setbeamertemplate{navigation symbols}{}
-\setbeamercolor{frametitle}{fg=white,bg=pidknavy}
-\setbeamertemplate{frametitle}{\nointerlineskip\begin{beamercolorbox}[wd=\paperwidth,ht=0.78cm,dp=0.24cm,leftskip=0.28cm]{frametitle}\usebeamerfont{frametitle}\insertframetitle\end{beamercolorbox}}
-\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
-\setbeamerfont{normal text}{size=\normalsize}
-\setbeamertemplate{footline}{%
-  \ifnum\value{framenumber}=1\relax\else%
-  \leavevmode\hbox{%
-  \begin{beamercolorbox}[wd=.36\paperwidth,ht=2.7ex,dp=1ex,leftskip=0.25cm]{footA}Pemrograman untuk Ilmu Data dan Komputasi\end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=.48\paperwidth,ht=2.7ex,dp=1ex,center]{footB}Program Studi Matematika ITERA\end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=.16\paperwidth,ht=2.7ex,dp=1ex,rightskip=0.25cm plus1fil]{footC}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}}%
-  \fi}
-\setbeamercolor{footA}{bg=pidknavy,fg=white}
-\setbeamercolor{footB}{bg=pidknavy,fg=white}
-\setbeamercolor{footC}{bg=pidknavy,fg=white}
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{Purple}{HTML}{6F42C1}
 
-\lstdefinestyle{pidk}{
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Gold}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\lstdefinestyle{py}{
   language=Python,
   basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\color{coderule}\bfseries,
-  commentstyle=\color{pidkteal},
-  stringstyle=\color{teal!60!black},
+  keywordstyle=\color{Blue}\bfseries,
+  commentstyle=\color{Teal},
+  stringstyle=\color{Gold!70!black},
   showstringspaces=false,
-  backgroundcolor=\color{codebg},
-  frame=single,
-  rulecolor=\color{codeframe},
-  framerule=0.45pt,
-  columns=fullflexible,
-  keepspaces=true,
   breaklines=true,
-  aboveskip=3pt,
-  belowskip=3pt
+  frame=single,
+  rulecolor=\color{Navy!35},
+  backgroundcolor=\color{CodeBg},
+  tabsize=4,
+  columns=fullflexible
 }
-\lstset{style=pidk}
+\lstset{style=py}
 
-\newenvironment{pidkbox}[1]{\begin{block}{#1}\justifying}{\end{block}}
-\setbeamercolor{block title}{bg=pidknavy,fg=white}
-\setbeamercolor{block body}{bg=pidkblue,fg=pidkgray}
-\setbeamerfont{block title}{series=\bfseries}
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
+}
 
-\title{Pertemuan 2\\Fungsi, Subprogram, dan Rekursi}
-\subtitle{Pemrograman untuk Ilmu Data dan Komputasi\\MA25-21008 Kelas RA dan RB}
-\author{Triyana Muliawati, S.Si., M.Si.\\Rifky Fauzi}
-\institute{Program Studi Matematika\\Institut Teknologi Sumatera}
-\date{Semester Ganjil 2026/2027}
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\title[\mkfooter]{Pertemuan 2: Fungsi, Subprogram, dan Rekursi}
+\subtitle{Fungsi sebagai unit kerja dalam program}
+\author{Triyana Muliawati, S.Si., M.Si. dan Rifky Fauzi}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
 
 \begin{document}
 
-% PATCH M02 FINAL MARKER: TRIYANA-FIRST SUBPROGRAM RECURSION NO-RUJUKAN NO-BATAS
-
+% 1
 \begin{frame}[plain]
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.47\linewidth}
-\vspace{0.9cm}
-\begin{tikzpicture}[scale=1]
-\fill[pidknavy] (0,0) rectangle (5.7,7.0);
-\foreach \i in {1,...,45}{\fill[cyan!55!white,opacity=.35] ({rnd*5.6},{rnd*6.8}) circle (0.018+rnd*0.035);}
-\draw[cyan!45!white,opacity=.65,line width=.4pt] plot[smooth] coordinates{(.15,1.1)(1.1,1.5)(2.1,.8)(3.0,1.8)(4.2,1.2)(5.4,2.0)};
-\draw[cyan!35!white,opacity=.45] (0.4,5.8)--(1.8,6.4)--(2.7,5.5)--(3.7,6.2)--(5.1,5.4);
-\foreach \p in {(0.4,5.8),(1.8,6.4),(2.7,5.5),(3.7,6.2),(5.1,5.4)}{\fill[cyan!70!white] \p circle (.055);}
-\node[align=center,text=white!72,font=\Large] at (3.0,3.8){$y=f(x)$};
-\node[align=center,text=white!55,font=\normalsize] at (3.0,3.1){input $\to$ proses $\to$ output};
+\begin{tikzpicture}[remember picture,overlay]
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{tech_bg.png}};
+\fill[DeepNavy,opacity=.84] (current page.south west) rectangle ([xshift=8.15cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=6.45cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{20}{22.5}\selectfont\bfseries Pertemuan 2\\Fungsi, Subprogram,\\dan Rekursi}\\[3mm]
+{\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10}{11.5}\selectfont Triyana Muliawati, S.Si., M.Si.\\Rifky Fauzi}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.2mm,text width=6.95cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Materi pertemuan}\\[2mm]
+\begin{itemize}\small
+  \item Subprogram sebagai unit kerja.
+  \item \texttt{def}, parameter, argumen, dan \texttt{return}.
+  \item Scope lokal dan global.
+  \item Tuple, unpacking, fungsi sebagai objek, dan \texttt{lambda}.
+  \item Rekursi: base case, recursive case, dan terminasi.
+\end{itemize}
+};
 \end{tikzpicture}
-\end{column}
-\begin{column}{.50\linewidth}
-\vspace{0.82cm}
-{\Huge\bfseries\color{pidknavy} Pertemuan 2}\par\vspace{1mm}
-{\LARGE\bfseries\color{pidknavy} Fungsi, Subprogram, dan Rekursi}\par\vspace{7mm}
-{\large Pemrograman untuk Ilmu Data dan Komputasi}\par\vspace{2mm}
-{MA25-21008 \quad Kelas RA dan RB}\par\vspace{6mm}
-{Triyana Muliawati, S.Si., M.Si.}\par
-{Rifky Fauzi}\par\vspace{6mm}
-{Program Studi Matematika}\par
-{Institut Teknologi Sumatera}\par\vspace{4mm}
-{Semester Ganjil 2026/2027}
-\vfill
-\begin{pidkbox}{Hari ini}
-Fungsi sebagai subprogram, input-output, scope, komposisi fungsi, dan rekursi.
-\end{pidkbox}
-\end{column}
-\end{columns}
 \end{frame}
 
-\begin{frame}{Dari M1 ke M2}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Yang sudah dipakai di M1}
+% 2
+\begin{frame}{Dari ekspresi ke fungsi}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Yang sudah dikuasai}
 \begin{itemize}
-\item ekspresi, tipe data, dan variabel;
-\item input/output;
-\item percabangan \texttt{if};
-\item pengulangan \texttt{for} dan \texttt{while}.
+  \item Membuat ekspresi dari rumus matematika.
+  \item Menggunakan variabel untuk menyimpan nilai.
+  \item Mengatur alur dengan \texttt{if}, \texttt{for}, dan \texttt{while}.
 \end{itemize}
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Yang mulai dibuat rapi di M2}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Langkah berikutnya}
 \begin{itemize}
-\item potongan logika diberi nama;
-\item input dan output dibuat eksplisit;
-\item program dapat dipanggil ulang;
-\item kesalahan lebih mudah dilacak.
+  \item Memberi nama pada proses yang sering dipakai.
+  \item Menentukan input dan output secara jelas.
+  \item Menulis program sebagai susunan unit kecil.
 \end{itemize}
-\end{pidkbox}
-\end{column}
+\end{block}
 \end{columns}
-\vspace{3mm}
-\begin{center}
-\large Program yang baik bukan hanya memberi jawaban, tetapi juga menjelaskan alur berpikirnya.
-\end{center}
-\end{frame}
-
-\begin{frame}{Apa itu subprogram?}
-\begin{pidkbox}{Makna umum}
-Subprogram adalah bagian program yang diberi nama untuk menjalankan tugas tertentu. Dalam Python, bentuk subprogram yang paling sering dipakai adalah \textbf{fungsi}.
-\end{pidkbox}
 \vspace{2mm}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Tanpa subprogram}
-\begin{itemize}
-\item satu program panjang;
-\item banyak bagian berulang;
-\item sulit diuji bagian demi bagian;
-\item sulit dipakai ulang pada data lain.
-\end{itemize}
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Dengan subprogram}
-\begin{itemize}
-\item satu tugas diberi nama;
-\item input dan output tampak jelas;
-\item dapat diuji terpisah;
-\item dapat disusun menjadi program besar.
-\end{itemize}
-\end{pidkbox}
-\end{column}
+\begin{center}
+\begin{tikzpicture}[node distance=7mm]
+\node[box,minimum width=2.4cm] (expr) {ekspresi};
+\node[box,minimum width=2.4cm,right=of expr] (block) {blok logika};
+\node[darkbox,minimum width=2.4cm,right=of block] (func) {fungsi};
+\draw[arr] (expr) -- (block);
+\draw[arr] (block) -- (func);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% 3
+\begin{frame}{Apa itu subprogram?}
+\begin{columns}[T]
+\column{.52\textwidth}
+\begin{block}{Makna umum}
+Subprogram adalah bagian program yang diberi nama untuk menjalankan satu tugas tertentu. Subprogram dapat dipanggil dari bagian lain program.
+\end{block}
+\begin{block}{Dalam Python}
+Bentuk utama subprogram adalah fungsi yang ditulis dengan \texttt{def}. Fungsi dapat menerima input melalui parameter dan mengirim hasil melalui \texttt{return}.
+\end{block}
+\column{.44\textwidth}
+\begin{center}
+\begin{tikzpicture}[node distance=8mm]
+\node[box,minimum width=3.8cm] (main) {program utama};
+\node[darkbox,minimum width=3.8cm,below=of main] (sub) {subprogram};
+\node[box,minimum width=3.8cm,below=of sub] (out) {hasil kembali};
+\draw[arr] (main) -- node[right]{panggil} (sub);
+\draw[arr] (sub) -- node[right]{return} (out);
+\end{tikzpicture}
+\end{center}
+\end{columns}
+\vspace{1mm}
+\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Subprogram membuat program lebih mudah dibaca, diuji, dan digunakan ulang.}}
+\end{frame}
+
+% 4
+\begin{frame}{Fungsi sebagai aturan transformasi}
+\begin{columns}[T]
+\column{.45\textwidth}
+\vspace{6mm}
+\[
+\boxed{y=f(x)}
+\]
+\[
+\boxed{\text{input} \rightarrow \text{proses} \rightarrow \text{output}}
+\]
+\begin{block}{Dalam matematika}
+Fungsi menghubungkan masukan dengan keluaran menurut aturan tertentu.
+\end{block}
+\column{.51\textwidth}
+\begin{center}
+\begin{tikzpicture}[node distance=7mm]
+\node[box,minimum width=2.2cm] (x) {$x$};
+\node[darkbox,minimum width=2.6cm,right=of x] (f) {$f$};
+\node[box,minimum width=2.5cm,right=of f] (y) {$f(x)$};
+\draw[arr] (x) -- (f);
+\draw[arr] (f) -- (y);
+\node[below=4mm of f,align=center,text width=6.2cm] {Dalam program, fungsi menyimpan aturan itu dalam bentuk langkah-langkah yang dapat dijalankan komputer.};
+\end{tikzpicture}
+\end{center}
+\begin{block}{Dalam Python}
+\texttt{def} memberi nama pada aturan komputasi. Parameter menjadi masukan. \texttt{return} menjadi keluaran.
+\end{block}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Fungsi sebagai mesin kecil}
-\begin{center}
-\begin{tikzpicture}[node distance=1.25cm,>=Stealth]
-\node[draw,rounded corners,fill=pidkblue,minimum width=2.2cm,minimum height=1.0cm] (input) {Input};
-\node[draw,rounded corners,fill=pidknavy!88,text=white,minimum width=3.2cm,minimum height=1.2cm,right=of input] (fungsi) {Fungsi};
-\node[draw,rounded corners,fill=pidkblue,minimum width=2.2cm,minimum height=1.0cm,right=of fungsi] (output) {Output};
-\draw[->,line width=1.2pt,color=pidknavy] (input)--(fungsi);
-\draw[->,line width=1.2pt,color=pidknavy] (fungsi)--(output);
-\node[below=.5cm of input,align=center] {$x$ atau data};
-\node[below=.5cm of fungsi,align=center] {aturan / algoritma};
-\node[below=.5cm of output,align=center] {$f(x)$ atau hasil};
-\end{tikzpicture}
-\end{center}
-\begin{pidkbox}{Cara membacanya}
-Fungsi menerima nilai, melakukan proses yang jelas, lalu mengembalikan hasil. Untuk mahasiswa Matematika, fungsi Python dapat dipandang sebagai bentuk komputasional dari transformasi matematika.
-\end{pidkbox}
-\end{frame}
-
+% 5
 \begin{frame}[fragile]{Anatomi fungsi Python}
 \begin{lstlisting}
 def nama_fungsi(parameter_1, parameter_2):
@@ -187,39 +208,40 @@ def nama_fungsi(parameter_1, parameter_2):
     langkah_2
     return hasil
 \end{lstlisting}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Saat mendefinisikan}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Bagian definisi}
 \begin{itemize}
-\item \texttt{def}: mulai mendefinisikan fungsi;
-\item nama fungsi: sebaiknya jelas;
-\item parameter: variabel lokal di dalam fungsi.
+  \item \texttt{def}: mendefinisikan fungsi.
+  \item Nama fungsi: tugas yang dikerjakan.
+  \item Parameter: nama input di dalam fungsi.
 \end{itemize}
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Saat memanggil}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Saat dipanggil}
 \begin{itemize}
-\item argumen: nilai nyata yang dikirim;
-\item \texttt{return}: hasil dikirim kembali;
-\item setelah \texttt{return}, fungsi selesai.
+  \item Argumen: nilai yang dikirim ke fungsi.
+  \item \texttt{return}: nilai yang dikirim kembali.
+  \item Setelah \texttt{return}, fungsi selesai.
 \end{itemize}
-\end{pidkbox}
-\end{column}
+\end{block}
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Contoh 1: fungsi dari rumus matematika}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.42\linewidth}
+% 6
+\begin{frame}[fragile]{Contoh: fungsi dari rumus matematika}
+\begin{columns}[T]
+\column{.42\textwidth}
 \[
- p(x)=2-3x+x^2
+p(x)=2-3x+x^2
 \]
 \[
- p(4)=2-12+16=6
+p(4)=2-12+16=6
 \]
-\end{column}
-\begin{column}{.55\linewidth}
+\begin{block}{Pertanyaan membaca kode}
+Nilai mana yang menjadi parameter? Nilai mana yang menjadi argumen?
+\end{block}
+\column{.54\textwidth}
 \begin{lstlisting}
 def polinom_sederhana(x):
     return 2 - 3*x + x**2
@@ -227,13 +249,10 @@ def polinom_sederhana(x):
 hasil = polinom_sederhana(4)
 print(hasil)
 \end{lstlisting}
-\end{column}
 \end{columns}
-\begin{pidkbox}{Perhatikan}
-Nilai \texttt{x} pada definisi fungsi adalah parameter. Nilai \texttt{4} saat pemanggilan adalah argumen.
-\end{pidkbox}
 \end{frame}
 
+% 7
 \begin{frame}[fragile]{Parameter dan argumen}
 \begin{lstlisting}
 def luas_persegi_panjang(panjang, lebar):
@@ -242,92 +261,99 @@ def luas_persegi_panjang(panjang, lebar):
 A = luas_persegi_panjang(5, 3)
 B = luas_persegi_panjang(lebar=3, panjang=5)
 \end{lstlisting}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Positional argument}
-Urutan argumen penting. Nilai pertama masuk ke parameter pertama.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Keyword argument}
-Nama parameter disebutkan langsung. Urutan tidak lagi menjadi fokus.
-\end{pidkbox}
-\end{column}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Positional argument}
+Urutan argumen menentukan parameter yang menerima nilai.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Keyword argument}
+Nama parameter disebutkan langsung. Urutan tidak lagi menjadi sumber utama kesalahan.
+\end{block}
 \end{columns}
+\vspace{1mm}
+\small Untuk fungsi matematis, nama parameter yang jelas mengurangi salah tafsir.
 \end{frame}
 
-\begin{frame}[fragile]{Empat bentuk fungsi: bagian 1}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Tanpa argumen, tanpa \texttt{return}}
+% 8
+\begin{frame}[fragile]{Fungsi tanpa argumen}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Tanpa argumen, tanpa \texttt{return}}
 \begin{lstlisting}
 def salam():
-    print("Selamat belajar Python")
+    print("Selamat belajar")
+
+salam()
 \end{lstlisting}
 Cocok untuk menampilkan pesan atau instruksi.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Tanpa argumen, dengan \texttt{return}}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Tanpa argumen, dengan \texttt{return}}
 \begin{lstlisting}
 def konstanta_pi():
     return 3.14159
+
+r = konstanta_pi()
 \end{lstlisting}
-Cocok untuk menghasilkan nilai tetap.
-\end{pidkbox}
-\end{column}
+Cocok untuk nilai tetap atau konfigurasi.
+\end{block}
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Empat bentuk fungsi: bagian 2}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Dengan argumen, tanpa \texttt{return}}
+% 9
+\begin{frame}[fragile]{Fungsi dengan argumen}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Dengan argumen, tanpa \texttt{return}}
 \begin{lstlisting}
 def tampil_kuadrat(x):
     print(x**2)
+
+tampil_kuadrat(5)
 \end{lstlisting}
-Cocok untuk melaporkan hasil, bukan menghitung lanjut.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Dengan argumen, dengan \texttt{return}}
+Hasil tampil di layar, tetapi tidak bisa langsung dipakai untuk hitungan lanjutan.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Dengan argumen, dengan \texttt{return}}
 \begin{lstlisting}
 def kuadrat(x):
     return x**2
+
+y = kuadrat(5) + 2
 \end{lstlisting}
-Cocok untuk menghasilkan nilai yang akan dipakai lagi.
-\end{pidkbox}
-\end{column}
+Ini bentuk yang paling sering dipakai dalam komputasi matematika.
+\end{block}
 \end{columns}
 \end{frame}
 
+% 10
 \begin{frame}[fragile]{\texttt{print} tidak sama dengan \texttt{return}}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
+\begin{columns}[T]
+\column{.48\textwidth}
 \begin{lstlisting}
 def g(x):
     return x**2 - 1
 
 def h(x):
     print(g(x))
-\end{lstlisting}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{lstlisting}
-y = h(3)
-print(y)
 
-z = h(3) + 2    # error
+nilai = h(3)
+print(nilai)
 \end{lstlisting}
-\end{column}
+\column{.48\textwidth}
+\begin{lstlisting}
+z = h(3) + 2
+# TypeError
+\end{lstlisting}
+\begin{block}{Ide utama}
+\texttt{print} hanya menampilkan nilai. Jika tidak ada \texttt{return}, fungsi mengembalikan \texttt{None}.
+\end{block}
 \end{columns}
-\begin{pidkbox}{Ide utama}
-\texttt{print} hanya menampilkan. Jika tidak ada \texttt{return}, fungsi mengembalikan \texttt{None}. Karena itu hasilnya tidak bisa langsung dipakai pada operasi aritmatika.
-\end{pidkbox}
 \end{frame}
 
-\begin{frame}[fragile]{Fungsi dengan beberapa keluaran}
+% 11
+\begin{frame}[fragile]{Fungsi yang mengembalikan lebih dari satu nilai}
 \begin{lstlisting}
 def stat_ringkas(a, b, c, d):
     nilai = [a, b, c, d]
@@ -339,34 +365,35 @@ def stat_ringkas(a, b, c, d):
 
 mn, mx, r, rg = stat_ringkas(4, 7, 1, 9)
 \end{lstlisting}
-\begin{pidkbox}{Apa yang terjadi?}
-Python sebenarnya mengembalikan satu objek bertipe \texttt{tuple}. Unpacking membagi isi tuple ke beberapa variabel.
-\end{pidkbox}
+\begin{block}{Yang terjadi}
+Python sebenarnya mengembalikan satu objek bertipe tuple. Unpacking membagi isi tuple ke beberapa variabel.
+\end{block}
 \end{frame}
 
+% 12
 \begin{frame}[fragile]{Tuple dan unpacking}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
+\begin{columns}[T]
+\column{.48\textwidth}
 \begin{lstlisting}
 hasil = stat_ringkas(4, 7, 1, 9)
 print(hasil)
 print(type(hasil))
-\end{lstlisting}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{lstlisting}
-minimum, maksimum, rata, rentang = hasil
 
-# jumlah variabel harus cocok
-x, y = hasil    # ValueError
+minimum, maksimum, rata, rentang = hasil
 \end{lstlisting}
-\end{column}
+\column{.48\textwidth}
+\begin{lstlisting}
+# jumlah variabel harus cocok
+x, y = hasil
+# ValueError
+\end{lstlisting}
+\begin{block}{Mengapa penting?}
+Satu proses sering menghasilkan beberapa informasi: nilai estimasi, galat, jumlah iterasi, atau status konvergensi.
+\end{block}
 \end{columns}
-\begin{pidkbox}{Mengapa penting?}
-Satu proses komputasi sering menghasilkan beberapa informasi: nilai fungsi, galat, jumlah iterasi, atau status konvergensi.
-\end{pidkbox}
 \end{frame}
 
+% 13
 \begin{frame}[fragile]{Scope: variabel lokal dan global}
 \begin{lstlisting}
 x = 10
@@ -378,20 +405,19 @@ def f(a):
 print(f(5))
 print(x)
 \end{lstlisting}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Variabel lokal}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Variabel lokal}
 \texttt{x} di dalam fungsi hanya hidup di dalam fungsi tersebut.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Variabel global}
-\texttt{x} di luar fungsi tetap bernilai \texttt{10}. Nilai ini tidak otomatis berubah hanya karena ada \texttt{x} lokal.
-\end{pidkbox}
-\end{column}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Variabel global}
+\texttt{x} di luar fungsi tetap bernilai 10. Nilai ini tidak otomatis berubah hanya karena ada \texttt{x} lokal.
+\end{block}
 \end{columns}
 \end{frame}
 
+% 14
 \begin{frame}[fragile]{Mengapa variabel global perlu hati-hati?}
 \begin{lstlisting}
 total = 0
@@ -401,29 +427,27 @@ def tambah(x):
     total = total + x
     return total
 \end{lstlisting}
-\begin{pidkbox}{Masalah yang sering muncul}
+\begin{block}{Masalah yang sering muncul}
 \begin{itemize}
-\item hasil fungsi bergantung pada riwayat pemanggilan;
-\item pengujian menjadi tidak mandiri;
-\item kesalahan sulit dilacak karena nilai dapat berubah dari tempat lain.
+  \item Hasil fungsi bergantung pada riwayat pemanggilan.
+  \item Test menjadi tidak mandiri.
+  \item Kesalahan sulit dilacak karena nilai dapat berubah dari tempat lain.
 \end{itemize}
-\end{pidkbox}
-\begin{pidkbox}{Saran awal}
-Utamakan fungsi yang menerima input secara eksplisit dan mengembalikan output secara eksplisit.
-\end{pidkbox}
+\end{block}
+\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Utamakan fungsi yang menerima input secara eksplisit dan mengembalikan output secara eksplisit.}}
 \end{frame}
 
+% 15
 \begin{frame}[fragile]{Fungsi sebagai alat dekomposisi}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.38\linewidth}
+\begin{columns}[T]
+\column{.43\textwidth}
 \[
- d(p,q)=\sqrt{(p_1-q_1)^2+(p_2-q_2)^2}
+d(p,q)=\sqrt{(p_1-q_1)^2+(p_2-q_2)^2}
 \]
 \[
- E(p,q)=\frac{1}{1+d(p,q)^2}
+E(p,q)=\frac{1}{1+d(p,q)^2}
 \]
-\end{column}
-\begin{column}{.59\linewidth}
+\column{.53\textwidth}
 \begin{lstlisting}
 def jarak(p, q):
     dx = p[0] - q[0]
@@ -436,30 +460,37 @@ def energi(d):
 def energi_dua_titik(p, q):
     return energi(jarak(p, q))
 \end{lstlisting}
-\end{column}
 \end{columns}
 \end{frame}
 
+% 16
 \begin{frame}{Komposisi fungsi}
-Jika \(g\) menerima \(x\), dan \(f\) menerima hasil dari \(g\), maka
+\vspace{1mm}
+Jika $g$ menerima $x$, dan $f$ menerima hasil dari $g$, maka
 \[
 (f\circ g)(x)=f(g(x)).
 \]
+\vspace{2mm}
 \begin{center}
-\begin{tikzpicture}[node distance=1.0cm,>=Stealth]
-\node[draw,rounded corners,fill=pidkblue,minimum width=2cm,minimum height=.85cm] (x) {$x$};
-\node[draw,rounded corners,fill=pidknavy,text=white,minimum width=2.4cm,minimum height=.85cm,right=of x] (g) {$g$};
-\node[draw,rounded corners,fill=pidkblue,minimum width=2.5cm,minimum height=.85cm,right=of g] (gx) {$g(x)$};
-\node[draw,rounded corners,fill=pidknavy,text=white,minimum width=2.4cm,minimum height=.85cm,right=of gx] (f) {$f$};
-\node[draw,rounded corners,fill=pidkblue,minimum width=2.8cm,minimum height=.85cm,right=of f] (fgx) {$f(g(x))$};
-\draw[->,thick] (x)--(g); \draw[->,thick] (g)--(gx); \draw[->,thick] (gx)--(f); \draw[->,thick] (f)--(fgx);
+\begin{tikzpicture}[node distance=8mm]
+\node[box,minimum width=1.5cm] (x) {$x$};
+\node[darkbox,minimum width=1.8cm,right=of x] (g) {$g$};
+\node[box,minimum width=2.1cm,right=of g] (gx) {$g(x)$};
+\node[darkbox,minimum width=1.8cm,right=of gx] (f) {$f$};
+\node[box,minimum width=2.25cm,right=of f] (fg) {$f(g(x))$};
+\draw[arr] (x) -- (g);
+\draw[arr] (g) -- (gx);
+\draw[arr] (gx) -- (f);
+\draw[arr] (f) -- (fg);
 \end{tikzpicture}
 \end{center}
-\begin{pidkbox}{Dalam Python}
+\vspace{2mm}
+\begin{block}{Dalam Python}
 Ide yang sama muncul saat satu fungsi memanggil fungsi lain. Program menjadi susunan unit kecil, bukan satu blok panjang.
-\end{pidkbox}
+\end{block}
 \end{frame}
 
+% 17
 \begin{frame}[fragile]{Fungsi sebagai objek}
 \begin{lstlisting}
 def proses(x, f):
@@ -474,11 +505,12 @@ def tambah1(x):
 print(proses(5, kuadrat))
 print(proses(5, tambah1))
 \end{lstlisting}
-\begin{pidkbox}{Makna penting}
+\begin{block}{Makna penting}
 Nama \texttt{kuadrat} tanpa tanda kurung adalah objek fungsi. Objek itu dapat dikirim sebagai argumen ke fungsi lain.
-\end{pidkbox}
+\end{block}
 \end{frame}
 
+% 18
 \begin{frame}[fragile]{List fungsi dan pipeline}
 \begin{lstlisting}
 def kuadrat(x):
@@ -496,36 +528,37 @@ def pipeline(x, ops):
 ops = [abs, kuadrat, tambah1]
 print(pipeline(-3, ops))
 \end{lstlisting}
-\begin{pidkbox}{Baca alurnya}
-Nilai \(-3\) diproses oleh \texttt{abs}, lalu \texttt{kuadrat}, lalu \texttt{tambah1}. Ini mirip alur transformasi data.
-\end{pidkbox}
+\begin{block}{Baca alurnya}
+Nilai $-3$ diproses oleh \texttt{abs}, lalu \texttt{kuadrat}, lalu \texttt{tambah1}. Pola ini sering muncul pada transformasi data.
+\end{block}
 \end{frame}
 
+% 19
 \begin{frame}[fragile]{Lambda: fungsi pendek untuk operasi pendek}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.36\linewidth}
+\begin{columns}[T]
+\column{.42\textwidth}
 \[
- f(x)=3x^2-2x+1
+f(x)=3x^2-2x+1
 \]
 \begin{lstlisting}
 f = lambda x: 3*x**2 - 2*x + 1
 \end{lstlisting}
-\end{column}
-\begin{column}{.61\linewidth}
+\column{.54\textwidth}
 \begin{lstlisting}
 xnilai = range(-3, 4)
+
 y = [f(x) for x in xnilai]
 
 z = list(map(lambda x: 3*x**2 - 2*x + 1,
              xnilai))
 \end{lstlisting}
-\end{column}
 \end{columns}
-\begin{pidkbox}{Gunakan secara wajar}
+\begin{block}{Gunakan secara wajar}
 Lambda cocok untuk fungsi satu baris yang jelas. Jika logika mulai panjang, fungsi bernama lebih baik.
-\end{pidkbox}
+\end{block}
 \end{frame}
 
+% 20
 \begin{frame}[fragile]{List comprehension untuk evaluasi fungsi}
 \begin{lstlisting}
 def f(x):
@@ -534,48 +567,50 @@ def f(x):
 xnilai = [-3, -2, -1, 0, 1, 2, 3]
 y = [f(x) for x in xnilai]
 \end{lstlisting}
-\begin{pidkbox}{Cara membaca}
+\begin{block}{Cara membaca}
 Untuk setiap \texttt{x} di \texttt{xnilai}, hitung \texttt{f(x)}, lalu simpan hasilnya ke list baru.
-\end{pidkbox}
-\begin{pidkbox}{Catatan untuk M3}
-Hari ini list dipakai sebagai wadah nilai secukupnya. Pembahasan list, dictionary, array NumPy, dan operasi matriks dibuat lebih formal pada pertemuan berikutnya.
-\end{pidkbox}
+\end{block}
+\colorbox{LightTeal}{\parbox{.96\linewidth}{\small List dipakai sebagai wadah data sederhana. Struktur data dan array NumPy dibahas lebih formal pada pertemuan berikutnya.}}
 \end{frame}
 
-\begin{frame}{Rekursi: fungsi memanggil dirinya sendiri}
-\begin{pidkbox}{Ide dasar}
-Rekursi dipakai ketika masalah dapat dipecah menjadi masalah yang sama tetapi lebih kecil.
-\end{pidkbox}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Base case}
-Kasus paling sederhana yang jawabannya langsung diketahui. Tanpa base case, rekursi tidak berhenti.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Recursive case}
-Kasus umum yang memanggil fungsi yang sama untuk ukuran masalah yang lebih kecil.
-\end{pidkbox}
-\end{column}
+% 21
+\begin{frame}{Rekursi: fungsi yang memanggil dirinya sendiri}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Ide utama}
+Masalah dipecah menjadi versi yang lebih kecil dari masalah yang sama.
+\end{block}
+\begin{block}{Dua bagian wajib}
+\begin{itemize}
+  \item \textbf{Base case}: kondisi berhenti.
+  \item \textbf{Recursive case}: pemanggilan fungsi pada masalah yang lebih kecil.
+\end{itemize}
+\end{block}
+\column{.48\textwidth}
+\begin{center}
+\begin{tikzpicture}[node distance=6mm]
+\node[darkbox,minimum width=3.1cm] (n) {masalah $n$};
+\node[box,minimum width=3.1cm,below=of n] (n1) {masalah $n-1$};
+\node[box,minimum width=3.1cm,below=of n1] (base) {base case};
+\draw[arr] (n) -- (n1);
+\draw[arr] (n1) -- (base);
+\draw[arr] ([xshift=-7mm]base.west) .. controls +(-1.1,0) and +(-1.1,0) .. node[left]{kembali} ([xshift=-7mm]n.west);
+\end{tikzpicture}
+\end{center}
 \end{columns}
-\vspace{2mm}
-\[
-\text{masalah ukuran } n \quad \longrightarrow \quad \text{masalah ukuran } n-1
-\]
 \end{frame}
 
+% 22
 \begin{frame}[fragile]{Contoh rekursi: faktorial}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.42\linewidth}
+\begin{columns}[T]
+\column{.42\textwidth}
 \[
- n!=n(n-1)!,\qquad 0!=1.
+n! = n(n-1)!, \qquad 0! = 1.
 \]
-\begin{align*}
-5!&=5\cdot 4!\\
-  &=5\cdot4\cdot3\cdot2\cdot1.
-\end{align*}
-\end{column}
-\begin{column}{.55\linewidth}
+\[
+5! = 5\cdot 4\cdot 3\cdot 2\cdot 1.
+\]
+\column{.54\textwidth}
 \begin{lstlisting}
 def faktorial(n):
     if n == 0:
@@ -584,207 +619,202 @@ def faktorial(n):
 
 print(faktorial(5))
 \end{lstlisting}
-\end{column}
 \end{columns}
-\begin{pidkbox}{Pertanyaan kelas}
-Baris mana yang menjadi base case? Baris mana yang membuat masalah menjadi lebih kecil?
-\end{pidkbox}
+\begin{block}{Telusuri}
+Tuliskan urutan pemanggilan \texttt{faktorial(5)}, \texttt{faktorial(4)}, \ldots, sampai kembali menghasilkan nilai akhir.
+\end{block}
 \end{frame}
 
+% 23
 \begin{frame}[fragile]{Rekursi untuk barisan}
 Diberikan barisan
 \[
- a_0=2,\qquad a_1=3,\qquad a_n=2a_{n-1}+a_{n-2} \quad (n\ge 2).
+a_0=2,\qquad a_{n}=3a_{n-1}+1, \quad n\ge 1.
 \]
 \begin{lstlisting}
 def a(n):
     if n == 0:
         return 2
-    if n == 1:
-        return 3
-    return 2*a(n-1) + a(n-2)
+    return 3*a(n - 1) + 1
 \end{lstlisting}
-\begin{pidkbox}{Latihan cepat}
-Hitung manual \(a_2,a_3,a_4\). Setelah itu jalankan fungsi dan bandingkan.
-\end{pidkbox}
-\end{frame}
-
-\begin{frame}[fragile]{Halt: kapan program berhenti?}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Berhenti}
-\begin{lstlisting}
-i = n
-while i > 0:
-    i = i // 2
-\end{lstlisting}
-Nilai \texttt{i} makin kecil dan akhirnya mencapai 0.
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Tidak berhenti untuk \(n>0\)}
-\begin{lstlisting}
-i = n
-while i > 0:
-    i = i + 1
-\end{lstlisting}
-Nilai \texttt{i} justru makin jauh dari kondisi berhenti.
-\end{pidkbox}
-\end{column}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Tugas kecil}
+Hitung manual $a_1$, $a_2$, dan $a_3$.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Yang perlu diamati}
+Setiap pemanggilan bergerak dari $n$ ke $n-1$, sehingga mendekati base case.
+\end{block}
 \end{columns}
-\begin{pidkbox}{Kaitannya dengan rekursi}
-Rekursi juga harus bergerak menuju base case. Jika tidak, pemanggilan fungsi berlangsung terus sampai program gagal.
-\end{pidkbox}
 \end{frame}
 
-\begin{frame}[fragile]{Kesalahan umum pada fungsi rekursif}
+% 24
+\begin{frame}[fragile]{Rekursi dan terminasi}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Berhenti}
 \begin{lstlisting}
-def faktorial_salah(n):
+def turun(n):
     if n == 0:
-        return 1
-    return n * faktorial_salah(n)
+        return 0
+    return turun(n - 1)
 \end{lstlisting}
-\begin{pidkbox}{Diagnosis}
-\begin{itemize}
-\item base case ada, tetapi tidak pernah didekati;
-\item pemanggilan ulang memakai \texttt{n}, bukan \texttt{n-1};
-\item ukuran masalah tidak turun;
-\item akibatnya fungsi tidak halt secara normal.
-\end{itemize}
-\end{pidkbox}
-\end{frame}
-
-\begin{frame}[fragile]{Merancang fungsi yang mudah diuji}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Tidak bergerak ke kondisi berhenti}
 \begin{lstlisting}
-def jarak_1d(x, y):
-    return abs(x - y)
-
-assert jarak_1d(3, 3) == 0
-assert jarak_1d(3, 8) == 5
-assert jarak_1d(-2, 3) == 5
+def salah(n):
+    if n == 0:
+        return 0
+    return salah(n + 1)
 \end{lstlisting}
-\begin{pidkbox}{Kriteria awal}
-\begin{itemize}
-\item input jelas;
-\item output jelas;
-\item tidak bergantung pada variabel global;
-\item dapat diuji dengan contoh yang jawabannya diketahui.
-\end{itemize}
-\end{pidkbox}
+\end{block}
+\end{columns}
+\vspace{1mm}
+\colorbox{LightBlue}{\parbox{.96\linewidth}{\small Pertanyaan penting: apakah ukuran masalah benar-benar mengecil menuju kondisi berhenti?}}
 \end{frame}
 
-\begin{frame}{Checklist membaca fungsi}
-\begin{pidkbox}{Saat melihat fungsi baru, tanyakan lima hal ini}
-\begin{enumerate}
-\item Apa nama tugas yang dikerjakan fungsi?
-\item Apa input yang dibutuhkan?
-\item Apa output yang dikembalikan?
-\item Apakah fungsi hanya mencetak, atau benar-benar mengembalikan nilai?
-\item Apakah fungsi bergerak menuju kondisi berhenti jika memakai loop atau rekursi?
-\end{enumerate}
-\end{pidkbox}
-\begin{pidkbox}{Untuk mahasiswa Matematika}
-Biasakan menulis fungsi sebagai padanan komputasional dari fungsi, transformasi, norma, jarak, ringkasan, operator, atau barisan.
-\end{pidkbox}
-\end{frame}
-
-\begin{frame}[fragile]{Latihan akhir 1: menulis fungsi}
-\begin{pidkbox}{Kerjakan di kelas}
-Buat fungsi berikut. Untuk setiap fungsi, tuliskan input, proses, dan output.
-\end{pidkbox}
-\begin{enumerate}
-\item \texttt{nilai\_polinom(x, koef)} untuk menghitung \(a_0+a_1x+\cdots+a_nx^n\).
-\item \texttt{stat\_ringkas(a,b,c,d)} yang mengembalikan minimum, maksimum, rata-rata, dan rentang.
-\item \texttt{norm1(v)} untuk menghitung \(\|v\|_1=\sum_i |v_i|\) dari list angka.
-\end{enumerate}
-\end{frame}
-
-\begin{frame}[fragile]{Latihan akhir 2: diagnosa kesalahan}
+% 25
+\begin{frame}[fragile]{Diagnosa kesalahan fungsi}
 \begin{lstlisting}
 def rata(data):
     total = 0
     for x in data:
         total = total + x
         return total / len(data)
+
+print(rata([2, 4, 6, 8]))
 \end{lstlisting}
-\begin{pidkbox}{Pertanyaan}
-\begin{enumerate}
-\item Mengapa fungsi di atas hanya memproses elemen pertama?
-\item Perbaiki posisi \texttt{return}.
-\item Tambahkan dua \texttt{assert} untuk menguji fungsi.
-\end{enumerate}
-\end{pidkbox}
+\begin{block}{Pertanyaan}
+\begin{itemize}
+  \item Mengapa hasilnya salah walaupun sintaksnya valid?
+  \item Di mana posisi \texttt{return} seharusnya?
+  \item Buat dua test sederhana untuk memeriksa fungsi setelah diperbaiki.
+\end{itemize}
+\end{block}
 \end{frame}
 
+% 26
+\begin{frame}{Checklist membaca fungsi}
+Saat melihat fungsi baru, tanyakan hal berikut.
+\begin{enumerate}
+  \item Apa tugas yang dikerjakan fungsi?
+  \item Apa input yang dibutuhkan?
+  \item Apa output yang dikembalikan?
+  \item Apakah fungsi hanya mencetak, atau benar-benar mengembalikan nilai?
+  \item Apakah fungsi bergantung pada keadaan di luar dirinya?
+  \item Jika rekursif: apa base case dan recursive case-nya?
+\end{enumerate}
+\vspace{1mm}
+\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Untuk mahasiswa Matematika, fungsi dapat dipahami sebagai padanan komputasional dari transformasi, norma, jarak, ringkasan, atau operator.}}
+\end{frame}
+
+% 27
+\begin{frame}[fragile]{Latihan akhir 1: menulis fungsi}
+Tulis fungsi berikut dengan input dan output yang jelas.
+\begin{enumerate}
+  \item \texttt{polinom(x, koef)} untuk menghitung $a_0+a_1x+\cdots+a_nx^n$.
+  \item \texttt{stat\_ringkas(a,b,c,d)} yang mengembalikan minimum, maksimum, rata-rata, dan rentang.
+  \item \texttt{jarak(p,q)} untuk jarak Euclid dua titik di bidang.
+\end{enumerate}
+\vspace{1mm}
+\begin{block}{Syarat}
+Setiap fungsi harus dipanggil minimal dua kali. Tuliskan contoh input, output yang diharapkan, dan hasil yang diperoleh Python.
+\end{block}
+\end{frame}
+
+% 28
+\begin{frame}[fragile]{Latihan akhir 2: diagnosa kesalahan}
+Periksa fungsi berikut. Jelaskan kesalahannya, perbaiki, lalu uji.
+\begin{lstlisting}
+def norm1(v):
+    total = 0
+    for x in v:
+    total = total + abs(x)
+    print(total)
+
+hasil = norm1([3, -4, 1, 2]) + 5
+\end{lstlisting}
+\begin{block}{Yang harus ditemukan}
+Indentasi, perbedaan \texttt{print} dan \texttt{return}, serta apakah nilai fungsi dapat dipakai untuk operasi lanjutan.
+\end{block}
+\end{frame}
+
+% 29
 \begin{frame}[fragile]{Latihan akhir 3: membuat fungsi rekursif}
-Diberikan barisan
+Diberikan barisan Fibonacci
 \[
- u_0=1,\qquad u_1=1,\qquad u_n=u_{n-1}+2u_{n-2}.
+F_0=0,\qquad F_1=1,\qquad F_n=F_{n-1}+F_{n-2}.
 \]
 \begin{enumerate}
-\item Tulis fungsi rekursif \texttt{u(n)}.
-\item Tentukan base case dan recursive case.
-\item Hitung \texttt{u(5)} secara manual dan dengan Python.
-\item Jelaskan mengapa fungsi tersebut halt untuk \(n\ge 0\).
+  \item Tulis fungsi rekursif \texttt{fib(n)}.
+  \item Tentukan base case dan recursive case.
+  \item Telusuri pemanggilan untuk \texttt{fib(5)}.
+  \item Bandingkan jumlah pemanggilan dengan versi iteratif untuk $n$ kecil.
 \end{enumerate}
 \end{frame}
 
+% 30
 \begin{frame}{Quiz e-learning M2}
-\begin{pidkbox}{Materi quiz}
+\begin{block}{Materi quiz}
 \begin{itemize}
-\item membaca fungsi dan memprediksi output;
-\item membedakan parameter dan argumen;
-\item membedakan \texttt{print}, \texttt{return}, dan \texttt{None};
-\item menelusuri scope lokal dan global;
-\item menentukan hasil fungsi rekursif sederhana.
+  \item Membaca definisi fungsi dan memprediksi output.
+  \item Membedakan parameter dan argumen.
+  \item Membedakan \texttt{print}, \texttt{return}, dan \texttt{None}.
+  \item Menelusuri scope lokal dan global.
+  \item Menentukan hasil unpacking.
+  \item Mengenali base case dan recursive case.
 \end{itemize}
-\end{pidkbox}
-\begin{pidkbox}{Cara belajar}
-Kerjakan prediksi dahulu di kertas atau catatan. Setelah itu jalankan Python untuk memeriksa dan memperbaiki pemahaman.
-\end{pidkbox}
+\end{block}
+\begin{block}{Cara belajar}
+Prediksi dahulu di kertas atau catatan. Setelah itu jalankan Python untuk memeriksa dan menuliskan koreksi pemahaman.
+\end{block}
 \end{frame}
 
+% 31
 \begin{frame}{Tugas mandiri M2}
-\begin{pidkbox}{Yang dikumpulkan}
+\begin{block}{Yang dikumpulkan}
 \begin{enumerate}
-\item empat bentuk fungsi sesuai materi hari ini;
-\item fungsi polinom dan fungsi statistik ringkas;
-\item contoh scope lokal dan global beserta penjelasan;
-\item fungsi \texttt{proses(x,f)} dan \texttt{pipeline(x,ops)};
-\item satu fungsi rekursif untuk barisan yang Anda pilih.
+  \item Empat bentuk fungsi sesuai materi.
+  \item Fungsi \texttt{polinom(x, koef)}.
+  \item Fungsi \texttt{stat\_ringkas} dengan unpacking.
+  \item Contoh scope lokal dan global beserta penjelasan.
+  \item \texttt{proses(x, f)} dan \texttt{pipeline(x, ops)}.
+  \item Satu fungsi rekursif untuk barisan sederhana.
 \end{enumerate}
-\end{pidkbox}
-\begin{pidkbox}{Format}
-Boleh menggunakan Google Colab, Jupyter, Spyder, VS Code, atau IDE Python lain. Kode harus dapat dijalankan ulang dan diberi komentar secukupnya.
-\end{pidkbox}
+\end{block}
+\begin{block}{Format}
+Boleh menggunakan Google Colab, Jupyter, Spyder, VS Code, atau IDE Python lain. Kode harus dapat dijalankan ulang dan diberi komentar singkat.
+\end{block}
 \end{frame}
 
+% 32
 \begin{frame}{Penutup}
-\begin{columns}[T,onlytextwidth]
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Hal yang perlu dikuasai}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Hal yang perlu dikuasai}
 \begin{itemize}
-\item membuat fungsi dengan input dan output jelas;
-\item memakai \texttt{return} secara tepat;
-\item menelusuri scope;
-\item memahami rekursi dan kondisi berhenti.
+  \item Membuat fungsi dengan input dan output jelas.
+  \item Menggunakan \texttt{return} secara tepat.
+  \item Menelusuri scope.
+  \item Mengirim fungsi sebagai argumen.
+  \item Menulis rekursi yang memiliki kondisi berhenti.
 \end{itemize}
-\end{pidkbox}
-\end{column}
-\begin{column}{.48\linewidth}
-\begin{pidkbox}{Arah M3}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Arah pertemuan berikutnya}
 \begin{itemize}
-\item representasi algoritma;
-\item list, tuple, dictionary;
-\item pseudocode;
-\item array NumPy dan comprehension.
+  \item Representasi algoritma.
+  \item List, tuple, dan dictionary.
+  \item Pseudocode.
+  \item Array NumPy dan comprehension.
 \end{itemize}
-\end{pidkbox}
-\end{column}
+\end{block}
 \end{columns}
-\vspace{4mm}
+\vspace{1mm}
 \begin{center}
-\large Fungsi yang baik membuat program lebih dekat dengan cara berpikir matematis: jelas inputnya, jelas transformasinya, jelas outputnya.
+\colorbox{LightTeal}{\parbox{.86\linewidth}{\centering\small Fungsi yang baik membuat program lebih dekat dengan cara berpikir matematis: jelas inputnya, jelas transformasinya, jelas outputnya.}}
 \end{center}
 \end{frame}
 
