@@ -1,51 +1,34 @@
 # Pemrograman untuk Ilmu Data dan Komputasi
 
-Repository bahan kuliah **MA25-21008**.
-
-## Struktur
+Repository bahan kuliah MA25-21008.
 
 ```text
-.
-├── Lembar_Kerja/
-│   ├── lembar_kerja_PIDK.tex
-│   └── itera_logo.png
-├── Materi/
-│   └── M01/
-│       ├── slides_M01.tex
-│       └── assets/
-├── generated/
-├── tools/
-└── .github/workflows/
+Lembar_Kerja/
+Materi/
+  M01/
+  M02/
+  ...
+generated/
+tools/
 ```
 
-Untuk M02 dan seterusnya, gunakan pola sederhana:
-
-```text
-Materi/M02/slides_M02.tex
-Materi/M03/slides_M03.tex
-...
-```
-
-## Perintah utama
+Perintah rutin:
 
 ```bash
-./tools/build.sh
-./tools/sync.sh "pesan commit"
+bash tools/build.sh
+bash tools/sync.sh "Revisi materi"
+bash tools/pull.sh
+bash tools/push.sh "Pesan commit"
+bash tools/status.sh
 ```
 
-Semua perintah lain ada di `tools/README.md`.
+`generated/` berisi PDF hasil compile dan ikut disimpan di GitHub.
+Setiap push ke `main`, termasuk push dari Overleaf, memicu GitHub Actions untuk compile ulang PDF dan memperbarui `generated/`.
 
-## Overleaf
-
-Repository ini dirancang dengan **GitHub sebagai hub**:
+Alur dua arah:
 
 ```text
 PC <-> GitHub <-> Overleaf
 ```
 
-Buat project Overleaf dengan **Import from GitHub** dari repository ini. Setelah terhubung:
-
-- perubahan PC: jalankan `./tools/sync.sh`, lalu klik **Pull** pada integrasi GitHub di Overleaf;
-- perubahan Overleaf: klik **Push** ke GitHub, lalu jalankan `./tools/sync.sh` di PC.
-
-Overleaf GitHub Synchronization memang memerlukan trigger Pull/Push dari antarmuka Overleaf; tidak ada sinkronisasi real-time otomatis untuk edit yang belum dipush.
+Overleaf tetap membutuhkan tombol GitHub Pull/Push. GitHub Actions hanya menangani build otomatis setelah sebuah perubahan sudah masuk GitHub.

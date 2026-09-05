@@ -2,12 +2,10 @@
 set -Eeuo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
-echo "Repository: $ROOT"
+echo "Repo: $ROOT"
 echo
-git remote -v || true
+git status -sb
 echo
-git status -sb || true
+git remote -v
 echo
-if git rev-parse --git-dir >/dev/null 2>&1; then
-  git log --oneline --decorate -8 || true
-fi
+git log --oneline --decorate -8 2>/dev/null || true

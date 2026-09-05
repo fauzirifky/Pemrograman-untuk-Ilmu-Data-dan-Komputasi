@@ -1,56 +1,74 @@
-name: Build LaTeX
+name: Build LaTeX and update generated PDFs
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+    paths-ignore:
+      - 'generated/**'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Detect LaTeX roots
-        id: roots
-        shell: bash
-        run: |
-          {
-            echo 'files<<EOF'
-            echo 'Lembar_Kerja/lembar_kerja_PIDK.tex'
-            find Materi -mindepth 2 -maxdepth 2 -type f -name '*.tex' | sort
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Compile all documents
+      - name: Compile Lembar Kerja
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: ${{ steps.roots.outputs.files }}
-          work_in_root_file_dir: true
+          root_file: lembar_kerja_PIDK.tex
+          working_directory: Lembar_Kerja
           args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
 
-      - name: Collect PDFs
-        if: always()
+      - name: Compile Materi
         shell: bash
         run: |
-          mkdir -p generated/Lembar_Kerja generated/Materi
-          if [ -f Lembar_Kerja/lembar_kerja_PIDK.pdf ]; then
-            cp Lembar_Kerja/lembar_kerja_PIDK.pdf generated/Lembar_Kerja/
-          fi
-          while IFS= read -r pdf; do
-            d="$(dirname "$pdf")"
-            m="$(basename "$d")"
-            mkdir -p "generated/Materi/$m"
-            cp "$pdf" "generated/Materi/$m/"
-          done < <(find Materi -mindepth 2 -maxdepth 2 -type f -name '*.pdf' | sort)
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            ghcr.io/xu-cheng/texlive-full:latest \
+            bash -lc '
+              set -e
+              find Materi -mindepth 2 -maxdepth 2 -type f -name "*.tex" | sort | while read -r tex; do
+                d=$(dirname "$tex")
+                f=$(basename "$tex")
+                echo "Compile $tex"
+                cd "/workspace/$d"
+                latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error "$f"
+              done
+            '
 
-      - name: Upload generated PDFs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: PIDK-generated-PDF
-          path: generated/**/*.pdf
-          if-no-files-found: warn
+      - name: Collect generated PDFs
+        shell: bash
+        run: |
+          set -e
+          mkdir -p generated/Lembar_Kerja generated/Materi
+          cp Lembar_Kerja/lembar_kerja_PIDK.pdf generated/Lembar_Kerja/lembar_kerja_PIDK.pdf
+          find Materi -mindepth 2 -maxdepth 2 -type f -name '*.pdf' | sort | while read -r pdf; do
+            d=$(dirname "$pdf")
+            m=$(basename "$d")
+            mkdir -p "generated/Materi/$m"
+            cp "$pdf" "generated/Materi/$m/$(basename "$pdf")"
+          done
+
+      - name: Commit generated PDFs
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated
+          if git diff --cached --quiet; then
+            echo "Generated PDFs tidak berubah."
+            exit 0
+          fi
+          git commit -m "Build generated PDFs [skip ci]"
+          git pull --rebase origin main
+          git push origin main

@@ -1,8 +1,6 @@
-# macOS
 .DS_Store
 __MACOSX/
-
-# LaTeX temporary files
+.build/
 *.aux
 *.log
 *.out
@@ -18,11 +16,6 @@ __MACOSX/
 *.bcf
 *.run.xml
 *.xdv
-
-# Local generated output
-generated/**/*.pdf
-
-# Backups / editors
 *~
 *.swp
 *.swo
