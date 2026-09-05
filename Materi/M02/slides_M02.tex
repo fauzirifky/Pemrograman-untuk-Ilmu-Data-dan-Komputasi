@@ -1,3 +1,4 @@
+
 \documentclass[aspectratio=169,11pt]{beamer}
 \usetheme{Madrid}
 \usecolortheme{default}
@@ -9,15 +10,14 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{tikz}
 \usepackage{listings}
 \usepackage{xcolor}
-\usepackage{multicol}
 \usepackage{ragged2e}
 \usepackage{adjustbox}
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{mathtools}
 
 \graphicspath{{assets/}}
 
@@ -73,9 +73,9 @@
 }%
 }
 
-\title[\mkfooter]{Pertemuan 2: Fungsi dan Struktur Kontrol}
-\subtitle{Subprogram, parameter, return, scope, dan gaya Pythonic}
-\author{Rifky Fauzi dan Triyana Muliawati, S.Si., M.Si.}
+\title[\mkfooter]{Pertemuan 2: Fungsi, Subprogram, dan Rekursi Awal}
+\subtitle{Parameter, return, scope, tuple, fungsi sebagai objek, dan lambda}
+\author{Triyana Muliawati, S.Si., M.Si. dan Rifky Fauzi}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
 
@@ -89,91 +89,79 @@
 \column{.47\paperwidth}
 \vspace{4mm}
 {\color{Navy}\fontsize{20}{23}\selectfont\bfseries Pertemuan 2}\par\vspace{1mm}
-{\color{Navy}\fontsize{17}{19.5}\selectfont\bfseries Fungsi dan Struktur Kontrol}\par\vspace{3mm}
+{\color{Navy}\fontsize{17}{19.5}\selectfont\bfseries Fungsi, Subprogram, dan Rekursi Awal}\par\vspace{3mm}
 {\color{DarkText}\fontsize{11}{13}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\par\vspace{2mm}
 {\color{DarkText}\fontsize{9.5}{11}\selectfont MA25-21008 \quad Kelas RA dan RB}\par\vspace{3mm}
-{\fontsize{9.2}{10.6}\selectfont Rifky Fauzi\\Triyana Muliawati, S.Si., M.Si.}\par\vspace{2mm}
+{\fontsize{9.2}{10.6}\selectfont Triyana Muliawati, S.Si., M.Si.\\Rifky Fauzi}\par\vspace{2mm}
 {\fontsize{8.4}{9.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}\par
 \vspace{2mm}
 {\color{Navy}\bfseries Hari ini}\par\vspace{1mm}
 {\footnotesize
 \begin{itemize}
-  \item Fungsi sebagai subprogram.
-  \item \texttt{def}, parameter, \texttt{return}, dan scope.
-  \item Memecah masalah menjadi bagian kecil.
-  
+  \item Program mulai dipecah menjadi subprogram.
+  \item Fungsi dipakai untuk memberi nama pada proses.
+  \item Rekursi dikenalkan sebagai fungsi yang memanggil dirinya sendiri.
 \end{itemize}}
 \end{columns}
 \end{frame}
 
 % 2
-\begin{frame}{Alur pertemuan}
+\begin{frame}{Arah pertemuan}
 \begin{columns}[T]
 \column{.48\textwidth}
 \begin{block}{Dari M1 ke M2}
 \begin{itemize}
   \item M1: ekspresi, variabel, input/output, percabangan, dan pengulangan.
-  \item M2: potongan logika yang sama mulai diberi nama.
-  \item Tujuannya: program tidak hanya berjalan, tetapi juga mudah dibaca dan digunakan ulang.
+  \item M2: potongan logika yang sama diberi nama dan dipanggil ulang.
+  \item Program mulai ditulis sebagai kumpulan bagian kecil yang jelas.
 \end{itemize}
 \end{block}
 \column{.48\textwidth}
-\begin{block}{Batas materi hari ini}
+\begin{block}{Yang ditekankan}
 \begin{itemize}
-  \item Fungsi, parameter, argumen, dan \texttt{return}.
+  \item Subprogram, fungsi, parameter, argumen, dan \texttt{return}.
   \item Scope lokal dan global.
-  \item Multiple return dan unpacking.
-  \item Fungsi sebagai objek dan lambda.
+  \item Multiple return, unpacking, fungsi sebagai objek, dan lambda.
+  \item Rekursi dasar dan kondisi berhenti.
 \end{itemize}
 \end{block}
 \end{columns}
 \end{frame}
 
 % 3
-\begin{frame}{Rujukan utama untuk M2}
-\footnotesize
-\begin{tabular}{p{3.0cm}p{4.6cm}p{4.8cm}}
-\toprule
-\textbf{Rujukan} & \textbf{Yang diambil} & \textbf{Cara kita pakai di kelas} \\
-\midrule
-Miller dan Ranum & Problem solving: masalah, algoritma, program, control structures, functions. & Fungsi dipahami sebagai cara mengubah algoritma menjadi unit kerja yang jelas. \\
-\addlinespace[1mm]
-Pine Ch. 7 & Functions, arguments, return values, anonymous functions, dan contoh scientific computing. & Fungsi dipakai untuk menghitung objek matematis: polinom, jarak, norma, dan ringkasan vektor. \\
-\addlinespace[1mm]
-McKinney Ch. 3 & Functions, namespaces, returning multiple values, functions as objects, lambda. & Fungsi dipakai sebagai alat untuk membangun pipeline pengolahan data. \\
-\bottomrule
-\end{tabular}
-\vspace{2mm}
-\begin{block}{Prinsip}
-Materi M2 tidak mengejar banyak sintaks. Yang ditekankan: desain fungsi yang jelas, dapat dipanggil ulang, dan dapat diuji.
+\begin{frame}{Apa itu subprogram?}
+\begin{block}{Definisi kerja}
+Subprogram adalah bagian program yang diberi nama untuk mengerjakan satu tugas tertentu. Subprogram dapat dipanggil dari bagian lain program tanpa menulis ulang langkah-langkahnya.
 \end{block}
-\end{frame}
-
-% 4
-\begin{frame}{Dari algoritma ke subprogram}
+\vspace{1mm}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Tanpa fungsi}
+\column{.47\textwidth}
+\begin{block}{Dalam banyak bahasa}
 \begin{itemize}
-  \item Satu program panjang.
-  \item Banyak baris berulang.
-  \item Sulit tahu bagian mana yang salah.
-  \item Sulit dipakai untuk data lain.
+  \item \textbf{Prosedur}: mengerjakan aksi, sering tanpa nilai balik.
+  \item \textbf{Fungsi}: mengolah input dan mengembalikan nilai.
 \end{itemize}
 \end{block}
-\column{.48\textwidth}
-\begin{block}{Dengan fungsi}
+\column{.49\textwidth}
+\begin{block}{Dalam Python}
 \begin{itemize}
-  \item Satu tugas diberi nama.
-  \item Input dan output dibuat eksplisit.
-  \item Dapat diuji secara terpisah.
-  \item Dapat dipakai dalam fungsi lain.
+  \item Keduanya ditulis dengan \texttt{def}.
+  \item Jika tidak ada \texttt{return}, hasilnya \texttt{None}.
+  \item Perbedaan utamanya ada pada tujuan pemakaian.
 \end{itemize}
 \end{block}
 \end{columns}
-\vspace{1mm}
-\centering
-\colorbox{LightTeal}{\parbox{.88\linewidth}{\centering Fungsi adalah cara membuat potongan algoritma menjadi unit yang bisa dipanggil kembali.}}
+\end{frame}
+
+% 4
+\begin{frame}{Makna fungsi dalam program}
+\begin{center}
+\includegraphics[width=.70\linewidth]{function_pipeline.png}
+\end{center}
+\vspace{-1mm}
+\begin{block}{Cara membacanya}
+Fungsi adalah unit bernama yang menerima masukan, menjalankan aturan tertentu, lalu menghasilkan keluaran. Dalam matematika kita sering menulis $y=f(x)$. Dalam program, fungsi juga dapat hanya menampilkan pesan, mengubah keadaan, atau memanggil fungsi lain.
+\end{block}
 \end{frame}
 
 % 5
@@ -184,29 +172,29 @@ def nama_fungsi(parameter_1, parameter_2):
     langkah_2
     return hasil
 \end{lstlisting}
-\vspace{2mm}
+\vspace{1mm}
 \begin{columns}[T]
 \column{.48\textwidth}
-\begin{block}{Bagian penting}
+\begin{block}{Saat didefinisikan}
 \begin{itemize}
-  \item \texttt{def}: mendefinisikan fungsi.
-  \item Nama fungsi: sebaiknya berupa kata kerja atau nama konsep.
-  \item Parameter: nama variabel di dalam definisi fungsi.
+  \item \texttt{def}: membuat definisi fungsi.
+  \item Parameter: nama masukan di dalam fungsi.
+  \item Badan fungsi: langkah-langkah yang dikerjakan.
 \end{itemize}
 \end{block}
 \column{.48\textwidth}
 \begin{block}{Saat dipanggil}
 \begin{itemize}
-  \item Argumen: nilai yang dikirim saat fungsi dipanggil.
-  \item \texttt{return}: nilai yang dikirim kembali ke pemanggil.
-  \item Fungsi selesai ketika mencapai \texttt{return}.
+  \item Argumen: nilai yang dikirim saat pemanggilan.
+  \item \texttt{return}: nilai yang dikirim balik.
+  \item Setelah \texttt{return}, eksekusi fungsi selesai.
 \end{itemize}
 \end{block}
 \end{columns}
 \end{frame}
 
 % 6
-\begin{frame}[fragile]{Contoh 1: fungsi dari rumus matematika}
+\begin{frame}[fragile]{Contoh pertama: fungsi dari rumus}
 \begin{columns}[T]
 \column{.43\textwidth}
 \[
@@ -226,7 +214,7 @@ print(hasil)
 \end{columns}
 \vspace{2mm}
 \begin{block}{Perhatikan}
-Nilai \texttt{x} pada fungsi adalah parameter. Nilai \texttt{4} saat pemanggilan adalah argumen.
+\texttt{x} pada definisi adalah parameter. Nilai \texttt{4} saat pemanggilan adalah argumen. Nilai yang dipakai pada operasi berikutnya berasal dari \texttt{return}.
 \end{block}
 \end{frame}
 
@@ -247,34 +235,64 @@ Urutan argumen penting. Nilai pertama masuk ke parameter pertama.
 \end{block}
 \column{.48\textwidth}
 \begin{block}{Keyword argument}
-Nama parameter disebutkan langsung. Urutan tidak lagi menjadi fokus.
+Nama parameter disebut langsung. Urutan argumen menjadi lebih mudah dibaca.
 \end{block}
 \end{columns}
-\vspace{1mm}
-\centering
-\colorbox{LightBlue}{\parbox{.80\linewidth}{\centering Untuk fungsi matematis, nama parameter yang jelas mengurangi salah tafsir.}}
 \end{frame}
 
 % 8
-\begin{frame}[fragile]{Empat bentuk fungsi}
-\footnotesize
-\begin{tabular}{p{3.5cm}p{3.8cm}p{4.6cm}}
-\toprule
-\textbf{Bentuk} & \textbf{Contoh} & \textbf{Kapan berguna} \\
-\midrule
-Tanpa argumen, tanpa \texttt{return} & \texttt{def salam(): print(...)} & Menampilkan pesan atau instruksi. \\
-Tanpa argumen, dengan \texttt{return} & \texttt{def pi(): return 3.14159} & Menghasilkan konstanta atau konfigurasi. \\
-Dengan argumen, tanpa \texttt{return} & \texttt{def tampil(x): print(x)} & Melaporkan hasil, bukan menghitung lanjut. \\
-Dengan argumen, dengan \texttt{return} & \texttt{def f(x): return x**2} & Menghasilkan nilai untuk dipakai lagi. \\
-\bottomrule
-\end{tabular}
-\vspace{2mm}
+\begin{frame}[fragile]{Empat bentuk fungsi: tanpa nilai balik}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Tanpa argumen, tanpa \texttt{return}}
+\begin{lstlisting}
+def salam():
+    print("Selamat belajar")
+\end{lstlisting}
+Cocok untuk menampilkan pesan atau instruksi.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Dengan argumen, tanpa \texttt{return}}
+\begin{lstlisting}
+def tampil_kuadrat(x):
+    print(x**2)
+\end{lstlisting}
+Berguna jika hasil hanya ingin ditampilkan, bukan dihitung lanjut.
+\end{block}
+\end{columns}
+\vspace{1mm}
 \begin{block}{Catatan}
-Pada komputasi matematika, bentuk paling sering adalah: fungsi dengan argumen dan dengan \texttt{return}.
+Jika tidak ada \texttt{return}, Python tetap mengembalikan \texttt{None}.
 \end{block}
 \end{frame}
 
 % 9
+\begin{frame}[fragile]{Empat bentuk fungsi: dengan nilai balik}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Tanpa argumen, dengan \texttt{return}}
+\begin{lstlisting}
+def konstanta_pi():
+    return 3.14159
+\end{lstlisting}
+Cocok untuk konstanta atau konfigurasi kecil.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Dengan argumen, dengan \texttt{return}}
+\begin{lstlisting}
+def kuadrat(x):
+    return x**2
+\end{lstlisting}
+Paling sering dipakai dalam komputasi matematika.
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{block}{Prinsip}
+Jika hasil akan dipakai pada perhitungan berikutnya, gunakan \texttt{return}.
+\end{block}
+\end{frame}
+
+% 10
 \begin{frame}[fragile]{\texttt{print} tidak sama dengan \texttt{return}}
 \begin{columns}[T]
 \column{.48\textwidth}
@@ -293,13 +311,13 @@ print(y)
 z = h(3) + 2   # error
 \end{lstlisting}
 \end{columns}
-\vspace{2mm}
-\begin{block}{Ide utama}
-\texttt{print} hanya menampilkan. Jika tidak ada \texttt{return}, fungsi mengembalikan \texttt{None}. Karena itu hasilnya tidak bisa langsung dipakai pada operasi aritmatika.
+\vspace{1mm}
+\begin{block}{Yang terjadi}
+\texttt{h(3)} menampilkan hasil \texttt{g(3)}, tetapi tidak mengembalikan nilai untuk dipakai pada operasi aritmatika. Karena itu \texttt{h(3)+2} gagal.
 \end{block}
 \end{frame}
 
-% 10
+% 11
 \begin{frame}[fragile]{Fungsi yang mengembalikan lebih dari satu nilai}
 \begin{lstlisting}
 def stat_ringkas(a, b, c, d):
@@ -314,11 +332,11 @@ mn, mx, r, rg = stat_ringkas(4, 7, 1, 9)
 \end{lstlisting}
 \vspace{1mm}
 \begin{block}{Apa yang terjadi?}
-Python sebenarnya mengembalikan satu objek bertipe tuple. Unpacking membagi isi tuple ke beberapa variabel.
+Python mengembalikan satu objek bertipe tuple. Unpacking membagi isi tuple ke beberapa variabel.
 \end{block}
 \end{frame}
 
-% 11
+% 12
 \begin{frame}[fragile]{Tuple dan unpacking}
 \begin{columns}[T]
 \column{.46\textwidth}
@@ -337,11 +355,11 @@ x, y = hasil  # ValueError
 \end{columns}
 \vspace{1mm}
 \begin{block}{Mengapa penting?}
-Dalam komputasi, satu proses sering menghasilkan beberapa informasi: parameter, galat, jumlah iterasi, atau status konvergensi.
+Satu proses komputasi sering menghasilkan beberapa informasi: parameter, galat, jumlah iterasi, atau status konvergensi.
 \end{block}
 \end{frame}
 
-% 12
+% 13
 \begin{frame}[fragile]{Scope: variabel lokal dan global}
 \begin{lstlisting}
 x = 10
@@ -353,7 +371,7 @@ def f(a):
 print(f(5))
 print(x)
 \end{lstlisting}
-\vspace{2mm}
+\vspace{1mm}
 \begin{columns}[T]
 \column{.48\textwidth}
 \begin{block}{Variabel lokal}
@@ -361,12 +379,12 @@ print(x)
 \end{block}
 \column{.48\textwidth}
 \begin{block}{Variabel global}
-\texttt{x} di luar fungsi tetap bernilai 10. Nilai ini tidak otomatis berubah hanya karena ada \texttt{x} lokal.
+\texttt{x} di luar fungsi tetap bernilai 10. Nilai ini tidak berubah hanya karena ada \texttt{x} lokal.
 \end{block}
 \end{columns}
 \end{frame}
 
-% 13
+% 14
 \begin{frame}[fragile]{Mengapa variabel global perlu hati-hati?}
 \begin{lstlisting}
 total = 0
@@ -376,7 +394,7 @@ def tambah(x):
     total = total + x
     return total
 \end{lstlisting}
-\vspace{2mm}
+\vspace{1mm}
 \begin{block}{Masalah yang sering muncul}
 \begin{itemize}
   \item Hasil fungsi bergantung pada riwayat pemanggilan.
@@ -389,7 +407,7 @@ Utamakan fungsi yang menerima input secara eksplisit dan mengembalikan output se
 \end{block}
 \end{frame}
 
-% 14
+% 15
 \begin{frame}[fragile]{Fungsi sebagai alat dekomposisi}
 \begin{columns}[T]
 \column{.46\textwidth}
@@ -415,18 +433,17 @@ def energi_dua_titik(p, q):
 \end{columns}
 \end{frame}
 
-% 15
+% 16
 \begin{frame}{Komposisi fungsi}
 \begin{center}
 \includegraphics[width=.63\linewidth]{function_pipeline.png}
 \end{center}
 \vspace{-1mm}
-\vspace{-1mm}
 \footnotesize
 \colorbox{LightBlue}{\parbox{.84\linewidth}{\centering Jika $g$ menerima $x$ dan $f$ menerima hasil dari $g$, maka $(f\circ g)(x)=f(g(x))$. Dalam Python, ide yang sama muncul saat satu fungsi memanggil fungsi lain.}}
 \end{frame}
 
-% 16
+% 17
 \begin{frame}[fragile]{Fungsi sebagai objek}
 \begin{lstlisting}
 def proses(x, f):
@@ -447,7 +464,7 @@ Nama \texttt{kuadrat} tanpa tanda kurung adalah objek fungsi. Objek itu dapat di
 \end{block}
 \end{frame}
 
-% 17
+% 18
 \begin{frame}[fragile]{List fungsi dan pipeline}
 \begin{lstlisting}
 def kuadrat(x):
@@ -471,7 +488,7 @@ print(pipeline(-3, ops))
 \end{block}
 \end{frame}
 
-% 18
+% 19
 \begin{frame}[fragile]{Lambda: fungsi pendek untuk operasi pendek}
 \begin{columns}[T]
 \column{.45\textwidth}
@@ -496,7 +513,7 @@ Lambda cocok untuk fungsi satu baris yang jelas. Jika logika mulai panjang, fung
 \end{block}
 \end{frame}
 
-% 19
+% 20
 \begin{frame}[fragile]{List comprehension untuk evaluasi fungsi}
 \begin{lstlisting}
 def f(x):
@@ -505,16 +522,120 @@ def f(x):
 xnilai = [-3, -2, -1, 0, 1, 2, 3]
 y = [f(x) for x in xnilai]
 \end{lstlisting}
-\vspace{2mm}
+\vspace{1mm}
 \begin{block}{Cara membaca}
 Untuk setiap $x$ di \texttt{xnilai}, hitung $f(x)$, lalu simpan hasilnya ke list baru.
 \end{block}
-\begin{block}{Batas materi}
-Hari ini list comprehension dipakai secukupnya untuk memahami fungsi. Struktur data list dan array akan dibahas lebih kuat pada M3.
+\begin{block}{Catatan}
+Di M2, list dipakai seperlunya agar fungsi bisa diterapkan pada beberapa nilai. Struktur list, dictionary, dan array dibahas lebih kuat pada M3.
 \end{block}
 \end{frame}
 
-% 20
+% 21
+\begin{frame}{Rekursi: ide dasar}
+\begin{block}{Definisi kerja}
+Rekursi terjadi ketika sebuah fungsi memanggil dirinya sendiri untuk menyelesaikan masalah yang lebih kecil.
+\end{block}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Dua bagian wajib}
+\begin{itemize}
+  \item \textbf{Base case}: kondisi berhenti.
+  \item \textbf{Recursive case}: memanggil fungsi pada masalah yang lebih kecil.
+\end{itemize}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Pertanyaan saat membaca rekursi}
+\begin{itemize}
+  \item Apa yang menjadi ukuran masalah?
+  \item Apakah ukuran itu berkurang?
+  \item Kapan pemanggilan berhenti?
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 22
+\begin{frame}[fragile]{Contoh rekursi: faktorial}
+\begin{columns}[T]
+\column{.43\textwidth}
+\[
+0! = 1,\qquad n! = n(n-1)!
+\]
+\[
+5! = 5\cdot 4\cdot 3\cdot 2\cdot 1
+\]
+\column{.53\textwidth}
+\begin{lstlisting}
+def faktorial(n):
+    if n == 0:
+        return 1
+    return n * faktorial(n - 1)
+
+print(faktorial(5))
+\end{lstlisting}
+\end{columns}
+\vspace{1mm}
+\begin{block}{Jejak singkat}
+\footnotesize \texttt{faktorial(5)} memanggil \texttt{faktorial(4)}, lalu \texttt{faktorial(3)}, sampai mencapai \texttt{faktorial(0)}. Setelah base case tercapai, hasil dikalikan kembali ke atas.
+\end{block}
+\end{frame}
+
+% 23
+\begin{frame}[fragile]{Rekursi pada barisan}
+\begin{columns}[T]
+\column{.43\textwidth}
+\[
+a_0=2,\qquad a_n=3a_{n-1}-2
+\]
+\vspace{1mm}
+Untuk menghitung $a_5$, fungsi perlu mengetahui $a_4$, $a_3$, dan seterusnya sampai $a_0$.
+\column{.53\textwidth}
+\begin{lstlisting}
+def a(n):
+    if n == 0:
+        return 2
+    return 3*a(n - 1) - 2
+
+for k in range(6):
+    print(k, a(k))
+\end{lstlisting}
+\end{columns}
+\vspace{1mm}
+\begin{block}{Catatan}
+Rekursi cocok ketika definisi masalah memang bergantung pada versi yang lebih kecil dari dirinya sendiri.
+\end{block}
+\end{frame}
+
+% 24
+\begin{frame}[fragile]{Kesalahan umum pada rekursi}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Tidak ada base case}
+\begin{lstlisting}
+def turun(n):
+    return turun(n - 1)
+\end{lstlisting}
+Fungsi terus memanggil dirinya sendiri.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Tidak menuju base case}
+\begin{lstlisting}
+def salah(n):
+    if n == 0:
+        return 0
+    return salah(n + 1)
+\end{lstlisting}
+Untuk $n>0$, pemanggilan makin jauh dari 0.
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{block}{Hubungan dengan halt}
+Sebuah fungsi rekursif harus bergerak menuju kondisi berhenti. Jika tidak, program tidak halt untuk input tertentu.
+\end{block}
+\end{frame}
+
+% 25
 \begin{frame}[fragile]{Merancang fungsi yang mudah diuji}
 \begin{lstlisting}
 def jarak_1d(x, y):
@@ -524,7 +645,7 @@ assert jarak_1d(3, 3) == 0
 assert jarak_1d(3, 8) == 5
 assert jarak_1d(-2, 3) == 5
 \end{lstlisting}
-\vspace{2mm}
+\vspace{1mm}
 \begin{block}{Kriteria awal}
 \begin{itemize}
   \item Input jelas.
@@ -535,11 +656,11 @@ assert jarak_1d(-2, 3) == 5
 \end{block}
 \end{frame}
 
-% 21
+% 26
 \begin{frame}{Checklist membaca fungsi}
 \begin{block}{Saat melihat fungsi baru, tanyakan lima hal ini}
 \begin{enumerate}
-  \item Apa nama tugas yang dikerjakan fungsi?
+  \item Apa tugas yang dikerjakan fungsi?
   \item Apa input yang dibutuhkan?
   \item Apa output yang dikembalikan?
   \item Apakah fungsi hanya mencetak, atau benar-benar mengembalikan nilai?
@@ -552,63 +673,7 @@ Biasakan menulis fungsi sebagai padanan komputasional dari objek matematika: fun
 \end{block}
 \end{frame}
 
-% 22
-\begin{frame}{Batas antarpertemuan}
-\footnotesize
-\begin{tabular}{p{2.4cm}p{4.9cm}p{4.9cm}}
-\toprule
-\textbf{Pertemuan} & \textbf{Fokus} & \textbf{Tidak dipaksakan di M2} \\
-\midrule
-M1 & Tipe data, variabel, operasi, \texttt{if}, \texttt{for}, \texttt{while}. & Fungsi Python formal belum menjadi fokus. \\
-\addlinespace[1mm]
-M2 & Fungsi, parameter, return, scope, multiple return, fungsi sebagai objek, lambda. & Dictionary, NumPy array, debugging sistematis, exception, rekursi. \\
-\addlinespace[1mm]
-M3 & List, dictionary, pseudocode, array NumPy, comprehension. & Big-O dan sorting belum menjadi pusat. \\
-\addlinespace[1mm]
-M4 & Debugging, testing, exception, halt, rekursi, Newton. & Materi ini tidak diulang sebagai inti M2. \\
-\bottomrule
-\end{tabular}
-\end{frame}
-
-% 23
-\begin{frame}[fragile]{Contoh latihan terarah: ringkasan empat bilangan}
-\begin{lstlisting}
-def stat_ringkas(a, b, c, d):
-    nilai = [a, b, c, d]
-    minimum = min(nilai)
-    maksimum = max(nilai)
-    rata = sum(nilai) / len(nilai)
-    rentang = maksimum - minimum
-    return minimum, maksimum, rata, rentang
-\end{lstlisting}
-\vspace{1mm}
-\begin{block}{Yang harus dijelaskan mahasiswa}
-\begin{itemize}
-  \item Mengapa fungsi ini memiliki empat parameter?
-  \item Mengapa output-nya dikembalikan, bukan dicetak?
-  \item Bagaimana unpacking dilakukan saat fungsi dipanggil?
-\end{itemize}
-\end{block}
-\end{frame}
-
-% 24
-\begin{frame}[fragile]{Contoh latihan terarah: fungsi vektor sederhana}
-\begin{lstlisting}
-def norm1(v):
-    total = 0
-    for x in v:
-        total = total + abs(x)
-    return total
-
-print(norm1([3, -4, 1, 2]))
-\end{lstlisting}
-\vspace{1mm}
-\begin{block}{Catatan}
-Contoh ini memakai list secukupnya sebagai wadah data. Struktur array dan operasi matriks dibahas lebih formal setelah M2.
-\end{block}
-\end{frame}
-
-% 25
+% 27
 \begin{frame}{Quiz e-learning M2}
 \begin{block}{Materi quiz}
 \begin{itemize}
@@ -617,15 +682,68 @@ Contoh ini memakai list secukupnya sebagai wadah data. Struktur array dan operas
   \item Membedakan \texttt{print}, \texttt{return}, dan \texttt{None}.
   \item Menelusuri scope lokal dan global.
   \item Menentukan hasil unpacking dan pemanggilan fungsi sebagai argumen.
+  \item Mengidentifikasi base case dan recursive case.
 \end{itemize}
 \end{block}
 \vspace{1mm}
 \begin{block}{Cara belajar}
-Kerjakan prediksi dahulu di kertas atau catatan. Setelah itu jalankan Python untuk memeriksa dan menuliskan koreksi pemahaman.
+Kerjakan prediksi dahulu. Setelah itu jalankan Python untuk memeriksa dan menuliskan koreksi pemahaman.
 \end{block}
 \end{frame}
 
-% 26
+% 28
+\begin{frame}[fragile]{Latihan akhir 1: menulis fungsi}
+\begin{block}{Tulis fungsi dari spesifikasi}
+Buat fungsi \texttt{stat\_ringkas(data)} yang menerima list bilangan dan mengembalikan tiga nilai: minimum, maksimum, dan rata-rata. Jangan menggunakan NumPy.
+\end{block}
+\begin{lstlisting}
+data = [4, 7, 1, 9, 3, 6]
+mn, mx, rata = stat_ringkas(data)
+\end{lstlisting}
+\begin{block}{Yang harus dicek}
+Fungsi harus mengembalikan nilai, bukan hanya mencetak. Uji pada list dengan satu elemen dan list berisi bilangan negatif.
+\end{block}
+\end{frame}
+
+% 29
+\begin{frame}[fragile]{Latihan akhir 2: diagnosa kesalahan}
+\begin{lstlisting}
+def rata(data):
+    total = 0
+    for x in data:
+        total = total + x
+        return total / len(data)
+\end{lstlisting}
+\vspace{1mm}
+\begin{block}{Tugas}
+\begin{enumerate}
+  \item Prediksi hasil untuk \texttt{data=[2,4,6,8]}.
+  \item Temukan baris yang menyebabkan kesalahan logika.
+  \item Perbaiki fungsi.
+  \item Tambahkan penanganan untuk list kosong.
+\end{enumerate}
+\end{block}
+\end{frame}
+
+% 30
+\begin{frame}[fragile]{Latihan akhir 3: buat fungsi rekursif}
+\begin{block}{Barisan rekursif}
+Diberikan
+\[
+a_0=1,\qquad a_n=2a_{n-1}+1.
+\]
+Buat fungsi \texttt{barisan(n)} untuk menghitung $a_n$.
+\end{block}
+\begin{lstlisting}
+for k in range(6):
+    print(k, barisan(k))
+\end{lstlisting}
+\begin{block}{Yang ditulis di jawaban}
+Tandai base case, recursive case, dan alasan fungsi berhenti untuk setiap bilangan bulat $n\ge0$.
+\end{block}
+\end{frame}
+
+% 31
 \begin{frame}{Tugas mandiri M2}
 \begin{block}{Yang dikumpulkan}
 \begin{enumerate}
@@ -633,7 +751,8 @@ Kerjakan prediksi dahulu di kertas atau catatan. Setelah itu jalankan Python unt
   \item Buat fungsi \texttt{polinom(x, koef)} untuk mengevaluasi polinom.
   \item Buat fungsi \texttt{stat\_ringkas} yang mengembalikan beberapa nilai dan gunakan unpacking.
   \item Buat contoh scope lokal dan global, lalu jelaskan hasilnya.
-  \item Buat \texttt{proses(x, f)} dan \texttt{pipeline(x, ops)} untuk menerapkan fungsi sebagai objek.
+  \item Buat \texttt{proses(x, f)} dan \texttt{pipeline(x, ops)}.
+  \item Buat satu fungsi rekursif untuk barisan sederhana.
 \end{enumerate}
 \end{block}
 \vspace{1mm}
@@ -642,7 +761,7 @@ Boleh menggunakan Google Colab, Jupyter, Spyder, VS Code, atau IDE Python lain. 
 \end{block}
 \end{frame}
 
-% 27
+% 32
 \begin{frame}{Penutup}
 \begin{columns}[T]
 \column{.48\textwidth}
@@ -652,6 +771,7 @@ Boleh menggunakan Google Colab, Jupyter, Spyder, VS Code, atau IDE Python lain. 
   \item Menggunakan \texttt{return} secara tepat.
   \item Menelusuri scope.
   \item Mengirim fungsi sebagai argumen.
+  \item Menulis rekursi dengan base case.
 \end{itemize}
 \end{block}
 \column{.48\textwidth}
