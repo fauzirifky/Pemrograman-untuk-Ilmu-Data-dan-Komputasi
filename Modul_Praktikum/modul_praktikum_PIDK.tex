@@ -1,0 +1,1027 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[a4paper,margin=2.05cm,top=2.0cm,bottom=2.0cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,tabularx,longtable,array,multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{tikz}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{url}
+
+\definecolor{iteraBlue}{RGB}{11,65,101}
+\definecolor{iteraBlue2}{RGB}{23,89,128}
+\definecolor{iteraLight}{RGB}{235,243,248}
+\definecolor{codebg}{RGB}{247,248,250}
+\definecolor{linegray}{RGB}{205,210,215}
+\definecolor{darkgray}{RGB}{65,65,65}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=iteraBlue,
+  pdftitle={Modul Praktikum Pemrograman untuk Ilmu Data dan Komputasi},
+  pdfauthor={Program Studi Matematika ITERA}
+}
+
+\renewcommand{\cftchapfont}{\color{black}\bfseries}
+\renewcommand{\cftchappagefont}{\color{black}\bfseries}
+\renewcommand{\cftsecfont}{\color{black}}
+\renewcommand{\cftsecpagefont}{\color{black}}
+\renewcommand{\cftsubsecfont}{\color{black}}
+\renewcommand{\cftsubsecpagefont}{\color{black}}
+\setlength{\cftbeforechapskip}{4pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{iteraBlue}}
+  {\large Bab \thechapter}
+  {0.2em}
+  {\Huge}
+\titleformat{\section}{\Large\bfseries\color{iteraBlue}}{\thesection}{0.65em}{}
+\titleformat{\subsection}{\large\bfseries\color{iteraBlue2}}{\thesubsection}{0.65em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Program Studi Matematika - Fakultas Sains}
+\fancyhead[R]{\small Institut Teknologi Sumatera}
+\fancyfoot[L]{\scriptsize MA25-21008 Pemrograman untuk Ilmu Data dan Komputasi}
+\fancyfoot[R]{\scriptsize \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+\setlist[itemize]{leftmargin=*,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setstretch{1.04}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{linegray},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  keywordstyle=\bfseries\color{iteraBlue},
+  commentstyle=\itshape\color{gray!75!black},
+  stringstyle=\color{darkgray},
+  aboveskip=5pt,
+  belowskip=5pt
+}
+\lstset{style=python}
+
+\newtcolorbox{tujuanbox}{
+  colback=iteraLight,colframe=iteraBlue,boxrule=0.6pt,arc=1mm,
+  title=Tujuan praktikum,fonttitle=\bfseries,coltitle=white,colbacktitle=iteraBlue
+}
+\newtcolorbox{idebox}[1]{
+  colback=white,colframe=iteraBlue!55,boxrule=0.5pt,arc=1mm,
+  title=#1,fonttitle=\bfseries,coltitle=black,colbacktitle=iteraLight
+}
+\newtcolorbox{catatanbox}{
+  colback=gray!4,colframe=gray!55,boxrule=0.4pt,arc=1mm,
+  title=Catatan,fonttitle=\bfseries,coltitle=black,colbacktitle=gray!12
+}
+\newtcolorbox{latihanbox}[1]{
+  colback=white,colframe=iteraBlue!60,boxrule=0.5pt,arc=1mm,
+  title=#1,fonttitle=\bfseries,coltitle=white,colbacktitle=iteraBlue
+}
+
+\newcommand{\kode}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\R}{\mathbb{R}}
+
+\begin{document}
+
+% ================= COVER =================
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[iteraBlue] (current page.north west) rectangle ([xshift=7.0cm]current page.south west);
+  \fill[iteraBlue!92!black] ([xshift=7.0cm]current page.north west) rectangle ([xshift=7.4cm]current page.south west);
+  \draw[white!18,line width=0.5pt] ([xshift=0.6cm,yshift=-3.5cm]current page.north west) .. controls +(2.2,-1.3) and +(-1.5,1.1) .. ([xshift=6.4cm,yshift=-7.5cm]current page.north west);
+  \draw[white!18,line width=0.5pt] ([xshift=0.7cm,yshift=-18.5cm]current page.north west) .. controls +(2.0,1.0) and +(-1.8,-1.2) .. ([xshift=6.5cm,yshift=-15.3cm]current page.north west);
+  \foreach \x/\y in {1.0/5.2,1.8/4.5,3.1/6.2,4.9/5.4,5.7/7.2,1.6/17.5,3.2/19.0,5.2/16.8,4.1/20.3,2.2/14.9}{\fill[white!30] ([xshift=\x cm,yshift=-\y cm]current page.north west) circle (1.4pt);}
+\end{tikzpicture}
+
+\begin{minipage}[t]{0.31\textwidth}
+\vspace{1.2cm}
+\centering
+\IfFileExists{itera_logo.png}{\includegraphics[width=2.0cm]{itera_logo.png}}{}
+\vspace{3.0cm}
+
+{\color{white}\Large\bfseries MODUL\\[0.2em] PRAKTIKUM}\par
+\vspace{0.9cm}
+{\color{white!90}\normalsize MA25-21008}\par
+\vspace{7.5cm}
+{\color{white!85}\small Program Studi Matematika\\Fakultas Sains\\Institut Teknologi Sumatera}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.59\textwidth}
+\vspace{3.0cm}
+{\color{iteraBlue}\Huge\bfseries Pemrograman untuk\\Ilmu Data dan Komputasi}\par
+\vspace{0.8cm}
+{\Large MA25-21008}\par
+\vspace{1.2cm}
+{\large Semester Ganjil 2026/2027}\par
+\vspace{2.1cm}
+{\large\bfseries Tim Pengajar}\par
+\vspace{0.3cm}
+{\large Rifky Fauzi\\Triyana Muliawati, S.Si., M.Si.}\par
+\vfill
+{\small Modul praktikum disusun untuk mendampingi materi kuliah, Lembar Kerja Mandiri, pre-test, dan persiapan UTS.}\par
+\vspace{1.5cm}
+\end{minipage}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+
+\chapter*{Identitas dan Cara Menggunakan Modul}
+\addcontentsline{toc}{chapter}{Identitas dan Cara Menggunakan Modul}
+
+\begin{tabularx}{\textwidth}{@{}p{0.28\textwidth}X@{}}
+\toprule
+Mata kuliah & Pemrograman untuk Ilmu Data dan Komputasi \\
+Kode & MA25-21008 \\
+Program studi & Matematika \\
+Fakultas & Fakultas Sains \\
+Institusi & Institut Teknologi Sumatera \\
+Perangkat lunak utama & Python 3, Jupyter Notebook/JupyterLab, Google Colab, atau IDE Python lain \\
+Pustaka utama & Python standard library, NumPy, matplotlib, pandas pada materi setelah UTS \\
+Dokumen pendamping & Materi pertemuan dan Lembar Kerja Mandiri (LKM) \\
+\bottomrule
+\end{tabularx}
+
+\section*{Arah penggunaan}
+Modul ini bukan kumpulan sintaks. Setiap praktikum menghubungkan tiga hal: persoalan yang hendak diselesaikan, struktur algoritma, dan implementasi Python. Pada bagian sebelum UTS, latihan disusun mengikuti cakupan LKM: prediksi perilaku program, penelusuran alur, penulisan kode, debugging, analisis algoritma, dan komputasi matriks.
+
+Untuk setiap praktikum, mahasiswa disarankan bekerja dengan urutan berikut.
+\begin{enumerate}
+  \item Baca tujuan dan konsep inti sebelum membuka editor.
+  \item Kerjakan prediksi atau perhitungan manual untuk contoh kecil.
+  \item Tulis algoritma atau pseudocode jika masalah memiliki beberapa tahap.
+  \item Implementasikan program Python dengan nama variabel yang jelas.
+  \item Uji program pada beberapa masukan, termasuk kondisi batas.
+  \item Bandingkan hasil komputasi dengan hasil manual, identitas matematika, atau sifat algoritma yang diketahui.
+  \item Simpan kode dan hasil secara rapi agar dapat dijalankan ulang.
+\end{enumerate}
+
+\section*{Peta praktikum}
+\begin{longtable}{@{}p{0.09\textwidth}p{0.33\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{P} & \textbf{Topik} & \textbf{Konsep utama} \\
+\midrule
+1 & Python dasar dan alur logika & tipe data, konversi, operasi, input/output, if, for, while, \kode{None}, \kode{break}, \kode{continue}, loop bersarang \\
+2 & Fungsi, subprogram, dan rekursi & parameter, argumen, \kode{return}, tuple/unpacking, scope, komposisi, fungsi sebagai objek, lambda, rekursi dasar \\
+3 & Representasi algoritma dan struktur data & pseudocode, list, tuple, dictionary, list comprehension, array NumPy, slicing, loop dua dimensi \\
+4 & Debugging, testing, dan terminasi & error logika, exception, \kode{assert}, \kode{print}/\kode{return}/\kode{None}, halt, rekursi, iterasi Newton \\
+5 & Kompleksitas dan sorting dasar & jumlah operasi, Big-O, pertumbuhan fungsi, selection/insertion/bubble sort, time-space trade-off \\
+6 & Searching, merge sort, dan benchmark & sequential/binary search, merge sort, tracing, invariant, \kode{timeit}, benchmark yang adil \\
+7 & Aljabar linier komputasional & vektor, matriks, element-wise, matmul, transpose, invers, SPL, residual, norma, nilai eigen, data sebagai matriks \\
+\midrule
+8 & Regresi linear & matriks desain, least squares, residual, visualisasi \\
+9 & k-Nearest Neighbor & jarak, tetangga terdekat, klasifikasi sederhana, evaluasi \\
+10 & k-Means dan proyek data & centroid, iterasi, stopping rule, reproducibility, rancangan mini proyek \\
+\bottomrule
+\end{longtable}
+
+\clearpage
+\pagenumbering{arabic}
+
+% ================= PRAKTIKUM 0 =================
+\chapter{Lingkungan Kerja Python}
+\begin{tujuanbox}
+Mahasiswa mampu menyiapkan lingkungan kerja Python, membuat struktur folder sederhana, menyimpan kode dan hasil, serta menjalankan ulang pekerjaan tanpa bergantung pada keadaan notebook sebelumnya.
+\end{tujuanbox}
+
+\section{Lingkungan kerja}
+Praktikum dapat dikerjakan menggunakan Jupyter Notebook, JupyterLab, Google Colab, Spyder, Visual Studio Code, atau IDE Python lain. Pilihan alat tidak mengubah logika program. Yang perlu dijaga adalah versi Python, pustaka yang digunakan, lokasi data, dan urutan eksekusi.
+
+\section{Struktur folder praktikum}
+Contoh sederhana:
+\begin{lstlisting}[language={}]
+praktikum_01/
+  praktikum_01.ipynb
+  data/
+  output/
+  README.md
+\end{lstlisting}
+Pada tahap awal, satu notebook sudah cukup. Pemisahan fungsi ke file lain dilakukan ketika materi fungsi dan subprogram telah dibahas.
+
+\section{Pemeriksaan awal}
+\begin{lstlisting}
+import sys
+print(sys.version)
+print(2 + 3)
+print(type(2 + 3))
+\end{lstlisting}
+
+\begin{latihanbox}{Latihan persiapan}
+\begin{enumerate}
+  \item Buat satu folder praktikum dengan struktur di atas.
+  \item Jalankan Python dan catat versinya.
+  \item Buat notebook yang menampilkan nama, NIM, dan hasil $2^{10}$.
+  \item Ubah urutan eksekusi dua sel yang saling bergantung. Jelaskan mengapa notebook yang tidak dijalankan dari awal dapat memberi hasil yang membingungkan.
+  \item Restart kernel, lalu jalankan seluruh sel dari atas. Pastikan hasil tetap sama.
+  \item Buat \kode{README.md} berisi cara menjalankan notebook dari awal.
+  \item Simpan satu keluaran teks ke folder \kode{output/}.
+  \item Tuliskan satu aturan penamaan file yang akan Anda gunakan sepanjang semester.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P1 =================
+\chapter{Praktikum 1: Python Dasar dan Alur Logika}
+\begin{tujuanbox}
+Mahasiswa mampu membaca dan menulis ekspresi Python, membedakan tipe data dasar, melakukan konversi tipe, menggunakan percabangan dan perulangan, serta menelusuri perubahan nilai variabel selama program berjalan.
+\end{tujuanbox}
+
+\section{Tipe data dan operasi}
+Empat tipe yang sering muncul pada awal perkuliahan adalah \kode{int}, \kode{float}, \kode{bool}, dan \kode{str}. Python menentukan perilaku operator berdasarkan tipe operand. Karena itu dua ekspresi yang tampak mirip dapat memiliki arti berbeda.
+
+\begin{lstlisting}
+print(1 + True)       # bool berperilaku seperti 0/1 pada aritmetika
+print('1' + '0')      # konkatenasi string
+print(int('1') + 0)   # konversi eksplisit
+print(3 / 2)          # pembagian biasa
+print(3 // 2)         # floor division
+print(bool('0'))      # string tidak kosong -> True
+\end{lstlisting}
+
+\begin{idebox}{Prinsip membaca ekspresi}
+Sebelum menjalankan kode, tentukan tipe setiap operand, arti operator untuk tipe tersebut, lalu prediksi tipe dan nilai hasil. Jika operator tidak didefinisikan untuk pasangan tipe itu, prediksi error.
+\end{idebox}
+
+\section{Percabangan sebagai representasi kondisi matematika}
+Untuk persamaan kuadrat $ax^2+bx+c=0$, diskriminan $D=b^2-4ac$ menentukan jenis akar. Struktur \kode{if}-\kode{elif}-\kode{else} menerjemahkan kondisi matematika tersebut menjadi alur program.
+
+\begin{lstlisting}
+a, b, c = 1.0, -3.0, 2.0
+D = b**2 - 4*a*c
+
+if D > 0:
+    jenis = "dua akar real"
+elif D == 0:
+    jenis = "akar real kembar"
+else:
+    jenis = "akar kompleks"
+
+print(D, jenis)
+\end{lstlisting}
+
+\section{Perulangan}
+\kode{for} cocok ketika himpunan nilai yang akan dilalui sudah jelas. \kode{while} cocok ketika pengulangan bergantung pada kondisi yang berubah selama program berjalan.
+
+\begin{lstlisting}
+data = [3, -2, 0, 7, -5, 4, 9]
+total_positif = 0
+
+for x in data:
+    if x > 0:
+        total_positif += x
+
+print(total_positif)
+\end{lstlisting}
+
+\section{None, break, dan continue}
+\kode{None} dapat dipakai untuk menyatakan bahwa sebuah nilai tidak tersedia. Ini berbeda dari nol atau nilai ekstrem. \kode{continue} melewati sisa langkah pada iterasi saat ini, sedangkan \kode{break} menghentikan loop.
+
+\begin{lstlisting}
+data = [2.5, None, -1.0, 4.2, None, 100.0, 3.1]
+valid = []
+
+for x in data:
+    if x is None:
+        continue
+    if abs(x) > 50:
+        break
+    valid.append(x)
+
+print(valid)
+\end{lstlisting}
+
+\section{Loop bersarang}
+Loop bersarang diperlukan ketika proses memiliki dua indeks, misalnya membentuk tabel, pola karakter, atau matriks sederhana.
+
+\begin{lstlisting}
+n = 5
+for i in range(1, n + 1):
+    for j in range(i):
+        print('*', end='')
+    print()
+\end{lstlisting}
+Jumlah karakter yang dicetak adalah $1+2+\cdots+n=n(n+1)/2$.
+
+\begin{latihanbox}{Latihan Praktikum 1}
+\begin{enumerate}
+  \item Prediksi nilai dan tipe untuk \kode{1 + True}, \kode{True + True}, \kode{'1' + '0'}, \kode{'1' + 0}, \kode{int('1') + 0}, \kode{2**3.0}, dan \kode{bool('0')}. Verifikasi setelah menulis prediksi.
+  \item Tulis program yang menerima bilangan bulat positif dan menampilkan bentuk desimal, biner, oktal, dan heksadesimal.
+  \item Untuk $x=2.4$ dan $y=-1.2$, hitung $f(x,y)=\dfrac{e^{x-y}+\sqrt{x^2+y^2}}{1+|xy|}$ menggunakan modul \kode{math}.
+  \item Buat program klasifikasi akar persamaan kuadrat berdasarkan diskriminan. Uji tiga kasus berbeda.
+  \item Implementasikan fungsi potongan secara langsung dengan \kode{if}-\kode{elif}-\kode{else}: $x^2+1$ untuk $x<0$, $2x+1$ untuk $0\le x<3$, dan $\sqrt{x+6}$ untuk $x\ge3$.
+  \item Dari list \kode{[3,-2,0,7,-5,4,9]}, hitung jumlah elemen positif, jumlah kuadrat elemen negatif, dan rata-rata elemen nonnol.
+  \item Gunakan \kode{continue} untuk mengabaikan \kode{None} dan hitung rata-rata data valid.
+  \item Gunakan \kode{break} untuk menghentikan pemrosesan saat $|x|>50$. Catat nilai akumulator pada setiap iterasi.
+  \item Buat segitiga bintang naik dan turun dengan loop bersarang.
+  \item Buat tabel perkalian $1$ sampai $n$ menggunakan dua loop.
+  \item Tulis program yang mencari faktor positif terkecil selain 1 dari bilangan $n>1$ menggunakan \kode{while}.
+  \item Gunakan faktor terkecil untuk menentukan apakah $n$ prima. Uji $101$, $221$, dan $997$.
+  \item Hitung $p_n=n\sin(\pi/n)$ untuk $n=3,4,10,100,10^4,10^6$ dan amati kecenderungannya.
+  \item Buat program yang membaca data sampai pengguna memasukkan kata \kode{stop}. Hitung banyak data dan rata-rata.
+  \item Buat loop yang mencetak semua pasangan $(i,j)$ dengan $1\le i\le4$, $1\le j\le4$, dan $i+j$ genap.
+  \item Jelaskan perbedaan makna data bernilai \kode{0}, \kode{None}, dan $100.0$ dalam konteks pengukuran.
+  \item Tulis satu contoh loop \kode{while} yang pasti berhenti dan satu yang tidak berhenti untuk input positif. Jelaskan alasannya.
+  \item Buat satu soal prediksi output sendiri yang menggunakan \kode{if}, \kode{for}, dan perubahan nilai variabel; tukarkan dengan teman untuk ditelusuri manual.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P2 =================
+\chapter{Praktikum 2: Fungsi, Subprogram, dan Rekursi}
+\begin{tujuanbox}
+Mahasiswa mampu mendefinisikan fungsi dengan parameter dan nilai balik, memahami scope, menggunakan tuple/unpacking, menyusun fungsi dari fungsi lain, memperlakukan fungsi sebagai objek, serta mengenali struktur dasar rekursi.
+\end{tujuanbox}
+
+\section{Subprogram dan fungsi}
+Subprogram adalah bagian program yang diberi nama dan menjalankan tugas tertentu. Pada Python, fungsi yang dibuat dengan \kode{def} merupakan bentuk subprogram yang paling umum. Fungsi membantu memisahkan persoalan besar menjadi unit yang dapat dipanggil, diuji, dan digunakan kembali.
+
+\begin{lstlisting}
+def polinom_sederhana(x):
+    return 2 - 3*x + x**2
+
+print(polinom_sederhana(4))
+\end{lstlisting}
+Dalam definisi di atas, \kode{x} adalah parameter. Pada pemanggilan \kode{polinom_sederhana(4)}, nilai \kode{4} adalah argumen.
+
+\section{Empat bentuk fungsi}
+Secara dasar fungsi dapat dibedakan berdasarkan ada tidaknya argumen dan ada tidaknya nilai balik.
+\begin{tabularx}{\textwidth}{@{}p{0.24\textwidth}p{0.35\textwidth}X@{}}
+\toprule
+Bentuk & Contoh & Makna \\
+\midrule
+Tanpa argumen, tanpa return & \kode{def salam(): print('Halo')} & melakukan aksi \\
+Tanpa argumen, dengan return & \kode{def pi(): return 3.14159} & menghasilkan nilai tetap \\
+Dengan argumen, tanpa return & \kode{def tampil(x): print(x)} & menerima input lalu menampilkan \\
+Dengan argumen, dengan return & \kode{def f(x): return x**2} & menghasilkan nilai untuk dipakai kembali \\
+\bottomrule
+\end{tabularx}
+
+\section{print, return, dan None}
+\begin{lstlisting}
+def g(x):
+    return x**2 - 1
+
+def h(x):
+    print(g(x))
+
+y = h(3)
+print(y)
+\end{lstlisting}
+\kode{print} hanya menampilkan nilai. Jika fungsi tidak mencapai \kode{return}, Python mengembalikan \kode{None}. Karena itu hasil fungsi seperti \kode{h} tidak langsung dapat dipakai dalam operasi aritmetika.
+
+\section{Multiple return, tuple, dan unpacking}
+\begin{lstlisting}
+def stat_ringkas(a, b, c, d):
+    nilai = [a, b, c, d]
+    minimum = min(nilai)
+    maksimum = max(nilai)
+    rata = sum(nilai) / len(nilai)
+    rentang = maksimum - minimum
+    return minimum, maksimum, rata, rentang
+
+mn, mx, r, rg = stat_ringkas(4, 7, 1, 9)
+\end{lstlisting}
+Python sebenarnya mengembalikan satu tuple. Unpacking menempatkan elemen tuple ke beberapa variabel.
+
+\section{Scope lokal dan global}
+\begin{lstlisting}
+x = 10
+
+def f(a):
+    x = a + 2
+    return x
+
+print(f(5))
+print(x)
+\end{lstlisting}
+Variabel \kode{x} di dalam fungsi bersifat lokal. Untuk program komputasi, fungsi yang menerima input dan mengembalikan output secara eksplisit biasanya lebih mudah diuji daripada fungsi yang mengubah banyak variabel global.
+
+\section{Komposisi dan fungsi sebagai objek}
+Jika $(f\circ g)(x)=f(g(x))$, maka pola yang sama dapat ditulis sebagai fungsi yang memanggil fungsi lain.
+\begin{lstlisting}
+def proses(x, f):
+    return f(x)
+
+def kuadrat(x):
+    return x**2
+
+print(proses(5, kuadrat))
+\end{lstlisting}
+Nama \kode{kuadrat} tanpa tanda kurung adalah objek fungsi dan dapat dikirim sebagai argumen.
+
+\section{Lambda}
+Lambda sesuai untuk fungsi pendek yang hanya terdiri dari satu ekspresi.
+\begin{lstlisting}
+f = lambda x: 3*x**2 - 2*x + 1
+print(f(2))
+\end{lstlisting}
+Jika logika mulai panjang, gunakan fungsi bernama dengan \kode{def}.
+
+\section{Rekursi dasar}
+Rekursi terjadi ketika fungsi memanggil dirinya sendiri. Dua komponen wajib adalah \textit{base case} dan langkah yang membawa masalah lebih dekat ke base case.
+
+Untuk faktorial,
+\[
+0!=1,\qquad n!=n(n-1)!,\quad n\ge1.
+\]
+\begin{lstlisting}
+def faktorial(n):
+    if n == 0:
+        return 1
+    return n * faktorial(n - 1)
+\end{lstlisting}
+Untuk $n=4$, urutan pemanggilan adalah $4\to3\to2\to1\to0$, lalu nilai dikembalikan ke arah sebaliknya.
+
+\begin{latihanbox}{Latihan Praktikum 2}
+\begin{enumerate}
+  \item Buat masing-masing satu contoh untuk empat bentuk fungsi pada tabel di atas.
+  \item Tulis \kode{polinom(x, koef)} untuk $p(x)=a_0+a_1x+\cdots+a_nx^n$ tanpa \kode{numpy.polyval}.
+  \item Buat \kode{stat_ringkas(a,b,c,d)} yang mengembalikan minimum, maksimum, rata-rata, dan rentang. Lakukan unpacking.
+  \item Ubah fungsi pada nomor sebelumnya agar menerima satu list data.
+  \item Prediksi keluaran program scope lokal dan global untuk beberapa nilai argumen.
+  \item Buat versi fungsi yang memakai \kode{global}; jelaskan mengapa hasilnya dapat bergantung pada riwayat pemanggilan.
+  \item Tulis \kode{jarak(p,q)} dan \kode{energi(d)=1/(1+d^2)}, lalu buat \kode{energi_dua_titik(p,q)} dengan komposisi.
+  \item Buat \kode{proses(x,f)} lalu uji dengan fungsi kuadrat, kubik, nilai mutlak, dan fungsi linear.
+  \item Buat list fungsi \kode{ops=[abs, kuadrat, tambah1]} dan terapkan berurutan pada $x=-3$.
+  \item Definisikan $f(x)=3x^2-2x+1$ dengan \kode{lambda}, lalu evaluasi untuk $x=-3,-2,\ldots,3$.
+  \item Bandingkan kode \kode{map} dan list comprehension untuk evaluasi fungsi yang sama. Pilih yang lebih mudah dibaca dan jelaskan alasan Anda.
+  \item Diagnosa kode berikut: \kode{def h(x): print(x**2)} kemudian \kode{h(3)+1}. Mengapa gagal? Perbaiki.
+  \item Buat fungsi \kode{ringkas_vektor(v)} yang mengembalikan $\|v\|_1$, $\|v\|_2$, $\max_i|v_i|$, dan rata-rata komponen.
+  \item Buat fungsi rekursif faktorial dan tulis jejak pemanggilan untuk $n=5$.
+  \item Tulis fungsi iteratif faktorial. Bandingkan struktur kode dengan versi rekursif.
+  \item Untuk $a_0=1$ dan $a_n=2a_{n-1}+1$, tulis fungsi rekursif dan hitung $a_0$ sampai $a_5$.
+  \item Buat fungsi rekursif untuk menghitung jumlah $1+2+\cdots+n$.
+  \item Buat satu fungsi rekursif yang salah karena tidak memiliki base case yang benar. Jelaskan mengapa program tidak berhenti secara wajar.
+  \item Tulis sebuah fungsi matematika pilihan Anda dengan input dan output yang jelas, tiga kasus uji, dan satu kondisi batas.
+  \item Ambil satu program panjang dari Praktikum 1 dan pecah menjadi paling sedikit dua fungsi yang mempunyai tanggung jawab berbeda.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P3 =================
+\chapter{Praktikum 3: Representasi Algoritma dan Struktur Data}
+\begin{tujuanbox}
+Mahasiswa mampu menulis pseudocode, memilih struktur data sederhana, melakukan iterasi pada list/tuple/dictionary, menggunakan comprehension, dan membentuk serta memproses NumPy array satu dan dua dimensi.
+\end{tujuanbox}
+
+\section{Pseudocode}
+Pseudocode memisahkan logika algoritma dari sintaks Python. Bentuk yang digunakan di praktikum:
+\begin{lstlisting}[language={}]
+ALGORITMA NamaAlgoritma
+INPUT:  data dan syarat masukan
+OUTPUT: hasil
+BEGIN
+    inisialisasi
+    IF kondisi THEN
+        ...
+    ENDIF
+    FOR / WHILE ...
+        ...
+    ENDFOR / ENDWHILE
+    RETURN hasil
+END
+\end{lstlisting}
+
+\section{List, tuple, dan dictionary}
+List cocok untuk koleksi berurutan yang dapat diubah. Tuple juga berurutan tetapi lazim dipakai untuk data yang dianggap tetap atau untuk multiple return. Dictionary menyimpan pasangan \kode{key:value}.
+
+\begin{lstlisting}
+nilai = {'A': 82, 'B': 71, 'C': 95, 'D': 64}
+for nama, skor in nilai.items():
+    print(nama, skor)
+\end{lstlisting}
+
+\section{List comprehension}
+\begin{lstlisting}
+x = [-2, -1, 0, 1, 2]
+y = [3*t**2 - 2*t + 1 for t in x]
+\end{lstlisting}
+Comprehension ringkas untuk transformasi sederhana. Untuk logika panjang atau bercabang, loop biasa sering lebih jelas.
+
+\section{NumPy array}
+Array NumPy bersifat homogen: elemen memiliki tipe data yang konsisten. Operasi aritmetika pada array dilakukan elemen per elemen secara alami.
+\begin{lstlisting}
+import numpy as np
+x = np.array([1, 4., -2, 7])
+print(x.dtype)
+print(2*x + 1)
+\end{lstlisting}
+
+\section{Loop dua dimensi dan matriks sebagai list}
+\begin{lstlisting}
+A = []
+for i in range(1, 5):
+    baris = []
+    for j in range(1, 5):
+        baris.append(i + j + i*j)
+    A.append(baris)
+\end{lstlisting}
+Setelah struktur dipahami, list of lists dapat dikonversi menjadi NumPy array untuk operasi numerik selanjutnya.
+
+\section{Slicing dan beda hingga}
+Jika $y_i$ diukur pada waktu $t_i$, kecepatan rata-rata antar titik dapat ditulis
+\[
+v_i=\frac{y_{i+1}-y_i}{t_{i+1}-t_i}.
+\]
+Dengan NumPy, operasi ini dapat dilakukan menggunakan slicing.
+\begin{lstlisting}
+v = (y[1:] - y[:-1]) / (t[1:] - t[:-1])
+\end{lstlisting}
+
+\begin{latihanbox}{Latihan Praktikum 3}
+\begin{enumerate}
+  \item Tulis pseudocode untuk mencari nilai maksimum dan indeksnya dari sebuah list tanpa \kode{max}.
+  \item Tulis pseudocode algoritma Euclid untuk $\gcd(a,b)$, lalu trace untuk $(252,105)$.
+  \item Buat contoh iterasi list, tuple, dan dictionary. Jelaskan nilai yang dihasilkan pada setiap iterasi.
+  \item Dari dictionary nilai mahasiswa, hitung rata-rata dan key dengan nilai tertinggi.
+  \item Dengan list comprehension, hitung $y_i=3x_i^2-2x_i+1$ untuk $x=[-2,-1,0,1,2]$.
+  \item Dari matriks list $3\times3$, ambil kolom terakhir dan diagonal utama tanpa NumPy.
+  \item Bentuk list berisi dua kali kuadrat elemen kolom tengah dengan comprehension.
+  \item Konversi list \kode{[1,4.,-2,7]} menjadi NumPy array dan jelaskan \kode{dtype} yang diperoleh.
+  \item Buat array integer dan float masing-masing panjang 5. Bandingkan hasil pembagian dengan 2.
+  \item Hitung $y_i=\sin(x_i)+x_i^2$ pada 1000 titik dengan loop Python dan NumPy. Pastikan hasil sama sampai toleransi tertentu.
+  \item Bentuk $A\in\R^{4\times4}$ dengan $a_{ij}=i+j+ij$ menggunakan dua loop.
+  \item Tentukan diagonal utama dan jumlah diagonal dari matriks nomor 11 tanpa NumPy.
+  \item Periksa secara manual dan dengan NumPy apakah matriks nomor 11 simetris.
+  \item Diberikan data yang mengandung \kode{None}. Abaikan data hilang dan hentikan proses jika $|x|>50$.
+  \item Bentuk dictionary skor-z dari dictionary nilai. Gunakan simpangan baku populasi dan verifikasi rata-rata skor-z mendekati nol.
+  \item Buat array waktu dan posisi sederhana, lalu hitung kecepatan rata-rata menggunakan slicing.
+  \item Jelaskan mengapa panjang array kecepatan satu lebih kecil dari panjang array posisi.
+  \item Buat matriks $5\times5$ dengan $a_{ij}=|i-j|$ menggunakan nested comprehension.
+  \item Bandingkan hasil loop biasa dan comprehension untuk transformasi data yang sama. Fokus pada keterbacaan, bukan hanya jumlah baris.
+  \item Tulis pseudocode dan kode Python untuk menghitung frekuensi kemunculan setiap kategori menggunakan dictionary.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P4 =================
+\chapter{Praktikum 4: Debugging, Testing, Terminasi, dan Rekursi}
+\begin{tujuanbox}
+Mahasiswa mampu menemukan kesalahan logika, membedakan error tipe/scope/kondisi batas, menggunakan exception dan assert secara proporsional, menilai apakah loop atau rekursi berhenti, serta menelusuri algoritma iteratif dan rekursif.
+\end{tujuanbox}
+
+\section{Debugging: kode benar secara sintaks belum tentu benar secara logika}
+\begin{lstlisting}
+def rata(data):
+    total = 0
+    for x in data:
+        total += x
+        return total / len(data)
+\end{lstlisting}
+Kode ini valid secara sintaks, tetapi \kode{return} berada terlalu awal. Uji dengan data kecil untuk menunjukkan bug sebelum memperbaikinya.
+
+\section{Exception handling}
+\begin{lstlisting}
+def rasio(a, b):
+    try:
+        x = float(a)
+        y = float(b)
+        return x / y
+    except (TypeError, ValueError):
+        return None
+    except ZeroDivisionError:
+        return None
+\end{lstlisting}
+Exception handling dipakai ketika kegagalan memang merupakan kondisi yang mungkin muncul dari input atau operasi. Jangan menangkap semua exception tanpa alasan karena bug pemrograman dapat tersembunyi.
+
+\section{Testing dengan assert}
+\begin{lstlisting}
+def jarak_1d(x, y):
+    return abs(x - y)
+
+assert jarak_1d(3, 3) == 0
+assert jarak_1d(3, 8) == 5
+assert jarak_1d(-2, 3) == 5
+\end{lstlisting}
+Kasus uji yang baik mencakup kasus normal, kondisi batas, dan kasus yang hasilnya sudah diketahui.
+
+\section{Halt atau terminasi}
+Algoritma dikatakan berhenti untuk sebuah input jika eksekusinya selesai setelah sejumlah langkah berhingga. Untuk loop, salah satu cara memberi alasan terminasi adalah menemukan ukuran bilangan bulat nonnegatif yang berkurang menuju nol.
+
+\begin{lstlisting}
+i = n
+while i > 0:
+    i = i // 2
+\end{lstlisting}
+Untuk $n>0$, nilai \kode{i} mengecil hingga nol.
+
+\section{Rekursi dan call stack}
+Pada rekursi, setiap pemanggilan menunggu hasil pemanggilan yang lebih kecil. Base case menghentikan rantai pemanggilan.
+
+\section{Iterasi Newton untuk akar kuadrat}
+Untuk $f(x)=x^2-n$, Newton-Raphson memberikan
+\[
+x_{k+1}=x_k-\frac{x_k^2-n}{2x_k}
+       =\frac12\left(x_k+\frac{n}{x_k}\right).
+\]
+Contoh implementasi dengan jumlah iterasi tetap:
+\begin{lstlisting}
+def square_root(n):
+    root = n / 2
+    for k in range(20):
+        root = 0.5 * (root + n / root)
+    return root
+\end{lstlisting}
+Kriteria berhenti dapat diperbaiki dengan toleransi $|x_{k+1}-x_k|<\varepsilon$.
+
+\begin{latihanbox}{Latihan Praktikum 4}
+\begin{enumerate}
+  \item Temukan dan perbaiki bug pada fungsi rata-rata dengan \kode{return} di dalam loop.
+  \item Buat dua test case yang pasti gagal pada versi salah dan lulus pada versi benar.
+  \item Diagnosa fungsi yang mencoba mengubah variabel global tanpa deklarasi \kode{global}. Berikan perbaikan dengan dan tanpa variabel global.
+  \item Tambahkan pemeriksaan pada fungsi invers $2\times2$ agar matriks singular ditolak.
+  \item Tulis lima \kode{assert} untuk fungsi jarak Euclid dua vektor.
+  \item Uji sifat simetri $d(x,y)=d(y,x)$ dan kasus $d((0,0),(3,4))=5$.
+  \item Tulis \kode{rasio(a,b)} yang menangani \kode{ValueError}, \kode{TypeError}, dan \kode{ZeroDivisionError}.
+  \item Jelaskan perbedaan \kode{print(g(x))}, \kode{return g(x)}, dan fungsi tanpa \kode{return}.
+  \item Tentukan apakah loop \kode{i=i//2}, \kode{i=i-2}, dan \kode{i=i+1} berhenti untuk semua input positif.
+  \item Untuk loop \kode{i=i-2}, klasifikasikan input yang mencapai kondisi tertentu dan yang tidak.
+  \item Definisikan ukuran yang menurun untuk membuktikan terminasi loop pembagian dua.
+  \item Tulis fungsi rekursif untuk $a_0=2$, $a_n=3a_{n-1}-2$. Hitung $a_1$ sampai $a_6$.
+  \item Tulis fungsi rekursif untuk $u_0=1$, $u_1=3$, $u_n=u_{n-1}+2u_{n-2}$. Gambar pohon pemanggilan untuk $u_4$.
+  \item Bandingkan faktorial rekursif dan iteratif untuk $n=5$. Tulis call stack versi rekursif.
+  \item Jelaskan mengapa rekursi Fibonacci naif menghitung submasalah yang sama berkali-kali.
+  \item Gunakan iterasi Newton untuk menghitung $\sqrt{2}$, $\sqrt{9}$, dan $\sqrt{4563}$.
+  \item Modifikasi Newton agar berhenti berdasarkan toleransi, lalu kembalikan juga banyak iterasi.
+  \item Uji Newton untuk nilai awal berbeda. Apakah semua pilihan nilai awal layak?
+  \item Buat satu contoh fungsi yang gagal pada kondisi batas meskipun bekerja pada input biasa. Tulis test yang menangkap kegagalan tersebut.
+  \item Pilih satu fungsi dari praktikum sebelumnya dan tulis sekurangnya enam test case yang mencakup normal, batas, dan input tidak valid.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P5 =================
+\chapter{Praktikum 5: Kompleksitas Algoritma dan Sorting Dasar}
+\begin{tujuanbox}
+Mahasiswa mampu menghubungkan struktur loop dengan jumlah operasi, membaca orde pertumbuhan Big-O, membedakan analisis asimtotik dari waktu aktual, dan menelusuri algoritma sorting dasar.
+\end{tujuanbox}
+
+\section{Ukuran input dan orde pertumbuhan}
+Big-O menggambarkan bagaimana kebutuhan komputasi tumbuh ketika ukuran input $n$ membesar. Urutan umum:
+\[
+1 \prec \log n \prec n \prec n\log n \prec n^2 \prec n^3 \prec 2^n \prec n!.
+\]
+
+\section{Menghitung operasi dari struktur loop}
+\begin{lstlisting}
+for i in range(n):
+    for j in range(n):
+        kerja()
+\end{lstlisting}
+Baris \kode{kerja()} dieksekusi $n^2$ kali, sehingga orde pertumbuhan adalah $O(n^2)$.
+
+Dua loop berurutan masing-masing $O(n)$ menghasilkan $O(n)+O(n)=O(n)$, bukan $O(n^2)$.
+
+\section{Loop yang membagi dua}
+\begin{lstlisting}
+i = n
+while i > 0:
+    i = i // 2
+\end{lstlisting}
+Jumlah iterasi sebanding dengan $\log_2 n$.
+
+\section{Sorting dasar}
+Selection sort memilih elemen minimum dari bagian yang belum terurut dan menempatkannya di posisi berikutnya. Insertion sort menyisipkan elemen ke bagian kiri yang sudah terurut. Bubble sort melakukan pertukaran elemen bertetangga.
+
+\begin{lstlisting}
+def selection_sort(data):
+    a = data.copy()
+    n = len(a)
+    for i in range(n - 1):
+        k = i
+        for j in range(i + 1, n):
+            if a[j] < a[k]:
+                k = j
+        a[i], a[k] = a[k], a[i]
+    return a
+\end{lstlisting}
+
+\section{Konstanta dan titik silang}
+Misalkan
+\[
+T_1(n)=7n^2+3n+40,\qquad T_2(n)=0.001n^3+100n.
+\]
+Secara asimtotik $T_1=O(n^2)$ dan $T_2=O(n^3)$, tetapi pada rentang input terbatas konstanta dapat membuat perbandingan praktis berbeda.
+
+\begin{latihanbox}{Latihan Praktikum 5}
+\begin{enumerate}
+  \item Urutkan $1,\log n,n,n\log n,n^2,n^3,2^n,n!$ dari pertumbuhan paling lambat.
+  \item Hitung jumlah eksekusi baris terdalam pada dua loop $n\times n$.
+  \item Jelaskan mengapa dua loop $O(n)$ yang berurutan tetap $O(n)$.
+  \item Hitung jumlah iterasi loop yang membagi \kode{i} dengan dua sampai nol.
+  \item Untuk loop segitiga \kode{for i in range(n): for j in range(i+1)}, tunjukkan bahwa jumlah operasi $1+2+\cdots+n$.
+  \item Bandingkan fungsi penjumlahan $1+\cdots+n$ berbasis loop dengan rumus $n(n+1)/2$.
+  \item Klasifikasikan indexing list, \kode{append}, \kode{pop()}, \kode{pop(0)}, membership, dan sorting menurut orde pertumbuhannya.
+  \item Gunakan \kode{timeit} untuk memeriksa minimal dua operasi list pada beberapa ukuran $n$.
+  \item Analisis time-space trade-off antara deteksi anagram dengan sorting dan dengan array frekuensi.
+  \item Tentukan Big-O $T_1(n)$ dan $T_2(n)$ di atas.
+  \item Cari secara numerik interval $n$ ketika $T_1(n)<T_2(n)$.
+  \item Rancang eksperimen untuk membedakan fungsi $O(n)$ dan $O(n^2)$ dari rasio waktu ketika $n$ digandakan.
+  \item Trace tiga pass pertama selection sort untuk \kode{[11,7,12,14,19,1,6,18,8,20]}.
+  \item Implementasikan insertion sort dan catat jumlah perbandingan.
+  \item Implementasikan bubble sort dan catat jumlah pertukaran.
+  \item Uji ketiga sorting pada data acak, terurut, dan terbalik.
+  \item Jelaskan kondisi ketika insertion sort dapat tampak cepat pada data kecil walaupun worst-case tetap $O(n^2)$.
+  \item Bandingkan hasil sorting buatan dengan \kode{sorted}. Pastikan urutannya sama.
+  \item Buat tabel $n$, waktu, dan jumlah operasi untuk sekurangnya empat ukuran input.
+  \item Tulis kesimpulan singkat yang membedakan Big-O, jumlah operasi, dan waktu eksekusi aktual.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P6 =================
+\chapter{Praktikum 6: Searching, Merge Sort, dan Benchmark}
+\begin{tujuanbox}
+Mahasiswa mampu menelusuri sequential dan binary search, memahami kebutuhan data terurut pada binary search, mengikuti rekursi merge sort, menggunakan invariant sederhana, dan merancang benchmark yang adil.
+\end{tujuanbox}
+
+\section{Sequential dan binary search}
+Sequential search memeriksa elemen satu per satu. Binary search memanfaatkan keterurutan data dan mengurangi interval pencarian sekitar setengah pada setiap langkah.
+
+\begin{lstlisting}
+def binary_search(a, target):
+    kiri, kanan = 0, len(a) - 1
+    while kiri <= kanan:
+        tengah = (kiri + kanan) // 2
+        if a[tengah] == target:
+            return tengah
+        if a[tengah] < target:
+            kiri = tengah + 1
+        else:
+            kanan = tengah - 1
+    return -1
+\end{lstlisting}
+
+\section{Tracing binary search}
+Untuk list terurut \kode{[3,5,6,8,11,12,14,15,17,18]}, catat pada setiap langkah: indeks kiri, kanan, tengah, nilai tengah, dan keputusan berikutnya. Tracing menjelaskan mengapa kompleksitas binary search adalah $O(\log n)$.
+
+\section{Merge sort}
+Merge sort membagi list menjadi dua sampai sublist kecil, lalu menggabungkan kembali dua list terurut. Struktur pembagian menghasilkan kedalaman sekitar $\log_2 n$, sedangkan setiap level memproses total sekitar $n$ elemen, sehingga kompleksitasnya $O(n\log n)$.
+
+\section{Benchmark}
+Benchmark mengukur implementasi, bukan menggantikan analisis kompleksitas. Gunakan input yang sama, beberapa ukuran data, pengulangan pengukuran, dan hindari pekerjaan tambahan yang hanya dilakukan oleh salah satu algoritma.
+
+\begin{latihanbox}{Latihan Praktikum 6}
+\begin{enumerate}
+  \item Trace binary search untuk mencari 8 pada \kode{[3,5,6,8,11,12,14,15,17,18]}.
+  \item Trace binary search untuk mencari 16 pada list yang sama sampai algoritma menyatakan tidak ditemukan.
+  \item Implementasikan sequential search dan kembalikan indeks serta banyak perbandingan.
+  \item Modifikasi binary search agar juga mengembalikan banyak perbandingan.
+  \item Bandingkan jumlah perbandingan untuk target di awal, tengah, akhir, dan tidak ditemukan.
+  \item Uji binary search pada data yang belum terurut. Jelaskan mengapa hasilnya tidak dapat dipercaya.
+  \item Tulis binary search rekursif dan bandingkan alurnya dengan versi iteratif.
+  \item Gambar tiga level awal pohon rekursi merge sort untuk \kode{[21,1,26,45,29,28,2,9,16,49,39,27,43,34,46,40]}.
+  \item Tentukan pasangan sublist pertama yang digabung kembali pada merge sort tersebut.
+  \item Implementasikan fungsi \kode{merge(left,right)} dan uji dengan dua list kecil yang sudah terurut.
+  \item Implementasikan merge sort rekursif.
+  \item Bandingkan worst-case bubble, selection, insertion, merge, dan quicksort standar.
+  \item Tulis invariant sederhana untuk selection sort dan gunakan untuk menjelaskan kebenaran algoritma.
+  \item Rancang benchmark insertion sort vs merge sort pada ukuran input yang meningkat.
+  \item Gunakan data acak yang sama untuk kedua algoritma pada setiap ulangan.
+  \item Bandingkan data acak, terurut, dan hampir terurut.
+  \item Ambil $x_i$ pada $[0,2\pi]$ dan hitung $\sin(x_i)+x_i^2$ dengan loop dan NumPy vectorization. Pastikan hasil sama sebelum mengukur waktu.
+  \item Ulangi benchmark vectorization untuk $n=10^3,10^4,10^5$.
+  \item Jelaskan mengapa satu pengukuran waktu tidak cukup untuk mengambil kesimpulan.
+  \item Buat laporan ringkas berisi teori kompleksitas, data waktu, dan interpretasi apakah hasil empiris konsisten dengan teori.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= P7 =================
+\chapter{Praktikum 7: Aljabar Linier Komputasional}
+\begin{tujuanbox}
+Mahasiswa mampu merepresentasikan vektor dan matriks, membedakan operasi element-wise dan perkalian matriks, menghitung transpose dan invers, menyelesaikan SPL, memeriksa residual, menghitung norma dan nilai eigen, serta melihat data sebagai matriks.
+\end{tujuanbox}
+
+\section{Vektor: list dan array}
+List Python adalah struktur umum. NumPy array dirancang untuk komputasi numerik dan mendukung operasi vektor secara langsung.
+\begin{lstlisting}
+import numpy as np
+x = np.array([1., -2., 3.])
+y = np.array([4., 0., -1.])
+print(x + y)
+print(np.dot(x, y))
+print(np.linalg.norm(x))
+\end{lstlisting}
+
+\section{Element-wise dan matrix multiplication}
+Untuk array NumPy, \kode{A*B} berarti perkalian elemen yang bersesuaian, sedangkan \kode{A@B} berarti perkalian matriks.
+
+\section{Perkalian matriks manual}
+Untuk memahami definisi $C=AB$ dengan $c_{ij}=\sum_k a_{ik}b_{kj}$, implementasikan perkalian matriks dengan tiga loop sebelum memakai \kode{@}.
+
+\section{Transpose dan invers}
+Untuk $A\in\R^{m\times n}$, transpose memiliki ukuran $n\times m$. Untuk
+\[
+A=\begin{pmatrix}a&b\\c&d\end{pmatrix},\qquad
+A^{-1}=\frac{1}{ad-bc}\begin{pmatrix}d&-b\\-c&a\end{pmatrix},
+\]
+selama $ad-bc\neq0$.
+
+\section{Sistem persamaan linier dan residual}
+Untuk $Ax=b$, solusi numerik $\hat{x}$ perlu diperiksa melalui residual
+\[
+r=b-A\hat{x},\qquad \|r\|_2.
+\]
+\begin{lstlisting}
+A = np.array([[2., 1.], [5., 3.]])
+b = np.array([1., 4.])
+x = np.linalg.solve(A, b)
+r = b - A @ x
+print(x, np.linalg.norm(r))
+\end{lstlisting}
+
+\section{Nilai eigen}
+Pasangan $(\lambda,v)$ memenuhi $Av=\lambda v$. Setelah memperoleh hasil dari \kode{np.linalg.eig}, verifikasi numerik dengan norma $\|Av-\lambda v\|_2$.
+
+\section{Data sebagai matriks}
+Jika baris mewakili observasi dan kolom mewakili fitur, data dapat ditulis sebagai matriks $X$. Centering dilakukan dengan mengurangi rata-rata setiap kolom. Matriks $X_c^T X_c$ merangkum hasil kali silang antarfitur dan selalu simetris.
+
+\begin{latihanbox}{Latihan Praktikum 7}
+\begin{enumerate}
+  \item Untuk $x=(1,-2,3)$ dan $y=(4,0,-1)$, hitung manual $x+y$, $2x-y$, $x\cdot y$, $\|x\|_2$, dan $\|x-y\|_2$.
+  \item Implementasikan operasi nomor 1 dengan list dan NumPy array. Catat perbedaan perilaku operator.
+  \item Untuk dua matriks $2\times2$, hitung manual $A\odot B$ dan $AB$, lalu bandingkan \kode{A*B} dan \kode{A@B}.
+  \item Tulis \kode{matmul_manual(A,B)} dengan tiga loop dan pemeriksaan dimensi.
+  \item Uji perkalian matriks $2\times3$ dengan $3\times2$ dan bandingkan dengan NumPy.
+  \item Buat transpose matriks dengan loop bersarang.
+  \item Buat transpose dengan list comprehension dan dengan \kode{np.array(A).T}.
+  \item Implementasikan invers matriks $2\times2$ dari rumus manual. Tolak matriks singular.
+  \item Bandingkan invers manual dengan \kode{np.linalg.inv} dan verifikasi $AA^{-1}\approx I$.
+  \item Selesaikan SPL $2\times2$ dengan invers manual dan \kode{np.linalg.solve}.
+  \item Hitung determinan sebelum menyelesaikan SPL. Jelaskan arti determinan nol terhadap keunikan solusi pada konteks ini.
+  \item Untuk solusi $\hat{x}$, hitung residual $r=b-A\hat{x}$ dan $\|r\|_2$.
+  \item Ganggu satu komponen solusi sebesar $10^{-3}$ dan bandingkan norma residual.
+  \item Selesaikan sistem $3\times3$ dari LKM dan verifikasi hasil melalui residual.
+  \item Bandingkan secara konseptual \kode{np.linalg.solve(A,b)} dengan \kode{np.linalg.inv(A) @ b}.
+  \item Untuk $A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$, hitung nilai eigen manual dari $\det(A-\lambda I)=0$.
+  \item Gunakan \kode{np.linalg.eig} dan verifikasi $Av\approx\lambda v$ dengan norma selisih.
+  \item Untuk $X=\begin{pmatrix}1&2\\2&1\\4&3\end{pmatrix}$, hitung rata-rata kolom, centered matrix, dan $X_c^TX_c$.
+  \item Kerjakan nomor 18 sekali dengan loop/list dan sekali dengan NumPy.
+  \item Buat data empat observasi dengan tiga fitur. Hitung Gram matrix $G=X_c^TX_c$ dan periksa bahwa $G$ simetris.
+  \item Tulis fungsi yang menerima $A,b$ dan mengembalikan solusi serta norma residual.
+  \item Buat tiga test case untuk fungsi pada nomor 21: identitas, sistem nontrivial, dan matriks singular.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= UTS =================
+\chapter{Latihan Terpadu Menjelang UTS}
+Bagian ini digunakan setelah Praktikum 1-7. Soal sengaja mencampur prediksi, tracing, debugging, penulisan program, analisis algoritma, dan komputasi matriks.
+
+\begin{latihanbox}{Latihan terpadu}
+\begin{enumerate}
+  \item Prediksi nilai dan tipe beberapa ekspresi yang mencampur \kode{int}, \kode{float}, \kode{bool}, dan \kode{str}. Sertakan satu contoh yang menghasilkan error.
+  \item Tulis program yang menerima koefisien persamaan kuadrat dan mengklasifikasikan jenis akar.
+  \item Trace loop yang menggunakan \kode{continue} untuk \kode{None} dan \kode{break} untuk nilai ekstrem.
+  \item Tulis nested loop yang menghasilkan pola segitiga dan hitung jumlah total iterasi dalam bentuk rumus.
+  \item Buat fungsi yang mengembalikan empat ringkasan statistik dan lakukan unpacking.
+  \item Diagnosa fungsi yang hanya melakukan \kode{print} tetapi hasilnya dipakai dalam ekspresi aritmetika.
+  \item Trace scope lokal dan global pada fungsi dengan nama variabel yang sama.
+  \item Gunakan fungsi sebagai argumen untuk menerapkan tiga transformasi pada satu nilai.
+  \item Tulis fungsi rekursif dari suatu relasi rekurensi dan tunjukkan base case.
+  \item Tulis pseudocode Euclid dan trace untuk satu pasangan bilangan.
+  \item Bentuk matriks sederhana dengan nested loop dan konversi ke NumPy.
+  \item Gunakan slicing untuk menghitung beda hingga dari dua array.
+  \item Temukan bug pada fungsi rata-rata yang memiliki \kode{return} di lokasi salah.
+  \item Tulis \kode{assert} untuk fungsi jarak yang mencakup kondisi batas.
+  \item Tentukan apakah tiga loop berbeda berhenti untuk semua input positif dan berikan alasan.
+  \item Turunkan iterasi Newton untuk $\sqrt{n}$ dari Newton-Raphson umum, lalu tulis implementasinya.
+  \item Tentukan Big-O dua loop bersarang, dua loop berurutan, dan loop yang membagi ukuran dengan dua.
+  \item Untuk dua model biaya polinomial, tentukan orde dan cari titik silang numerik.
+  \item Trace tiga pass selection sort pada list yang diberikan.
+  \item Trace binary search untuk key yang ditemukan dan key yang tidak ditemukan.
+  \item Gambar dua atau tiga level awal merge sort untuk list panjang 16.
+  \item Jelaskan perbedaan analisis kompleksitas dan benchmark empiris.
+  \item Hitung operasi vektor, norma, dan dot product secara manual lalu verifikasi dengan NumPy.
+  \item Bandingkan \kode{A*B} dan \kode{A@B} pada dua matriks $2\times2$.
+  \item Selesaikan SPL dan hitung norma residual.
+  \item Hitung nilai eigen matriks simetris $2\times2$ dan verifikasi pasangan eigen numerik.
+  \item Centering sebuah matriks data dan hitung $X_c^TX_c$; jelaskan mengapa hasilnya simetris.
+\end{enumerate}
+\end{latihanbox}
+
+% ================= POST UTS =================
+\chapter{Praktikum 8: Regresi Linear Berbasis Aljabar Linier}
+\begin{tujuanbox}
+Mahasiswa mampu membentuk matriks desain, menghitung parameter least squares sederhana, membuat prediksi, menghitung residual, dan memvisualisasikan hasil regresi.
+\end{tujuanbox}
+
+Untuk model $y_i=\beta_0+\beta_1x_i+\varepsilon_i$, bentuk matriks
+\[
+y=X\beta+\varepsilon,
+\]
+dan cari $\beta$ melalui persamaan normal $(X^TX)\beta=X^Ty$ untuk tujuan pembelajaran aljabar linier.
+
+\begin{lstlisting}
+import numpy as np
+
+x = np.array([1., 2., 3., 4., 5.])
+y = np.array([2.1, 3.9, 6.2, 8.0, 10.1])
+X = np.column_stack([np.ones(len(x)), x])
+beta = np.linalg.solve(X.T @ X, X.T @ y)
+yhat = X @ beta
+residual = y - yhat
+print(beta)
+print(np.linalg.norm(residual))
+\end{lstlisting}
+
+\begin{latihanbox}{Latihan Praktikum 8}
+\begin{enumerate}
+  \item Bentuk matriks desain untuk regresi dengan intercept.
+  \item Hitung $X^TX$ dan $X^Ty$ secara manual untuk dataset kecil.
+  \item Selesaikan parameter dengan \kode{np.linalg.solve}.
+  \item Hitung prediksi dan residual.
+  \item Hitung SSE, RMSE, dan $R^2$.
+  \item Buat scatter plot data dan garis regresi.
+  \item Bandingkan hasil dengan \kode{numpy.polyfit}.
+  \item Ubah skala $x$ dan amati perubahan parameter.
+  \item Tambahkan satu outlier dan amati perubahan model.
+  \item Jelaskan hubungan residual dengan konsep jarak dari data ke model.
+\end{enumerate}
+\end{latihanbox}
+
+\chapter[Praktikum 9: Klasifikasi k-Nearest Neighbor]{Praktikum 9: Klasifikasi\\k-Nearest Neighbor}
+\begin{tujuanbox}
+Mahasiswa mampu menggunakan jarak Euclid untuk mencari tetangga terdekat, melakukan voting kelas sederhana, dan mengevaluasi prediksi pada dataset kecil.
+\end{tujuanbox}
+
+\begin{lstlisting}
+import numpy as np
+
+def jarak(x, y):
+    return np.linalg.norm(x - y)
+\end{lstlisting}
+
+\begin{latihanbox}{Latihan Praktikum 9}
+\begin{enumerate}
+  \item Hitung jarak sebuah titik uji ke semua data latih.
+  \item Urutkan indeks berdasarkan jarak.
+  \item Implementasikan k-NN untuk $k=1$ dan $k=3$.
+  \item Uji pengaruh perubahan skala salah satu fitur.
+  \item Standardisasi fitur lalu ulangi klasifikasi.
+  \item Buat confusion matrix sederhana secara manual.
+  \item Hitung akurasi pada data uji kecil.
+  \item Uji beberapa nilai $k$ dan bandingkan hasilnya.
+  \item Jelaskan apa yang terjadi jika terdapat voting seri.
+  \item Bandingkan implementasi manual dengan pustaka yang tersedia jika diizinkan.
+\end{enumerate}
+\end{latihanbox}
+
+\chapter[Praktikum 10: k-Means dan Mini Proyek Data]{Praktikum 10: k-Means\\dan Mini Proyek Data}
+\begin{tujuanbox}
+Mahasiswa mampu memahami proses iteratif k-means, menentukan stopping rule sederhana, memeriksa perubahan centroid, dan menyusun mini proyek yang dapat dijalankan ulang.
+\end{tujuanbox}
+
+Secara umum k-means mengulang dua langkah: menetapkan setiap titik ke centroid terdekat, lalu memperbarui centroid sebagai rata-rata anggota cluster. Iterasi berhenti ketika assignment atau centroid tidak lagi berubah secara berarti.
+
+\begin{latihanbox}{Latihan Praktikum 10}
+\begin{enumerate}
+  \item Lakukan satu iterasi k-means secara manual pada empat titik dan dua centroid awal.
+  \item Implementasikan assignment ke centroid terdekat.
+  \item Implementasikan pembaruan centroid.
+  \item Tambahkan stopping rule berdasarkan perubahan centroid.
+  \item Catat objective sum of squared distances pada setiap iterasi.
+  \item Uji beberapa inisialisasi centroid dan bandingkan hasilnya.
+  \item Visualisasikan cluster untuk data dua dimensi.
+  \item Jelaskan mengapa skala fitur memengaruhi k-means.
+  \item Susun folder mini proyek berisi kode, data, output, dan README.
+  \item Tulis rumusan masalah, input, output, algoritma, validasi, dan cara menjalankan ulang proyek.
+  \item Buat satu eksperimen tambahan yang mengubah parameter utama dan catat dampaknya.
+  \item Tulis ringkasan satu halaman yang menjelaskan apa yang dapat dan tidak dapat disimpulkan dari hasil komputasi.
+\end{enumerate}
+\end{latihanbox}
+
+\chapter*{Daftar Pustaka Singkat}
+\addcontentsline{toc}{chapter}{Daftar Pustaka Singkat}
+\begin{enumerate}
+  \item Miller, B. dan Ranum, D. \textit{Problem Solving with Algorithms and Data Structures Using Python}, Release 3.0.
+  \item Pine, D. J. \textit{Introduction to Python for Science and Engineering}. CRC Press, 2019.
+  \item McKinney, W. \textit{Python for Data Analysis: Data Wrangling with pandas, NumPy, and Jupyter}, 3rd ed. O'Reilly, 2022.
+  \item Dokumentasi Python: \url{https://docs.python.org/3/}
+  \item Dokumentasi NumPy: \url{https://numpy.org/doc/}
+\end{enumerate}
+
+\end{document}
