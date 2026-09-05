@@ -1,47 +1,75 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 BUILD="$ROOT/.build"
-GEN="$ROOT/generated"
-rm -rf "$BUILD"
-mkdir -p "$BUILD" "$GEN/Lembar_Kerja" "$GEN/Materi"
 
 if command -v latexmk >/dev/null 2>&1; then
-  LATEXMK=1
+    ENGINE=latexmk
 elif command -v pdflatex >/dev/null 2>&1; then
-  LATEXMK=0
+    ENGINE=pdflatex
 else
-  echo "TeX lokal tidak ditemukan (latexmk/pdflatex)."
-  echo "Source tetap bisa dipush; GitHub Actions akan compile dan mengisi generated/."
-  exit 127
+    echo "TeX tidak ditemukan: perlu latexmk atau pdflatex." >&2
+    exit 127
 fi
 
-build_one(){
-  local src="$1" tex="$2" out="$3" final="$4"
-  mkdir -p "$out" "$(dirname "$final")"
-  echo "==> COMPILE ${src#$ROOT/}/$tex"
-  if [[ "$LATEXMK" == 1 ]]; then
-    (cd "$src" && latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -outdir="$out" "$tex")
-  else
-    (cd "$src" && pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory="$out" "$tex")
-    (cd "$src" && pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory="$out" "$tex")
-  fi
-  local pdf="$out/${tex%.tex}.pdf"
-  [[ -f "$pdf" ]] || { echo "PDF tidak terbentuk: $pdf"; exit 2; }
-  cp "$pdf" "$final"
-  echo "    -> ${final#$ROOT/}"
+rm -rf "$BUILD"
+mkdir -p "$BUILD"
+
+COUNT=0
+
+compile_one() {
+    tex="$1"
+    dir=$(dirname "$tex")
+    file=$(basename "$tex")
+    stem=${file%.tex}
+    rel=${dir#"$ROOT"/}
+    out="$BUILD/$rel"
+
+    mkdir -p "$out"
+    printf '\n==> COMPILE %s\n' "${tex#"$ROOT"/}"
+
+    if [ "$ENGINE" = "latexmk" ]; then
+        (
+            cd "$dir"
+            latexmk -pdf \
+                -interaction=nonstopmode \
+                -halt-on-error \
+                -file-line-error \
+                -outdir="$out" \
+                "$file"
+        )
+    else
+        (
+            cd "$dir"
+            pdflatex -interaction=nonstopmode -halt-on-error -file-line-error \
+                -output-directory="$out" "$file"
+            pdflatex -interaction=nonstopmode -halt-on-error -file-line-error \
+                -output-directory="$out" "$file"
+        )
+    fi
+
+    pdf="$out/$stem.pdf"
+    [ -f "$pdf" ] || {
+        echo "PDF tidak terbentuk: $pdf" >&2
+        exit 2
+    }
+
+    cp "$pdf" "$dir/$stem.pdf"
+    echo "    PDF -> $rel/$stem.pdf"
+    COUNT=$((COUNT + 1))
 }
 
-build_one "$ROOT/Lembar_Kerja" "lembar_kerja_PIDK.tex" "$BUILD/Lembar_Kerja" "$GEN/Lembar_Kerja/lembar_kerja_PIDK.pdf"
-
-while IFS= read -r -d '' tex; do
-  d="$(dirname "$tex")"
-  m="$(basename "$d")"
-  [[ "$m" =~ ^M[0-9][0-9]$ ]] || continue
-  name="$(basename "$tex" .tex)"
-  build_one "$d" "$(basename "$tex")" "$BUILD/Materi/$m" "$GEN/Materi/$m/${name}.pdf"
-done < <(find "$ROOT/Materi" -mindepth 2 -maxdepth 2 -type f -name '*.tex' -print0 | sort -z)
+# Hanya file .tex yang merupakan dokumen utama: harus mengandung \documentclass.
+# Dengan demikian file potongan/fragment .tex tidak ikut dicompile.
+find "$ROOT/Lembar_Kerja" "$ROOT/Materi" -type f -name '*.tex' -print | sort | while IFS= read -r tex; do
+    if grep -Eq '^[[:space:]]*\\documentclass' "$tex"; then
+        compile_one "$tex"
+    fi
+done
 
 rm -rf "$BUILD"
+
 echo
-echo "Build selesai: $GEN"
+echo "Build selesai. PDF berada di folder yang sama dengan source .tex."
+find "$ROOT/Lembar_Kerja" "$ROOT/Materi" -type f -name '*.pdf' -print | sort | sed "s#^$ROOT/#    #"

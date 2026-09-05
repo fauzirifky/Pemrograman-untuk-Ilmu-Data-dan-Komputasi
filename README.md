@@ -2,33 +2,46 @@
 
 Repository bahan kuliah MA25-21008.
 
+Struktur utama:
+
 ```text
 Lembar_Kerja/
+  lembar_kerja_PIDK.tex
+  lembar_kerja_PIDK.pdf
+
 Materi/
   M01/
+    slides_M01.tex
+    slides_M01.pdf
+    assets/
   M02/
+  M03/
   ...
-generated/
+
 tools/
+  build.sh
+  sync.sh
+  pull.sh
+  push.sh
+  status.sh
 ```
+
+PDF hasil compile selalu berada di folder yang sama dengan dokumen `.tex` utama.
 
 Perintah rutin:
 
 ```bash
-bash tools/build.sh
-bash tools/sync.sh "Revisi materi"
-bash tools/pull.sh
-bash tools/push.sh "Pesan commit"
-bash tools/status.sh
+sh tools/build.sh
+sh tools/sync.sh "Revisi materi"
+sh tools/pull.sh
+sh tools/push.sh "Pesan commit"
+sh tools/status.sh
 ```
 
-`generated/` berisi PDF hasil compile dan ikut disimpan di GitHub.
-Setiap push ke `main`, termasuk push dari Overleaf, memicu GitHub Actions untuk compile ulang PDF dan memperbarui `generated/`.
-
-Alur dua arah:
+Alur sinkronisasi:
 
 ```text
 PC <-> GitHub <-> Overleaf
 ```
 
-Overleaf tetap membutuhkan tombol GitHub Pull/Push. GitHub Actions hanya menangani build otomatis setelah sebuah perubahan sudah masuk GitHub.
+Jika edit dilakukan di Overleaf: lakukan GitHub Push dari Overleaf. Setelah perubahan masuk GitHub, GitHub Actions otomatis compile dan memperbarui PDF di folder yang sama dengan `.tex`.

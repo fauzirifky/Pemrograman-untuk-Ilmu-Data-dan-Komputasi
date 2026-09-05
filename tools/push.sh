@@ -1,17 +1,29 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
-MSG="${1:-Update PIDK $(date '+%Y-%m-%d %H:%M')}"
-if ! "$ROOT/tools/build.sh"; then
-  code=$?
-  if [[ $code -eq 127 ]]; then
-    echo "Build lokal dilewati; GitHub Actions akan compile setelah push."
-  else
-    echo "Build lokal gagal. Push dibatalkan agar error diperbaiki dahulu."
-    exit $code
-  fi
+MSG=${1:-"Update PIDK $(date '+%Y-%m-%d %H:%M')"}
+
+if sh "$ROOT/tools/build.sh"; then
+    :
+else
+    code=$?
+    if [ "$code" -eq 127 ]; then
+        echo "TeX lokal tidak tersedia. Source akan dipush dan GitHub Actions akan compile."
+    else
+        echo "Build gagal. Push dibatalkan." >&2
+        exit "$code"
+    fi
 fi
+
 git add -A
-if ! git diff --cached --quiet; then git commit -m "$MSG"; fi
+if ! git diff --cached --quiet; then
+    git commit -m "$MSG"
+fi
+
+# Ambil perubahan remote yang mungkin masuk dari Overleaf tepat sebelum push.
+if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+    git pull --rebase origin main
+fi
+
 git push -u origin main

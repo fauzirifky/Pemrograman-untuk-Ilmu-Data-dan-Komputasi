@@ -1,32 +1,43 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
-MSG="${1:-Sync PIDK $(date '+%Y-%m-%d %H:%M')}"
+MSG=${1:-"Sync PIDK $(date '+%Y-%m-%d %H:%M')"}
 
-# 1. Tarik update dari GitHub/Overleaf lebih dulu, sambil menjaga edit lokal.
-git pull --rebase --autostash origin main || {
-  echo "Pull gagal. Jika ada conflict, selesaikan conflict lalu jalankan sync lagi."
-  exit 2
-}
-
-# 2. Compile lokal bila TeX tersedia.
-if ! "$ROOT/tools/build.sh"; then
-  code=$?
-  if [[ $code -eq 127 ]]; then
-    echo "Build lokal dilewati; GitHub Actions akan compile setelah push."
-  else
-    echo "Build lokal gagal. Sync berhenti sebelum push."
-    exit $code
-  fi
+echo "==> 1/4 Pull GitHub"
+if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+    git pull --rebase --autostash origin main
+else
+    echo "origin/main belum tersedia; lanjut sebagai initial push."
 fi
 
-# 3. Commit source + generated PDF, lalu push.
+echo "==> 2/4 Compile"
+if sh "$ROOT/tools/build.sh"; then
+    :
+else
+    code=$?
+    if [ "$code" -eq 127 ]; then
+        echo "TeX lokal tidak tersedia. GitHub Actions akan compile setelah push."
+    else
+        echo "Build gagal. Sync berhenti sebelum push." >&2
+        exit "$code"
+    fi
+fi
+
+echo "==> 3/4 Commit"
 git add -A
-if ! git diff --cached --quiet; then git commit -m "$MSG"; fi
+if ! git diff --cached --quiet; then
+    git commit -m "$MSG"
+else
+    echo "Tidak ada perubahan untuk commit."
+fi
+
+echo "==> 4/4 Push"
+if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+    git pull --rebase origin main
+fi
 git push -u origin main
 
 echo
 echo "Sync selesai: PC <-> GitHub."
-echo "Jika edit berasal dari Overleaf, Push dari Overleaf dahulu."
-echo "Jika edit berasal dari PC, setelah ini lakukan Pull pada Overleaf."
+echo "Jika ada edit baru di Overleaf setelah ini, lakukan Push dari Overleaf lalu jalankan sync lagi di PC."

@@ -1,9 +1,17 @@
-#!/usr/bin/env bash
-set -Eeuo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
+
 git pull --rebase --autostash origin main
-if ! "$ROOT/tools/build.sh"; then
-  code=$?
-  [[ $code -eq 127 ]] || exit $code
+
+if sh "$ROOT/tools/build.sh"; then
+    :
+else
+    code=$?
+    if [ "$code" -eq 127 ]; then
+        echo "TeX lokal tidak tersedia. Pull tetap selesai; GitHub Actions dapat melakukan build."
+    else
+        exit "$code"
+    fi
 fi
