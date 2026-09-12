@@ -1,0 +1,1010 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[indonesian]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\graphicspath{{assets/}{../M01/assets/}}
+
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{Purple}{HTML}{6F42C1}
+
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Gold}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{Blue}\bfseries,
+  commentstyle=\color{Teal},
+  stringstyle=\color{Gold!70!black},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{Navy!35},
+  backgroundcolor=\color{CodeBg},
+  tabsize=4,
+  columns=fullflexible
+}
+\lstset{style=py}
+
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
+}
+
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\title[\mkfooter]{Pertemuan 3: Representasi Algoritma, List, Dictionary, dan NumPy Array}
+\subtitle{Dari struktur data ke komputasi array}
+\author{Triyana Muliawati, S.Si., M.Si. dan Rifky Fauzi}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{tech_bg.png}};
+\fill[DeepNavy,opacity=.84] (current page.south west) rectangle ([xshift=8.15cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=6.65cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{18.2}{20.5}\selectfont\bfseries Pertemuan 3\\Representasi Algoritma,\\List, Dictionary,\\dan NumPy Array}\\[3mm]
+{\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10}{11.5}\selectfont Triyana Muliawati, S.Si., M.Si.\\Rifky Fauzi}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.2mm,text width=7.05cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Materi pertemuan}\\[2mm]
+\begin{itemize}\small
+  \item Menulis algoritma dengan narasi dan pseudocode.
+  \item List, tuple, dictionary, dan sifat mutable.
+  \item Iterasi, comprehension, dan \texttt{map}.
+  \item NumPy array, \texttt{dtype}, \texttt{shape}, slicing, dan vectorization.
+  \item Operasi array, perkalian matriks dengan \texttt{@}, dan beda hingga.
+\end{itemize}
+};
+\end{tikzpicture}
+\end{frame}
+
+% 2
+\begin{frame}{Dari satu nilai ke struktur data}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{block}{Ketika data masih sedikit}
+\begin{itemize}
+  \item Satu nilai dapat disimpan dalam satu variabel.
+  \item Rumus dapat ditulis sebagai satu ekspresi.
+  \item Alur program masih mudah dibaca dari atas ke bawah.
+\end{itemize}
+\end{block}
+\column{.49\textwidth}
+\begin{block}{Ketika data mulai banyak}
+\begin{itemize}
+  \item Kita perlu wadah: list, tuple, dictionary, atau array.
+  \item Kita perlu algoritma: langkah yang dapat ditelusuri.
+  \item Kita perlu verifikasi: cek ukuran, tipe, dan hasil.
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{3mm}
+\begin{center}
+\begin{tikzpicture}[node distance=7mm]
+\node[box,minimum width=2.1cm] (x) {nilai};
+\node[box,minimum width=2.2cm,right=of x] (d) {data};
+\node[box,minimum width=2.6cm,right=of d] (a) {algoritma};
+\node[darkbox,minimum width=2.4cm,right=of a] (h) {hasil};
+\draw[arr] (x) -- (d);
+\draw[arr] (d) -- (a);
+\draw[arr] (a) -- (h);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% 3
+\begin{frame}{Cara membaca soal komputasi}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{block}{Sebelum menulis kode}
+\begin{enumerate}\small
+  \item Apa inputnya?
+  \item Apa output yang diminta?
+  \item Struktur data apa yang paling cocok?
+  \item Langkah mana yang berulang?
+  \item Bagaimana memeriksa hasilnya?
+\end{enumerate}
+\end{block}
+\column{.49\textwidth}
+\begin{block}{Sesudah kode berjalan}
+\begin{itemize}
+  \item Cek tipe data dengan \texttt{type} atau \texttt{dtype}.
+  \item Cek ukuran data dengan \texttt{len} atau \texttt{shape}.
+  \item Uji kasus kecil yang dapat dihitung manual.
+  \item Bandingkan versi loop dan NumPy bila relevan.
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 4
+\begin{frame}{Representasi algoritma}
+\begin{columns}[T]
+\column{.32\textwidth}
+\begin{block}{Narasi}
+Kalimat biasa. Cocok untuk menjelaskan ide awal dan asumsi.
+\end{block}
+\column{.32\textwidth}
+\begin{block}{Pseudocode}
+Langkah formal yang mirip kode, tetapi tidak terikat sintaks Python.
+\end{block}
+\column{.32\textwidth}
+\begin{block}{Flowchart}
+Gambar alur. Cocok untuk keputusan dan pengulangan.
+\end{block}
+\end{columns}
+\vspace{3mm}
+\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Untuk soal LKM, pseudocode membantu memisahkan logika matematika dari detail sintaks.}}
+\end{frame}
+
+% 5
+\begin{frame}[fragile]{Template pseudocode yang dipakai}
+\begin{lstlisting}[language={}]
+ALGORITMA NamaAlgoritma
+INPUT  : data masukan dan syaratnya
+OUTPUT : keluaran yang diharapkan
+BEGIN
+    inisialisasi
+    langkah-langkah utama
+    IF kondisi THEN
+        langkah ketika kondisi benar
+    ELSE
+        langkah ketika kondisi salah
+    ENDIF
+    FOR / WHILE proses berulang
+        perbarui keadaan
+    ENDFOR / ENDWHILE
+    RETURN hasil
+END
+\end{lstlisting}
+\vspace{-1mm}
+\begin{block}{Yang harus terlihat}
+Input, output, kondisi, pengulangan, dan variabel yang berubah dari langkah ke langkah.
+\end{block}
+\end{frame}
+
+% 6
+\begin{frame}{Algoritma Euclid untuk FPB}
+\begin{columns}[T]
+\column{.46\textwidth}
+\begin{block}{Apa yang dicari?}
+FPB atau \textit{greatest common divisor} (GCD) dari dua bilangan bulat positif adalah bilangan terbesar yang membagi keduanya.
+\end{block}
+\begin{block}{Ide matematika}
+Jika
+\[
+ a = qb + r, \quad 0 \le r < b,
+\]
+maka
+\[
+ \gcd(a,b)=\gcd(b,r).
+\]
+\end{block}
+\column{.50\textwidth}
+\begin{center}
+\begin{tabular}{c c c c}
+\toprule
+$a$ & $b$ & $q$ & $r$ \\
+\midrule
+252 & 105 & 2 & 42 \\
+105 & 42 & 2 & 21 \\
+42 & 21 & 2 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+Ketika sisa pembagian menjadi 0, FPB adalah pembagi terakhir: $21$.
+\end{columns}
+\end{frame}
+
+% 7
+\begin{frame}[fragile]{Pseudocode dan kode Euclid}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}[language={}]
+ALGORITMA Euclid
+INPUT  : a, b bilangan bulat positif
+OUTPUT : gcd(a,b)
+BEGIN
+    WHILE b != 0
+        r = a mod b
+        a = b
+        b = r
+    ENDWHILE
+    RETURN a
+END
+\end{lstlisting}
+\column{.48\textwidth}
+\begin{lstlisting}
+def gcd(a, b):
+    while b != 0:
+        r = a % b
+        a = b
+        b = r
+    return a
+
+print(gcd(252, 105))
+\end{lstlisting}
+\end{columns}
+\begin{block}{Latihan membaca algoritma}
+Catat pasangan $(a,b)$ setiap kali loop selesai. Itulah jejak eksekusi program.
+\end{block}
+\end{frame}
+
+% 8
+\begin{frame}{Collection di Python}
+\begin{center}
+\begin{tabular}{p{2.5cm} p{3.5cm} p{5.4cm}}
+\toprule
+Struktur & Bentuk & Kegunaan utama \\
+\midrule
+List & \texttt{[3, 5, 8]} & Data berurutan dan dapat diubah. \\
+Tuple & \texttt{(3, 5, 8)} & Data berurutan dan tetap. \\
+Dictionary & \texttt{\{'A':82\}} & Data berpasangan \texttt{key:value}. \\
+Set & \texttt{\{3, 5, 8\}} & Anggota unik dan operasi himpunan. \\
+NumPy array & \texttt{np.array([...])} & Komputasi numerik berbasis array. \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{2mm}
+\colorbox{LightBlue}{\parbox{.96\linewidth}{\small Pilihan struktur data menentukan cara iterasi, cara mengubah data, dan jenis operasi yang tersedia.}}
+\end{frame}
+
+% 9
+\begin{frame}[fragile]{Mutable dan immutable}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Mutable}
+Objek dapat diubah setelah dibuat.
+\end{block}
+\begin{lstlisting}
+a = [1, 2, 3]
+a[0] = 99
+print(a)
+# [99, 2, 3]
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{block}{Immutable}
+Objek tidak dapat diubah pada posisi tertentu.
+\end{block}
+\begin{lstlisting}
+b = (1, 2, 3)
+b[0] = 99
+# TypeError
+\end{lstlisting}
+\end{columns}
+\begin{block}{Mengapa penting?}
+Saat fungsi menerima list, isi list dapat berubah. Saat menerima tuple, struktur datanya lebih terlindungi.
+\end{block}
+\end{frame}
+
+% 10
+\begin{frame}[fragile]{List: indeks, slicing, dan list bersarang}
+\begin{columns}[T]
+\column{.52\textwidth}
+\begin{lstlisting}
+a = [10, 20, 30, 40, 50]
+print(a[0])     # 10
+print(a[-1])    # 50
+print(a[1:4])   # [20, 30, 40]
+print(a[:3])    # [10, 20, 30]
+\end{lstlisting}
+\column{.44\textwidth}
+\begin{lstlisting}
+A = [[1, 2, 3],
+     [4, 5, 6],
+     [7, 8, 9]]
+
+print(A[1][2])  # 6
+print(A[2][0])  # 7
+\end{lstlisting}
+\end{columns}
+\begin{block}{Catatan}
+List bersarang dapat merepresentasikan matriks, tetapi operasi matematikanya belum otomatis seperti vektor atau matriks.
+\end{block}
+\end{frame}
+
+% 11
+\begin{frame}[fragile]{List tidak otomatis menjadi vektor}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{lstlisting}
+>>> [1, 2] + [3, 4]
+[1, 2, 3, 4]
+
+>>> 2 * [1, 2]
+[1, 2, 1, 2]
+
+>>> [1, 2] * [3, 4]
+TypeError
+\end{lstlisting}
+\column{.46\textwidth}
+\begin{block}{Yang sering disangka}
+\[
+[1,2]+[3,4] \stackrel{?}{=} [4,6]
+\]
+\[
+2[1,2] \stackrel{?}{=} [2,4]
+\]
+\end{block}
+\begin{block}{Makna sebenarnya}
+List adalah wadah berurutan. Untuk operasi vektor numerik, gunakan loop sendiri atau NumPy array.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 12
+\begin{frame}[fragile]{Mengolah list dengan loop}
+\begin{lstlisting}
+data = [3, -2, 0, 7, -5, 4, 9]
+jumlah_positif = 0
+jumlah_kuadrat_negatif = 0
+jumlah_nonnol = 0
+total_nonnol = 0
+
+for x in data:
+    if x > 0:
+        jumlah_positif += 1
+    if x < 0:
+        jumlah_kuadrat_negatif += x**2
+    if x != 0:
+        jumlah_nonnol += 1
+        total_nonnol += x
+
+rata_nonnol = total_nonnol / jumlah_nonnol
+\end{lstlisting}
+\begin{block}{Pola umum}
+Inisialisasi nilai awal, telusuri data satu per satu, perbarui ringkasan.
+\end{block}
+\end{frame}
+
+% 13
+\begin{frame}[fragile]{Menerapkan fungsi pada list}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{lstlisting}
+def f(x):
+    return 3*x**2 - 2*x + 1
+
+xs = [-2, -1, 0, 1, 2]
+
+ys = []
+for x in xs:
+    ys.append(f(x))
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{lstlisting}
+# list comprehension
+ys = [f(x) for x in xs]
+
+# map
+ys = list(map(f, xs))
+
+print(ys)
+# [17, 6, 1, 2, 9]
+\end{lstlisting}
+\end{columns}
+\begin{block}{Kapan dipakai?}
+Loop biasa enak untuk langkah panjang. Comprehension ringkas untuk transformasi sederhana. \texttt{map} berguna ketika fungsi sudah jelas dan ingin diterapkan ke semua elemen.
+\end{block}
+\end{frame}
+
+% 14
+\begin{frame}[fragile]{List comprehension sebagai notasi komputasi}
+\begin{columns}[T]
+\column{.42\textwidth}
+Diberikan
+\[
+x=[-2,-1,0,1,2].
+\]
+Hitung
+\[
+y_i=3x_i^2-2x_i+1,
+\qquad z_i=x_i y_i.
+\]
+\column{.54\textwidth}
+\begin{lstlisting}
+x = [-2, -1, 0, 1, 2]
+y = [3*t**2 - 2*t + 1 for t in x]
+z = [x[i]*y[i] for i in range(len(x))]
+total = sum(z)
+\end{lstlisting}
+\end{columns}
+\begin{block}{Yang perlu dibaca}
+Comprehension tetap sebuah loop. Bentuknya lebih dekat dengan notasi matematika, tetapi indeks dan panjang data tetap harus diperiksa.
+\end{block}
+\end{frame}
+
+% 15
+\begin{frame}[fragile]{Dictionary: data berpasangan}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{lstlisting}
+nilai = {'A': 82, 'B': 71,
+         'C': 95, 'D': 64}
+
+for nama, skor in nilai.items():
+    print(nama, skor)
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{block}{Makna}
+\begin{itemize}
+  \item \texttt{key}: identitas data.
+  \item \texttt{value}: nilai yang tersimpan.
+  \item Cocok untuk tabel kecil berbasis label.
+\end{itemize}
+\end{block}
+\begin{block}{Contoh penggunaan}
+Nilai mahasiswa, jumlah kasus per wilayah, parameter model, atau konfigurasi program.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 16
+\begin{frame}[fragile]{Transformasi dictionary}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{lstlisting}
+nilai = {'A':82, 'B':71,
+         'C':95, 'D':64}
+
+data = list(nilai.values())
+rata = sum(data) / len(data)
+var = sum((x-rata)**2 for x in data) / len(data)
+s = var**0.5
+\end{lstlisting}
+\column{.49\textwidth}
+\begin{lstlisting}
+z = {}
+for nama, x in nilai.items():
+    z[nama] = (x - rata) / s
+
+print(z)
+\end{lstlisting}
+\begin{block}{Verifikasi}
+Rata-rata skor $z$ seharusnya mendekati 0. Ini contoh sederhana bahwa program perlu diperiksa dengan sifat matematika.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 17
+\begin{frame}[fragile]{Matriks sebagai list of lists}
+\begin{columns}[T]
+\column{.45\textwidth}
+\[
+A=\begin{bmatrix}
+1&2&3\\
+4&5&6\\
+7&8&9
+\end{bmatrix}
+\]
+\column{.51\textwidth}
+\begin{lstlisting}
+A = [[1, 2, 3],
+     [4, 5, 6],
+     [7, 8, 9]]
+
+kolom_akhir = [baris[-1] for baris in A]
+diagonal = [A[i][i] for i in range(3)]
+kolom_tengah = [2*baris[1]**2 for baris in A]
+\end{lstlisting}
+\end{columns}
+\begin{block}{Perhatikan indeks}
+Baris dipilih dulu, lalu kolom. Bentuk \texttt{A[i][j]} berarti elemen baris ke-\texttt{i}, kolom ke-\texttt{j}.
+\end{block}
+\end{frame}
+
+% 18
+\begin{frame}[fragile]{Membentuk matriks dengan loop bersarang}
+\begin{columns}[T]
+\column{.42\textwidth}
+Bentuk matriks $A\in\mathbb{R}^{4\times4}$ dengan
+\[
+a_{ij}=i+j+ij,\quad i,j=1,2,3,4.
+\]
+\column{.54\textwidth}
+\begin{lstlisting}
+A = []
+for i in range(1, 5):
+    baris = []
+    for j in range(1, 5):
+        baris.append(i + j + i*j)
+    A.append(baris)
+
+print(A)
+\end{lstlisting}
+\end{columns}
+\begin{block}{Struktur algoritma}
+Loop luar membentuk baris. Loop dalam mengisi kolom. Setelah satu baris selesai, baris dimasukkan ke matriks.
+\end{block}
+\end{frame}
+
+% 19
+\begin{frame}[fragile]{Algoritma transpose manual}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{lstlisting}[language={}]
+ALGORITMA Transpose
+INPUT  : matriks A berukuran m x n
+OUTPUT : matriks B berukuran n x m
+BEGIN
+    buat B kosong
+    FOR j = 0 sampai n-1
+        buat baris baru
+        FOR i = 0 sampai m-1
+            tambahkan A[i][j]
+        ENDFOR
+        tambahkan baris ke B
+    ENDFOR
+    RETURN B
+END
+\end{lstlisting}
+\column{.49\textwidth}
+\begin{lstlisting}
+def transpose(A):
+    m = len(A)
+    n = len(A[0])
+    B = []
+    for j in range(n):
+        baris = []
+        for i in range(m):
+            baris.append(A[i][j])
+        B.append(baris)
+    return B
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 20
+\begin{frame}[fragile]{Algoritma perkalian matriks-vektor}
+\begin{columns}[T]
+\column{.45\textwidth}
+Untuk $A\in\mathbb{R}^{m\times n}$ dan $x\in\mathbb{R}^n$,
+\[
+y_i=\sum_{j=1}^{n} a_{ij}x_j.
+\]
+Setiap komponen $y_i$ adalah hasil kali baris ke-$i$ dengan vektor $x$.
+\column{.51\textwidth}
+\begin{lstlisting}
+def matvec(A, x):
+    m = len(A)
+    n = len(A[0])
+    y = []
+    for i in range(m):
+        total = 0
+        for j in range(n):
+            total += A[i][j] * x[j]
+        y.append(total)
+    return y
+\end{lstlisting}
+\end{columns}
+\begin{block}{Koneksi ke NumPy}
+Versi manual ini membantu memahami apa yang nanti ditulis ringkas sebagai \texttt{A @ x}.
+\end{block}
+\end{frame}
+
+% 21
+\begin{frame}[fragile]{NumPy array}
+\begin{columns}[T]
+\column{.46\textwidth}
+\begin{block}{Mengapa perlu NumPy?}
+\begin{itemize}
+  \item Array numerik memiliki tipe data seragam.
+  \item Operasi pada banyak data ditulis lebih ringkas.
+  \item Banyak pustaka ilmiah memakai NumPy sebagai dasar.
+\end{itemize}
+\end{block}
+\column{.50\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+a = [0, 0, 1, 4, 7, 16]
+b = np.array(a)
+c = np.array([1, 4., -2, 7])
+
+print(b.dtype)  # int
+print(c.dtype)  # float
+print(c.shape)  # (4,)
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 22
+\begin{frame}[fragile]{Membuat array}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+np.array([1, 2, 3])
+np.arange(0, 10, 2)
+np.linspace(0, 1, 5)
+np.zeros((2, 3))
+np.ones((2, 3))
+np.eye(3)
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{block}{Yang perlu dicek}
+\begin{itemize}
+  \item \texttt{shape}: ukuran setiap dimensi.
+  \item \texttt{dtype}: tipe data elemen.
+  \item Dimensi: array 1D tidak sama dengan matriks kolom.
+\end{itemize}
+\end{block}
+\begin{block}{Kebiasaan baik}
+Gunakan \texttt{import numpy as np}. Hindari \texttt{from numpy import *}.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 23
+\begin{frame}[fragile]{List dan NumPy array: hasil operasi berbeda}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}
+>>> [1, 2, 3] + [10, 20, 30]
+[1, 2, 3, 10, 20, 30]
+
+>>> 2 * [1, 2, 3]
+[1, 2, 3, 1, 2, 3]
+\end{lstlisting}
+\column{.48\textwidth}
+\begin{lstlisting}
+>>> import numpy as np
+>>> a = np.array([1, 2, 3])
+>>> b = np.array([10, 20, 30])
+>>> a + b
+array([11, 22, 33])
+>>> 2 * a
+array([2, 4, 6])
+\end{lstlisting}
+\end{columns}
+\begin{block}{Inti}
+List mengatur urutan objek. NumPy array mendukung operasi numerik seperti vektor.
+\end{block}
+\end{frame}
+
+% 24
+\begin{frame}[fragile]{Operasi element-wise pada array}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+x = np.array([-2, -1, 0, 1, 2])
+y = 3*x**2 - 2*x + 1
+z = x*y
+
+print(y)
+print(np.sum(z))
+\end{lstlisting}
+\column{.49\textwidth}
+\begin{block}{Apa yang terjadi?}
+\begin{itemize}
+  \item \texttt{x**2} menghitung kuadrat tiap elemen.
+  \item \texttt{3*x**2 - 2*x + 1} berlaku ke seluruh array.
+  \item \texttt{x*y} adalah perkalian elemen dengan elemen.
+\end{itemize}
+\end{block}
+\begin{block}{Penting}
+Operasi element-wise bukan perkalian matriks.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 25
+\begin{frame}[fragile]{Operator \texttt{@} untuk perkalian matriks}
+\begin{columns}[T]
+\column{.45\textwidth}
+\[
+A=\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad
+B=\begin{bmatrix}2&0\\1&5\end{bmatrix}
+\]
+\begin{block}{Dua operasi berbeda}
+\texttt{A*B}: perkalian elemen-sejajar.\newline
+\texttt{A@B}: perkalian matriks.
+\end{block}
+\column{.51\textwidth}
+\begin{lstlisting}
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[2, 0], [1, 5]])
+
+print(A * B)
+# [[ 2  0]
+#  [ 3 20]]
+
+print(A @ B)
+# [[ 4 10]
+#  [10 20]]
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 26
+\begin{frame}[fragile]{Slicing array}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+A = np.array([[1, 2, 3],
+              [4, 5, 6],
+              [7, 8, 9]])
+
+print(A[0, :])   # baris pertama
+print(A[:, 1])   # kolom kedua
+print(A[1:, :2]) # submatriks
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{block}{Perbedaan dengan list}
+Pada NumPy array dua dimensi, indeks dapat ditulis \texttt{A[i,j]}. Pada list of lists, bentuknya \texttt{A[i][j]}.
+\end{block}
+\begin{block}{Kegunaan}
+Slicing membuat operasi pada bagian data dapat ditulis tanpa loop eksplisit.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 27
+\begin{frame}[fragile]{Masking: memilih data dengan kondisi}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}
+x = np.array([3, -2, 0, 7, -5, 4, 9])
+positif = x[x > 0]
+genap = x[x % 2 == 0]
+
+print(positif)
+print(genap)
+\end{lstlisting}
+\column{.48\textwidth}
+\begin{block}{Makna}
+Kondisi \texttt{x > 0} menghasilkan array Boolean. Array Boolean itu dipakai untuk mengambil elemen yang memenuhi syarat.
+\end{block}
+\begin{block}{Koneksi ke data analysis}
+Masking adalah dasar filtering data sebelum masuk ke pandas.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 28
+\begin{frame}{Dari turunan ke beda hingga}
+\begin{columns}[T]
+\column{.46\textwidth}
+Dalam kalkulus, turunan didefinisikan sebagai
+\[
+f'(t)=\lim_{h\to 0}\frac{f(t+h)-f(t)}{h}.
+\]
+Jika data hanya tersedia pada titik diskrit, limit tidak dapat dihitung langsung.
+\column{.50\textwidth}
+Untuk data posisi $y_i$ pada waktu $t_i$, pendekatan kecepatan rata-rata antar titik adalah
+\[
+v_i \approx \frac{y_{i+1}-y_i}{t_{i+1}-t_i}.
+\]
+Ini disebut beda hingga maju pada data diskrit.
+\end{columns}
+\vspace{2mm}
+\colorbox{LightBlue}{\parbox{.96\linewidth}{\small Jadi beda hingga bukan rumus yang muncul tiba-tiba. Ia berasal dari ide rasio perubahan pada definisi turunan.}}
+\end{frame}
+
+% 29
+\begin{frame}[fragile]{Beda hingga dengan slicing NumPy}
+\begin{lstlisting}
+import numpy as np
+
+t = np.array([0.0, 0.5, 1.0, 1.5, 2.0])
+y = np.array([0.0, 0.2, 0.9, 2.1, 3.8])
+
+v = (y[1:] - y[:-1]) / (t[1:] - t[:-1])
+
+print(v)
+print(len(y), len(v))
+\end{lstlisting}
+\begin{block}{Mengapa panjangnya berkurang satu?}
+Setiap nilai $v_i$ memakai dua titik berurutan: titik ke-$i$ dan titik ke-$i+1$. Jika ada $n$ titik data, hanya ada $n-1$ selang antar titik.
+\end{block}
+\end{frame}
+
+% 30
+\begin{frame}[fragile]{Verifikasi hasil komputasi array}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}
+y_loop = []
+for x in xs:
+    y_loop.append(f(x))
+
+y_np = f(np.array(xs))
+
+np.allclose(y_loop, y_np)
+\end{lstlisting}
+\column{.48\textwidth}
+\begin{block}{Yang diperiksa}
+\begin{itemize}
+  \item Apakah hasil loop dan NumPy sama?
+  \item Apakah tipe datanya sesuai?
+  \item Apakah ukuran output sesuai harapan?
+  \item Apakah kasus kecil cocok dengan hitungan manual?
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 31
+\begin{frame}{Menyiapkan jawaban untuk tantangan LKM M3}
+\begin{center}
+\begin{tikzpicture}[node distance=8mm]
+\node[box,minimum width=2.4cm] (s) {soal};
+\node[box,minimum width=3.0cm,right=of s] (r) {representasi data};
+\node[box,minimum width=2.8cm,right=of r] (p) {pseudocode};
+\node[box,minimum width=2.5cm,below=of p] (k) {kode};
+\node[darkbox,minimum width=2.8cm,left=of k] (v) {verifikasi};
+\draw[arr] (s) -- (r);
+\draw[arr] (r) -- (p);
+\draw[arr] (p) -- (k);
+\draw[arr] (k) -- (v);
+\end{tikzpicture}
+\end{center}
+\vspace{2mm}
+\begin{block}{Contoh pertanyaan sebelum mengerjakan}
+Apakah datanya berlabel atau berurutan? Apakah operasi dilakukan per elemen atau antarbaris-kolom? Apakah perlu loop, comprehension, atau NumPy?
+\end{block}
+\end{frame}
+
+% 32
+\begin{frame}[fragile]{Contoh terpadu: standardisasi data kecil}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}
+nilai = {'A':82, 'B':71,
+         'C':95, 'D':64}
+
+nama = list(nilai.keys())
+x = np.array(list(nilai.values()), dtype=float)
+
+z = (x - x.mean()) / x.std()
+hasil = dict(zip(nama, z))
+\end{lstlisting}
+\column{.48\textwidth}
+\begin{block}{Langkah berpikir}
+\begin{enumerate}\small
+  \item Dictionary menyimpan label dan nilai.
+  \item Array dipakai untuk komputasi numerik.
+  \item Hasil dikembalikan lagi ke dictionary.
+  \item Rata-rata skor $z$ dicek mendekati nol.
+\end{enumerate}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 33
+\begin{frame}{Kesalahan yang sering muncul}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Pada list dan dictionary}
+\begin{itemize}
+  \item Mengira list otomatis seperti vektor.
+  \item Salah indeks: mulai dari 1 padahal Python mulai dari 0.
+  \item Lupa menggunakan \texttt{.items()} saat butuh key dan value.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Pada NumPy}
+\begin{itemize}
+  \item Bingung \texttt{*} dan \texttt{@}.
+  \item Tidak mengecek \texttt{shape}.
+  \item Mengira \texttt{dtype} tidak penting.
+  \item Slicing menghasilkan ukuran yang berubah.
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 34
+\begin{frame}{Quiz e-learning M3}
+\begin{block}{Materi quiz}
+\begin{itemize}
+  \item Membaca pseudocode dan menelusuri loop.
+  \item GCD dengan algoritma Euclid.
+  \item Mutable dan immutable.
+  \item Operasi list dibandingkan NumPy array.
+  \item Dictionary dan iterasi \texttt{items()}.
+  \item \texttt{shape}, \texttt{dtype}, slicing, dan operator \texttt{@}.
+\end{itemize}
+\end{block}
+\begin{block}{Cara belajar}
+Prediksi dahulu hasil kode. Setelah itu jalankan Python untuk memeriksa dan menulis koreksi pemahaman.
+\end{block}
+\end{frame}
+
+% 35
+\begin{frame}{Tugas mandiri M3}
+\begin{block}{Yang dikumpulkan}
+\begin{enumerate}\small
+  \item Pseudocode dan implementasi algoritma Euclid.
+  \item Contoh mutable dan immutable beserta penjelasan.
+  \item Program transformasi list dengan loop, comprehension, dan \texttt{map}.
+  \item Dictionary nilai dan standardisasi skor.
+  \item Matriks list of lists: transpose dan perkalian matriks-vektor manual.
+  \item NumPy array: operasi element-wise, \texttt{@}, slicing, dan beda hingga.
+\end{enumerate}
+\end{block}
+\begin{block}{Format}
+Boleh menggunakan Google Colab, Jupyter, Spyder, VS Code, atau IDE Python lain. Kode harus dapat dijalankan ulang.
+\end{block}
+\end{frame}
+
+% 36
+\begin{frame}{Penutup}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Setelah pertemuan ini}
+Mahasiswa diharapkan dapat memilih representasi data, menulis algoritma sederhana, dan mengubahnya menjadi kode Python yang dapat diperiksa.
+\end{block}
+\column{.47\textwidth}
+\begin{block}{Menuju pertemuan berikutnya}
+Kode yang sudah berjalan perlu dibuat lebih aman: exception, debugging, testing, terminasi, dan rekursi akan diperiksa lebih teliti.
+\end{block}
+\end{columns}
+\vspace{2mm}
+\begin{block}{Rujukan}
+Miller dan Ranum: algoritma dan struktur data. Pine: list, dictionary, array, dan komputasi ilmiah. McKinney: struktur data Python, NumPy array, vectorized computation, dan workflow data.
+\end{block}
+\end{frame}
+
+\end{document}
+
