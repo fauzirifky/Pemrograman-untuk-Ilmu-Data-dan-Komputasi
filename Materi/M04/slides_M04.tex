@@ -1,3 +1,4 @@
+
 \documentclass[aspectratio=169,11pt]{beamer}
 \usetheme{Madrid}
 \usecolortheme{default}
@@ -50,7 +51,7 @@
 
 \lstdefinestyle{py}{
   language=Python,
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\scriptsize,
   keywordstyle=\color{Blue}\bfseries,
   commentstyle=\color{Teal},
   stringstyle=\color{Gold!70!black},
@@ -84,7 +85,7 @@
 }
 
 \title[\mkfooter]{Pertemuan 4: Debugging, Testing, Terminasi, dan Rekursi}
-\subtitle{Dari masalah matematika, alasan berhenti, sampai kode yang dapat dipercaya}
+\subtitle{Matematika dulu, telusuri manual, lalu tulis algoritma dan kode}
 \author{Rifky Fauzi dan Triyana Muliawati, S.Si., M.Si.}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
@@ -104,146 +105,87 @@
 {\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
 };
 \node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.2mm,text width=6.9cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
-{\fontsize{13}{15}\selectfont\bfseries Cara belajar hari ini}\\[2mm]
+{\fontsize{13}{15}\selectfont\bfseries Agenda hari ini}\\[2mm]
 \begin{itemize}\small
-  \item Mulai dari masalah: program salah, macet, atau hasilnya aneh.
-  \item Tulis perhitungan manual untuk kasus kecil.
-  \item Baru tulis algoritma dan kode Python.
-  \item Terka kesalahan, perbaiki, lalu uji kembali.
+  \item Lihat permasalahan pada kode.
+  \item Hitung manual untuk kasus kecil.
+  \item Tulis algoritma yang jelas berhenti.
+  \item Jenis-jenis: error, exception, testing, terminasi.
 \end{itemize}
 };
 \end{tikzpicture}
 \end{frame}
 
 % 2
-\begin{frame}[fragile]{Masalah 1: program jalan terus}
-\begin{columns}[T]
-\column{.56\textwidth}
-\begin{lstlisting}
-n = 5
-while n > 0:
-    print(n)
-    n = n + 1
-\end{lstlisting}
-\column{.40\textwidth}
-\begin{block}{Diskusi cepat}
-\begin{enumerate}\small
-  \item Nilai pertama yang dicetak apa?
-  \item Setelah satu putaran, nilai \texttt{n} menjadi apa?
-  \item Apakah \texttt{n > 0} makin dekat menjadi salah?
-\end{enumerate}
-\end{block}
-\end{columns}
+\begin{frame}{Dari masalah ke perbaikan}
+\begin{center}
+\begin{tikzpicture}[node distance=9mm]
+\node[badbox, text width=2.5cm] (p) {Program bermasalah};
+\node[box, right=of p, text width=2.6cm] (m) {Hitung manual\\kasus kecil};
+\node[box, right=of m, text width=2.6cm] (a) {Tulis algoritma\\yang berhenti};
+\node[goodbox, right=of a, text width=2.8cm] (t) {Uji dengan\\contoh dan assert};
+\draw[arr] (p)--(m); \draw[arr] (m)--(a); \draw[arr] (a)--(t);
+\end{tikzpicture}
+\end{center}
 \vspace{2mm}
-\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Program yang benar bukan hanya menghasilkan output. Program juga harus punya alasan mengapa prosesnya berhenti.}}
+\begin{block}{Aturan kelas hari ini}
+Sebelum melihat/membuat kode, coba prediksi hasil pseudocodenya. Baru uji coba.
+\end{block}
 \end{frame}
 
 % 3
-\begin{frame}{Loop: keadaan berubah menuju berhenti}
-\begin{center}
-\begin{tikzpicture}[node distance=7mm]
-\node[box,minimum width=3.1cm] (state) {keadaan awal};
-\node[darkbox,minimum width=3.3cm,right=of state] (step) {langkah program};
-\node[box,minimum width=3.5cm,right=of step] (new) {keadaan baru};
-\node[goodbox,minimum width=3.3cm,below=of step] (stop) {kondisi berhenti};
-\draw[arr] (state) -- (step);
-\draw[arr] (step) -- (new);
-\draw[arr] (new) |- (stop);
-\end{tikzpicture}
-\end{center}
+\begin{frame}[fragile]{Masalah 1: rata-rata yang aneh}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Pertanyaan saat menulis loop}
-\begin{itemize}\small
-  \item Apa kondisi berhentinya?
-  \item Variabel mana yang diubah setiap putaran?
-  \item Ukuran apa yang makin kecil atau makin dekat ke batas?
-\end{itemize}
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Contoh ukuran yang turun}
-\[
- i=n,\quad i\leftarrow i//2
-\]
-Jika \(n>0\), nilai \(i\) akhirnya menjadi 0.
-\end{block}
-\end{columns}
-\end{frame}
-
-% 4
-\begin{frame}{Hitung manual: tiga loop, tiga perilaku}
-\small
-\begin{center}
-\begin{tabular}{p{.24\linewidth}p{.22\linewidth}p{.19\linewidth}p{.22\linewidth}}
-\toprule
-Kode ringkas & Contoh lintasan & Halt? & Alasan\\
-\midrule
-\(i=n;\ i=i//2\) selama \(i>0\) & \(10,5,2,1,0\) & Ya & makin kecil menuju 0\\[1mm]
-\(i=n;\ i=i-2\) selama \(i\neq1\) & \(7,5,3,1\) & tergantung & ganjil positif berhenti; genap melewati 1\\[1mm]
-\(i=n;\ i=i+1\) selama \(i>0\) & \(5,6,7,\ldots\) & Tidak & makin jauh dari 0\\
-\bottomrule
-\end{tabular}
-\end{center}
-\vspace{1mm}
-\begin{block}{Latihan kelas}
-Untuk loop kedua, tulis lintasan mulai dari \(n=6\). Apa yang terjadi setelah \(i=2\)?
-\end{block}
-\end{frame}
-
-% 5
-\begin{frame}{Halt atau terminasi}
-\begin{block}{Definisi kerja}
-Suatu program dikatakan \textit{halt} untuk sebuah input jika program berhenti setelah jumlah langkah yang berhingga.
-\end{block}
-\begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Loop}
-Kita mencari ukuran yang bergerak menuju kondisi berhenti.
-\[
- i\to i-1,\quad i\to i//2,\quad |x_k^2-n|\to 0.
-\]
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Rekursi}
-Kita mencari submasalah yang lebih kecil dan base case.
-\[
- n! = n(n-1)!,\quad 0! = 1.
-\]
-\end{block}
-\end{columns}
-\end{frame}
-
-% 6
-\begin{frame}[fragile]{Masalah 2: program berhenti, tetapi hasilnya salah}
-\begin{columns}[T]
-\column{.54\textwidth}
+\column{.55\textwidth}
 \begin{lstlisting}
 def rata(data):
     total = 0
     for x in data:
         total += x
         return total / len(data)
+
+print(rata([2, 4, 6, 8]))
 \end{lstlisting}
-\column{.42\textwidth}
-\begin{block}{Coba hitung manual}
-Data: \([2,4,6,8]\)
-\begin{itemize}\small
-  \item Harusnya rata-rata: \((2+4+6+8)/4=5\).
-  \item Kode mengembalikan nilai setelah membaca elemen pertama.
-  \item Hasilnya: \(2/4=0.5\).
-\end{itemize}
+\column{.40\textwidth}
+\begin{block}{Diskusi dulu}
+\begin{enumerate}\small
+  \item Secara matematis, rata-rata data itu berapa?
+  \item Menurut kode, baris mana yang dijalankan lebih dulu?
+  \item Apakah semua data sempat diproses?
+\end{enumerate}
 \end{block}
+\pause
+\begin{alertblock}{Hasil yang perlu disadari}
+Kode mengembalikan nilai terlalu cepat: hanya elemen pertama yang dipakai.
+\end{alertblock}
 \end{columns}
-\vspace{1mm}
-\colorbox{BadRed!8}{\parbox{.96\linewidth}{\small Kesalahan ini tidak selalu menghasilkan error. Python jalan, tetapi logika program salah.}}
 \end{frame}
 
-% 7
-\begin{frame}[fragile]{Memperbaiki: return setelah loop selesai}
+% 4
+\begin{frame}[fragile]{Hitung manual, lalu perbaiki algoritma}
 \begin{columns}[T]
-\column{.56\textwidth}
+\column{.48\textwidth}
+\begin{block}{Perhitungan manual}
+\only<1>{Tutup dulu hasilnya. Hitung di kertas: $[2,4,6,8]$.}
+\only<2->{%
+\[
+\bar{x}=\frac{2+4+6+8}{4}=5.
+\]
+Algoritma harus menjumlahkan semua elemen dulu, baru membagi.
+}
+\end{block}
+\column{.48\textwidth}
+\pause
 \begin{lstlisting}
 def rata(data):
+    total = 0
+    for x in data:
+        total += x
+    return total / len(data)
+\end{lstlisting}
+\pause
+\begin{lstlisting}
+def rata_aman(data):
     if len(data) == 0:
         return None
     total = 0
@@ -251,71 +193,38 @@ def rata(data):
         total += x
     return total / len(data)
 \end{lstlisting}
-\column{.40\textwidth}
-\begin{block}{Alur perhitungan}
-\[
-\begin{array}{c|c|c}
- x & total\;lama & total\;baru\\ \hline
- 2&0&2\\
- 4&2&6\\
- 6&6&12\\
- 8&12&20
-\end{array}
-\]
-Akhirnya \(20/4=5\).
-\end{block}
 \end{columns}
 \end{frame}
 
-% 8
-\begin{frame}{Tiga jenis masalah program}
-\begin{center}
-\begin{tabular}{p{.25\linewidth}p{.34\linewidth}p{.31\linewidth}}
-\toprule
-Jenis & Gejala & Contoh\\
-\midrule
-Syntax error & kode tidak dapat dibaca Python & titik dua hilang setelah \texttt{if}\\
-Runtime error & kode mulai berjalan, lalu berhenti karena operasi tidak sah & pembagian dengan nol\\
-Logical error & kode berjalan, tetapi hasil salah & penyebut rata-rata ditulis \texttt{len(data)+1}\\
-\bottomrule
-\end{tabular}
-\end{center}
-\begin{block}{Cara membaca error}
-Jangan mulai dari panik. Baca baris error, tipe error, lalu nilai variabel yang terlibat.
-\end{block}
-\end{frame}
-
-% 9
-\begin{frame}[fragile]{Contoh: mana jenis kesalahannya?}
+% 5
+\begin{frame}[fragile]{Masalah 2: membagi dua nilai dari input}
 \begin{columns}[T]
-\column{.32\textwidth}
+\column{.48\textwidth}
 \begin{lstlisting}
-# A
-if x > 0
-    print(x)
+def rasio(a, b):
+    a = float(a)
+    b = float(b)
+    return a / b
 \end{lstlisting}
-\column{.32\textwidth}
-\begin{lstlisting}
-# B
-x = 3 / 0
-\end{lstlisting}
-\column{.32\textwidth}
-\begin{lstlisting}
-# C
-def rata(data):
-    return sum(data) / (len(data)+1)
-\end{lstlisting}
+\column{.48\textwidth}
+\begin{block}{Prediksi kasus uji}
+Apa yang terjadi untuk input berikut?
+\begin{enumerate}\small
+  \item \texttt{('3.5','2')}
+  \item \texttt{('abc',2)}
+  \item \texttt{(3,0)}
+  \item \texttt{(None,4)}
+\end{enumerate}
+\end{block}
+\pause
+\begin{alertblock}{Ide}
+Tidak semua kegagalan sama. Karena itu pesan kesalahan sebaiknya dipisah.
+\end{alertblock}
 \end{columns}
-\vspace{1mm}
-\begin{block}{Tugas dua menit}
-Tentukan jenis kesalahan A, B, dan C. Untuk C, uji dengan data \([2,4,6,8]\).
-\end{block}
 \end{frame}
 
-% 10
-\begin{frame}[fragile]{Exception handling: fungsi rasio}
-\begin{columns}[T]
-\column{.52\textwidth}
+% 6
+\begin{frame}[fragile]{Membuat fungsi rasio lebih terkendali}
 \begin{lstlisting}
 def rasio(a, b):
     try:
@@ -323,115 +232,47 @@ def rasio(a, b):
         b = float(b)
         return a / b
     except ValueError:
-        return "input bukan angka"
+        return "input tidak dapat diubah menjadi angka"
     except TypeError:
-        return "tipe data tidak cocok"
+        return "tipe data input tidak sesuai"
     except ZeroDivisionError:
-        return "pembagi nol"
+        return "penyebut tidak boleh nol"
 \end{lstlisting}
-\column{.44\textwidth}
-\begin{block}{Uji kasus}
-\begin{tabular}{ll}
-\toprule
-Input & Makna\\
-\midrule
-\texttt{('3.5','2')} & normal\\
-\texttt{('abc',2)} & gagal konversi\\
-\texttt{(3,0)} & pembagi nol\\
-\texttt{(None,4)} & tipe tidak cocok\\
-\bottomrule
-\end{tabular}
+\pause
+\begin{block}{Mengapa tidak cukup menulis \texttt{except:} saja?}
+\texttt{except:} yang terlalu umum dapat menyembunyikan kesalahan logika yang seharusnya diperbaiki.
 \end{block}
-\end{columns}
 \end{frame}
 
-% 11
-\begin{frame}{Mengapa bukan except kosong?}
-\begin{block}{Masalah dengan \texttt{except:}}
-\texttt{except:} menangkap terlalu banyak hal. Bug yang seharusnya terlihat bisa tersembunyi.
-\end{block}
+% 7
+\begin{frame}[fragile]{Masalah 3: Newton untuk akar kuadrat}
 \begin{columns}[T]
 \column{.48\textwidth}
-\begin{block}{Lebih baik}
-Tangani jenis masalah yang kita pahami:
-\begin{itemize}\small
-  \item \texttt{ValueError}: nilai tidak dapat dikonversi.
-  \item \texttt{TypeError}: tipe data tidak sesuai.
-  \item \texttt{ZeroDivisionError}: pembagian nol.
-\end{itemize}
+\begin{block}{Dari matematika}
+Untuk mencari $\sqrt{n}$, gunakan iterasi
+\[
+x_{k+1}=\frac12\left(x_k+\frac{n}{x_k}\right).
+\]
+\end{block}
+\begin{block}{Hitung manual dulu}
+Untuk $n=9$ dan $x_0=4.5$, hitung $x_1,x_2,x_3$.
 \end{block}
 \column{.48\textwidth}
-\begin{block}{Prinsip}
-Jika error belum dipahami, biarkan terlihat saat pengembangan. Setelah jelas, baru tangani.
-\end{block}
+\only<1>{\begin{alertblock}{Tahan dulu}\centering Jangan buka kalkulator dulu. Kerjakan satu iterasi bersama.\end{alertblock}}
+\only<2->{%
+\[
+\begin{aligned}
+x_1 &= \tfrac12(4.5+9/4.5)=3.25,\\
+x_2 &\approx 3.0096,\\
+x_3 &\approx 3.0000.
+\end{aligned}
+\]
+}
 \end{columns}
 \end{frame}
 
-% 12
-\begin{frame}{Debugging: dari gejala ke penyebab}
-\begin{center}
-\begin{tikzpicture}[node distance=6mm]
-\node[badbox,minimum width=3.0cm] (sym) {gejala};
-\node[box,minimum width=3.0cm,right=of sym] (small) {kasus kecil};
-\node[box,minimum width=3.0cm,right=of small] (trace) {telusuri nilai};
-\node[goodbox,minimum width=3.0cm,right=of trace] (fix) {perbaikan};
-\draw[arr] (sym) -- (small);
-\draw[arr] (small) -- (trace);
-\draw[arr] (trace) -- (fix);
-\end{tikzpicture}
-\end{center}
-\begin{block}{Untuk kelas}
-Kalau mahasiswa bingung membaca kode, jangan langsung ke sintaks. Minta mereka mengisi tabel nilai variabel dari satu input kecil.
-\end{block}
-\end{frame}
-
-% 13
-\begin{frame}{Masalah 3: akar kuadrat dengan Newton}
-\begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Masalah matematika}
-Cari \(x\) sehingga
-\[
- x^2=n.
-\]
-Definisikan \(F(x)=x^2-n\). Akar \(F(x)=0\) adalah \(\sqrt n\).
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Iterasi Newton}
-\[
- x_{k+1}=x_k-\frac{F(x_k)}{F'(x_k)}
- =\frac12\left(x_k+\frac{n}{x_k}\right).
-\]
-Syarat penting: \(x_k\neq0\).
-\end{block}
-\end{columns}
-\end{frame}
-
-% 14
-\begin{frame}{Hitung manual Newton untuk \(\sqrt{10}\)}
-Ambil \(x_0=5\). Rumus:
-\[
- x_{k+1}=\frac12\left(x_k+\frac{10}{x_k}\right).
-\]
-\begin{center}
-\begin{tabular}{c|c|c}
-\toprule
-\(k\) & \(x_k\) & \(x_k^2-10\)\\
-\midrule
-0 & 5.0000 & 15.0000\\
-1 & 3.5000 & 2.2500\\
-2 & 3.1786 & 0.1033\\
-3 & 3.1623 & mendekati 0\\
-\bottomrule
-\end{tabular}
-\end{center}
-\begin{block}{Yang diamati}
-Galat \(|x_k^2-n|\) semakin kecil. Inilah alasan kita boleh berhenti setelah toleransi tercapai.
-\end{block}
-\end{frame}
-
-% 15
-\begin{frame}[fragile]{Kode Newton yang sengaja salah}
+% 8
+\begin{frame}[fragile]{Kode Newton yang salah: apa masalahnya?}
 \begin{columns}[T]
 \column{.55\textwidth}
 \begin{lstlisting}
@@ -441,187 +282,134 @@ def akar(n, tol=1e-10):
         x = 0.5 * (x + n/x)
     return x
 \end{lstlisting}
-\column{.41\textwidth}
-\begin{block}{Tebak masalahnya}
-\begin{itemize}\small
-  \item Apa yang terjadi saat \texttt{n/x} dan \texttt{x=0.0}?
-  \item Bagaimana jika \(n=0\)?
-  \item Bagaimana jika \(n<0\)?
-  \item Bagaimana kalau iterasi tidak membaik?
-\end{itemize}
+\column{.40\textwidth}
+\begin{block}{Tebak dulu}
+\begin{enumerate}\small
+  \item Apa yang terjadi saat $n=9$?
+  \item Apa yang terjadi saat $n=0$?
+  \item Bagaimana jika $n<0$?
+\end{enumerate}
 \end{block}
+\pause
+\begin{alertblock}{Masalah utama}
+Tebakan awal $x=0$ membuat $n/x$ gagal. Kasus $n=0$ dan $n<0$ juga harus dipikirkan.
+\end{alertblock}
 \end{columns}
 \end{frame}
 
-% 16
-\begin{frame}[fragile]{Newton yang lebih aman}
+% 9
+\begin{frame}[fragile]{Algoritma Newton yang lebih aman}
 \begin{lstlisting}
-def akar(n, tol=1e-10, max_iter=100):
+def akar(n, tol=1e-10, max_iter=50):
     if n < 0:
         return None
     if n == 0:
         return 0.0
+
     x = n / 2 if n >= 1 else 1.0
     for k in range(max_iter):
-        if abs(x*x - n) <= tol:
-            return x
-        x = 0.5 * (x + n/x)
-    return None
+        x_baru = 0.5 * (x + n/x)
+        if abs(x_baru*x_baru - n) < tol:
+            return x_baru
+        x = x_baru
+    return x
 \end{lstlisting}
-\begin{block}{Makna desain}
-Ada penanganan domain, tebakan awal tidak nol, toleransi, dan batas iterasi.
+\pause
+\begin{block}{Uji minimal}
+Coba $n=0,1,4,9,2,-1$. Bandingkan dengan nilai yang sudah diketahui.
 \end{block}
 \end{frame}
 
-% 17
-\begin{frame}{Masalah 4: fungsi prima dan kondisi batas}
-\begin{block}{Definisi}
-Bilangan bulat positif \(n\) disebut prima jika \(n>1\) dan hanya punya pembagi positif 1 dan \(n\).
-\end{block}
+% 10
+\begin{frame}[fragile]{Masalah 4: program jalan terus}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Mengapa cukup sampai \(\sqrt n\)?}
-Jika \(n=ab\) dan \(a>\sqrt n\), maka \(b<\sqrt n\). Jadi salah satu faktor nontrivial pasti tidak melebihi \(\sqrt n\).
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Contoh manual}
-Untuk \(n=49\), \(\sqrt{49}=7\). Jika percobaan pembagi berhenti sebelum 7, faktor 7 tidak pernah diuji.
-\end{block}
-\end{columns}
-\end{frame}
-
-% 18
-\begin{frame}[fragile]{Kode prima yang salah}
-\begin{columns}[T]
-\column{.56\textwidth}
-\begin{lstlisting}
-def is_prima(n):
-    if n <= 1:
-        return False
-    d = 2
-    while d*d < n:   # salah di batas
-        if n % d == 0:
-            return False
-        d += 1
-    return True
+\column{.32\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+# A
+i = n
+while i > 0:
+    i = i // 2
 \end{lstlisting}
-\column{.40\textwidth}
-\begin{block}{Cari pembongkar bug}
-Uji:
-\[
- n=4,\ 9,\ 25,\ 49.
-\]
-Apa yang terjadi ketika \(d^2=n\)?
-\end{block}
+\column{.32\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+# B
+i = n
+while i != 1:
+    i = i - 2
+\end{lstlisting}
+\column{.32\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+# C
+i = n
+while i > 0:
+    i = i + 1
+\end{lstlisting}
 \end{columns}
-\vspace{1mm}
-\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Perbaikan: gunakan \texttt{while d*d <= n}. Kondisi batas sering lebih penting daripada kasus besar.}}
+\vspace{2mm}
+\begin{block}{Pertanyaan kelas}
+Untuk $n$ bilangan bulat positif, mana yang pasti berhenti? Mana yang hanya berhenti untuk sebagian input?
+\end{block}
+\pause
+\begin{center}
+\begin{tabular}{ccl}
+\toprule
+Kode & Halt? & Alasan ringkas\\
+\midrule
+A & Ya & $i$ turun: $n,n/2,n/4,\ldots,0$\\
+B & Tergantung & berhenti untuk $n$ ganjil, tidak untuk $n$ genap\\
+C & Tidak & $i$ bergerak menjauh dari 0\\
+\bottomrule
+\end{tabular}
+\end{center}
 \end{frame}
 
-% 19
-\begin{frame}{Testing: bukan sekadar “kode jalan”}
-\begin{block}{Ide}
-Testing berarti memilih kasus yang jawabannya sudah diketahui atau sifatnya sudah pasti.
-\end{block}
+% 11
+\begin{frame}{Ukuran yang turun menuju berhenti}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Kasus normal}
-\begin{itemize}\small
-  \item input sederhana
-  \item hasil mudah dihitung manual
+\column{.52\textwidth}
+\begin{block}{Pertanyaan penting}
+Pada loop atau rekursi, cari besaran yang makin dekat ke kondisi berhenti.
+\end{block}
+\begin{itemize}
+  \item Kode A: ukuran $i$ turun menjadi $\lfloor i/2\rfloor$.
+  \item Newton: galat $|x_k^2-n|$ diharapkan mengecil.
+  \item Rekursi faktorial: ukuran $n$ turun menjadi $n-1$.
 \end{itemize}
-\end{block}
-\begin{block}{Kasus batas}
-\begin{itemize}\small
-  \item data kosong
-  \item pembagi nol
-  \item \(n=0,1,2\)
-\end{itemize}
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Sifat matematis}
-\begin{itemize}\small
-  \item simetri jarak: \(d(x,y)=d(y,x)\)
-  \item nonnegatif
-  \item nilai khusus yang diketahui
-\end{itemize}
-\end{block}
+\column{.43\textwidth}
+\begin{tikzpicture}[node distance=8mm]
+\node[box] (s) {$n$};
+\node[box, below=of s] (s1) {$n-1$};
+\node[box, below=of s1] (s2) {$n-2$};
+\node[goodbox, below=of s2] (b) {base case};
+\draw[arr] (s)--(s1);\draw[arr] (s1)--(s2);\draw[arr] (s2)--(b);
+\end{tikzpicture}
 \end{columns}
 \end{frame}
 
-% 20
-\begin{frame}{Jarak Euclid: dari rumus ke algoritma}
-Untuk dua vektor
+% 12
+\begin{frame}{Masalah 5: definisi faktorial}
+\begin{block}{Dari matematika}
 \[
- x=(x_1,\ldots,x_m),\qquad y=(y_1,\ldots,y_m),
-\]
-jarak Euclid didefinisikan sebagai
-\[
- d(x,y)=\sqrt{\sum_{i=1}^{m}(x_i-y_i)^2}.
-\]
-\begin{block}{Algoritma manual}
-\begin{enumerate}\small
-  \item Pastikan panjang \(x\) dan \(y\) sama.
-  \item Untuk tiap indeks, hitung selisih \(x_i-y_i\).
-  \item Kuadratkan selisih, jumlahkan, lalu ambil akar.
-\end{enumerate}
-\end{block}
-\end{frame}
-
-% 21
-\begin{frame}[fragile]{Implementasi jarak dan assert}
-\begin{columns}[T]
-\column{.55\textwidth}
-\begin{lstlisting}
-from math import sqrt
-
-def jarak(x, y):
-    assert len(x) == len(y)
-    total = 0
-    for i in range(len(x)):
-        total += (x[i] - y[i])**2
-    return sqrt(total)
-\end{lstlisting}
-\column{.41\textwidth}
-\begin{block}{Tes yang masuk akal}
-\begin{lstlisting}
-assert jarak([0,0],[3,4]) == 5
-assert jarak([1,2],[1,2]) == 0
-assert jarak([-1,2],[2,6]) == 5
-assert jarak([1,2],[3,4]) == jarak([3,4],[1,2])
-\end{lstlisting}
-\end{block}
-\end{columns}
-\end{frame}
-
-% 22
-\begin{frame}{Rekursi dari masalah matematika}
-\begin{block}{Pertanyaan matematika}
-Bagaimana menghitung \(5!\)?
-\[
-5! = 5\cdot4\cdot3\cdot2\cdot1.
+n! = n(n-1)!, \quad 0!=1.
 \]
 \end{block}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Pola yang terlihat}
-\[
-5! = 5\cdot4!,\quad
-4! = 4\cdot3!,\quad
-3! = 3\cdot2!.
-\]
+\column{.45\textwidth}
+\begin{block}{Hitung manual}
+Tuliskan $5!$ tanpa kode.
 \end{block}
-\column{.48\textwidth}
-\begin{block}{Definisi rekursif}
+\column{.50\textwidth}
+\only<1>{\begin{alertblock}{Tahan dulu}\centering Biarkan mahasiswa menuliskan rantainya di papan.\end{alertblock}}
+\only<2->{%
 \[
- n! = n(n-1)!,\quad 0! = 1.
+5!=5\cdot4\cdot3\cdot2\cdot1=120.
 \]
-Base case: \(0!\). Recursive case: \(n(n-1)!\).
-\end{block}
+Pola ini cocok dengan pemanggilan fungsi pada masalah yang lebih kecil.
+}
 \end{columns}
 \end{frame}
 
-% 23
+% 13
 \begin{frame}[fragile]{Faktorial: rekursif dan iteratif}
 \begin{columns}[T]
 \column{.48\textwidth}
@@ -640,309 +428,251 @@ def faktorial_iter(n):
     return hasil
 \end{lstlisting}
 \end{columns}
-\begin{block}{Diskusi}
-Keduanya menghitung nilai yang sama. Versi rekursif menyimpan pemanggilan yang belum selesai; versi iteratif menyimpan akumulasi \texttt{hasil}.
+\pause
+\begin{block}{Telusuri call stack}
+\texttt{faktorial(5)} menunggu hasil \texttt{faktorial(4)}, lalu \texttt{faktorial(3)}, dan seterusnya sampai base case.
 \end{block}
 \end{frame}
 
-% 24
-\begin{frame}{Call stack untuk \(5!\)}
-\begin{center}
-\begin{tikzpicture}[node distance=4mm]
-\node[box,minimum width=3.2cm] (a) {faktorial(5)};
-\node[box,minimum width=3.2cm,below=of a] (b) {5 \(\times\) faktorial(4)};
-\node[box,minimum width=3.2cm,below=of b] (c) {5 \(\times4\times\) faktorial(3)};
-\node[box,minimum width=3.2cm,below=of c] (d) {\(\cdots\)};
-\node[goodbox,minimum width=3.2cm,below=of d] (e) {faktorial(0) = 1};
-\draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d); \draw[arr] (d) -- (e);
-\end{tikzpicture}
-\end{center}
-\begin{block}{Yang harus dicek}
-Apakah setiap pemanggilan bergerak menuju \(n=0\)? Jika tidak, rekursi tidak berhenti.
-\end{block}
-\end{frame}
-
-% 25
-\begin{frame}{Barisan rekursif: hitung dulu, kode kemudian}
-Diberikan
+% 14
+\begin{frame}{Masalah 6: barisan rekursif}
+\begin{block}{Diberikan}
 \[
- a_0=2,\qquad a_n=3a_{n-1}-2,
+a_0=2,\qquad a_n=3a_{n-1}-2,\quad n\ge 1.
 \]
-untuk \(n\ge1\).
-\begin{center}
-\begin{tabular}{c|c|c}
-\toprule
-\(n\) & Rumus & Nilai\\
-\midrule
-0 & diberikan & 2\\
-1 & \(3a_0-2\) & 4\\
-2 & \(3a_1-2\) & 10\\
-3 & \(3a_2-2\) & 28\\
-\bottomrule
-\end{tabular}
-\end{center}
-\begin{block}{Sebelum menulis kode}
-Tentukan base case, recursive case, dan contoh nilai kecil untuk memeriksa program.
 \end{block}
+\begin{columns}[T]
+\column{.45\textwidth}
+\begin{block}{Kerjakan manual}
+Hitung $a_0,a_1,a_2,a_3,a_4$. Tebak bentuk umum $a_n$.
+\end{block}
+\column{.50\textwidth}
+\only<1>{\begin{alertblock}{Tahan dulu}\centering Tulis tabel nilai bersama mahasiswa.\end{alertblock}}
+\only<2->{%
+\[
+2,\;4,\;10,\;28,\;82,\ldots
+\]
+Jika $b_n=a_n-1$, maka $b_n=3b_{n-1}$ dan $b_0=1$.
+\[
+a_n=3^n+1.
+\]
+}
+\end{columns}
 \end{frame}
 
-% 26
-\begin{frame}[fragile]{Kode rekursif barisan}
-\begin{columns}[T]
-\column{.52\textwidth}
+% 15
+\begin{frame}[fragile]{Barisan rekursif: implementasi dan pengecekan}
 \begin{lstlisting}
 def a(n):
     if n == 0:
         return 2
     return 3*a(n-1) - 2
+
+for n in range(7):
+    print(n, a(n), 3**n + 1)
 \end{lstlisting}
-\column{.44\textwidth}
-\begin{block}{Tes cepat}
-\begin{lstlisting}
-assert a(0) == 2
-assert a(1) == 4
-assert a(2) == 10
-assert a(3) == 28
-\end{lstlisting}
-\end{block}
-\end{columns}
-\vspace{1mm}
-\begin{block}{Rumus eksplisit}
-Dengan mengamati nilai: \(2,4,10,28,\ldots\), mahasiswa dapat menebak pola, lalu memverifikasi dengan induksi atau pengujian numerik.
+\pause
+\begin{block}{Yang diperiksa}
+\begin{itemize}
+  \item Base case: $n=0$.
+  \item Recursive case: $n$ bergerak ke $n-1$.
+  \item Verifikasi: hasil rekursif sama dengan rumus eksplisit untuk beberapa $n$.
+\end{itemize}
 \end{block}
 \end{frame}
 
-% 27
-\begin{frame}{Mencari rumus eksplisit secara bertahap}
-Untuk
+% 16
+\begin{frame}{Masalah 7: submasalah dihitung berulang}
+\begin{block}{Diberikan}
 \[
- a_n = 3a_{n-1}-2,
+u_0=1,\quad u_1=3,\quad u_n=u_{n-1}+2u_{n-2}.
 \]
-carilah titik tetap \(L
-i=3L-2\), sehingga
-\[
- L=1.
-\]
-Definisikan \(b_n=a_n-1\). Maka
-\[
- b_n = a_n-1 = 3a_{n-1}-3 = 3(a_{n-1}-1)=3b_{n-1}.
-\]
-Karena \(b_0=a_0-1=1\), maka
-\[
- b_n=3^n,
- \qquad a_n=3^n+1.
-\]
-\end{frame}
-
-% 28
-\begin{frame}{Rekursi yang menghitung berulang}
-Diberikan
-\[
- u_0=1,\quad u_1=3,\quad u_n=u_{n-1}+2u_{n-2}.
-\]
-Untuk \(u_5\):
-\begin{center}
-\begin{tikzpicture}[level distance=10mm,
-  level 1/.style={sibling distance=43mm},
-  level 2/.style={sibling distance=23mm},
-  every node/.style={box,minimum width=1.55cm,inner sep=1mm}]
-\node {$u_5$}
- child {node {$u_4$}
-   child {node {$u_3$}}
-   child {node {$u_2$}}}
- child {node {$u_3$}
-   child {node {$u_2$}}
-   child {node {$u_1$}}};
-\end{tikzpicture}
-\end{center}
-\begin{block}{Amati}
-Submasalah \(u_3\) dan \(u_2\) muncul lebih dari sekali. Ini menjelaskan mengapa rekursi langsung dapat mahal.
 \end{block}
-\end{frame}
-
-% 29
-\begin{frame}[fragile]{Kode rekursif langsung: benar, tetapi bisa mahal}
 \begin{columns}[T]
-\column{.52\textwidth}
-\begin{lstlisting}
-def u(n):
-    if n == 0:
-        return 1
-    if n == 1:
-        return 3
-    return u(n-1) + 2*u(n-2)
-\end{lstlisting}
-\column{.44\textwidth}
-\begin{block}{Untuk \(u_5\)}
-\[
-\begin{aligned}
-u_2&=3+2(1)=5,\\
-u_3&=5+2(3)=11,\\
-u_4&=11+2(5)=21,\\
-u_5&=21+2(11)=43.
-\end{aligned}
-\]
-\end{block}
-\end{columns}
-\begin{block}{Diskusi}
-Kalau nilai kecil dapat dihitung manual dengan tabel, mengapa rekursi langsung tetap melakukan banyak pemanggilan ulang?
-\end{block}
-\end{frame}
-
-% 30
-\begin{frame}{Dari recursive case ke tabel iteratif}
-\begin{columns}[T]
-\column{.46\textwidth}
-\begin{block}{Definisi}
-\[
- u_n=u_{n-1}+2u_{n-2}.
-\]
-Untuk menghitung \(u_n\), sebenarnya cukup menyimpan dua nilai terakhir.
+\column{.45\textwidth}
+\begin{block}{Pertanyaan}
+Gambar pohon pemanggilan untuk $u_5$. Submasalah mana yang muncul lebih dari sekali?
 \end{block}
 \column{.50\textwidth}
+\only<1>{\begin{alertblock}{Tahan dulu}\centering Mulai dari $u_5 \to u_4$ dan $u_3$.\end{alertblock}}
+\only<2->{%
+\begin{tikzpicture}[level distance=8mm,sibling distance=13mm,scale=.72, every node/.style={scale=.72}]
+\node[box] {$u_5$}
+ child {node[box] {$u_4$}
+   child {node[box] {$u_3$}}
+   child {node[box] {$u_2$}}}
+ child {node[box] {$u_3$}
+   child {node[box] {$u_2$}}
+   child {node[box] {$u_1$}}};
+\end{tikzpicture}
+}
+\end{columns}
+\pause
+\begin{alertblock}{Catatan}
+Rekursi langsung mudah ditulis, tetapi dapat menghitung submasalah yang sama berkali-kali.
+\end{alertblock}
+\end{frame}
+
+% 17
+\begin{frame}[fragile]{Masalah 8: jarak Euclid dua vektor}
+\begin{block}{Dari matematika}
+Untuk $x,y\in\mathbb{R}^n$,
+\[
+d(x,y)=\sqrt{\sum_{i=1}^{n}(x_i-y_i)^2}.
+\]
+\end{block}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{block}{Hitung manual}
+$d((0,0),(3,4))=$ ?
+\end{block}
+\column{.48\textwidth}
+\only<1>{\begin{alertblock}{Tahan dulu}\centering Hubungkan dengan segitiga 3-4-5.\end{alertblock}}
+\only<2->{%
+\[
+\sqrt{(3-0)^2+(4-0)^2}=5.
+\]
+}
+\end{columns}
+\end{frame}
+
+% 18
+\begin{frame}[fragile]{Testing dengan assert}
+\begin{lstlisting}
+import math
+
+def jarak(x, y):
+    assert len(x) == len(y)
+    s = 0
+    for i in range(len(x)):
+        s += (x[i] - y[i])**2
+    return math.sqrt(s)
+
+assert jarak([0,0], [0,0]) == 0
+assert jarak([0,0], [3,4]) == 5
+assert jarak([3,4], [0,0]) == jarak([0,0], [3,4])
+\end{lstlisting}
+\pause
+\begin{block}{Tambahkan sendiri}
+Kasus dimensi satu, komponen negatif, dan panjang vektor yang berbeda.
+\end{block}
+\end{frame}
+
+% 19
+\begin{frame}[fragile]{Masalah 9: bilangan prima dan kondisi batas}
+\begin{columns}[T]
+\column{.55\textwidth}
+\begin{lstlisting}
+def prima(n):
+    if n <= 1:
+        return False
+    pembagi = 2
+    while pembagi*pembagi < n:
+        if n % pembagi == 0:
+            return False
+        pembagi += 1
+    return True
+\end{lstlisting}
+\column{.40\textwidth}
+\begin{block}{Prediksi}
+Uji secara mental untuk:
+\begin{itemize}\small
+  \item $n=2$
+  \item $n=9$
+  \item $n=49$
+\end{itemize}
+Mana yang membongkar bug?
+\end{block}
+\pause
+\begin{alertblock}{Masalahnya}
+Syarat \texttt{< n} melewatkan pembagi saat \texttt{pembagi*pembagi == n}. Gunakan \texttt{<= n}.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 20
+\begin{frame}{Baru sekarang kita beri nama istilahnya}
 \begin{center}
-\begin{tabular}{c|cc|c}
+\begin{tabular}{p{3.1cm}p{8.2cm}}
 \toprule
-n & \(u_{n-2}\) & \(u_{n-1}\) & \(u_n\)\\
+Istilah & Makna praktis di kelas ini\\
 \midrule
-2 & 1 & 3 & 5\\
-3 & 3 & 5 & 11\\
-4 & 5 & 11 & 21\\
-5 & 11 & 21 & 43\\
+Syntax error & Bentuk kode tidak sah menurut aturan Python.\\
+Runtime error & Kode sah, tetapi gagal saat dijalankan: pembagian nol, tipe salah, nama tidak ada.\\
+Logical error & Program berjalan, tetapi hasilnya salah secara matematika atau algoritma.\\
+Exception handling & Cara mengendalikan kegagalan yang dapat diperkirakan.\\
+Assertion/test & Pemeriksaan kecil agar fungsi dipercaya pada kasus normal dan batas.\\
+Terminasi & Program berhenti setelah langkah berhingga.\\
+Base/recursive case & Bagian berhenti dan bagian pemanggilan ulang pada rekursi.\\
 \bottomrule
 \end{tabular}
 \end{center}
-\end{columns}
-\begin{block}{Pesan}
-Rekursi membantu mendeskripsikan masalah. Implementasi tidak selalu harus rekursif jika tabel iteratif lebih jelas.
-\end{block}
 \end{frame}
 
-% 31
-\begin{frame}{Membaca kode salah: prosedur kelas}
+% 21
+\begin{frame}{Langkah membaca kode bermasalah}
 \begin{enumerate}
-  \item Tulis satu input kecil yang jawabannya dapat dihitung manual.
-  \item Buat tabel nilai variabel per langkah.
-  \item Tandai baris pertama yang membuat nilai keluar dari harapan.
-  \item Perbaiki satu hal saja.
-  \item Uji ulang dengan kasus normal dan kasus batas.
+  \item Ambil contoh kecil yang bisa dihitung manual.
+  \item Catat nilai variabel setelah setiap baris penting.
+  \item Tanya: apakah loop atau rekursi mendekati kondisi berhenti?
+  \item Buat satu test yang seharusnya benar.
+  \item Buat satu test batas: nol, data kosong, bilangan negatif, panjang berbeda.
+  \item Perbaiki kode, lalu jalankan ulang test.
 \end{enumerate}
-\begin{block}{Aturan diskusi}
-Kalau maju ke papan, tidak harus langsung benar. Yang dicari adalah alasan mengapa program salah.
-\end{block}
 \end{frame}
 
-% 32
-\begin{frame}[fragile]{Latihan kelas: diagnosa cepat}
-\begin{lstlisting}
-def jumlah_positif(data):
-    total = 0
-    for x in data:
-        if x > 0:
-            total += x
-        else:
-            return total
-    return total
-\end{lstlisting}
-\begin{block}{Pertanyaan}
-Untuk \texttt{data = [2, 3, -1, 4, 5]}, apakah fungsi memang menjumlahkan semua bilangan positif? Jika tidak, baris mana yang menyebabkan masalah?
+% 22
+\begin{frame}{Latihan kelas}
+\begin{block}{Kelompok kecil}
+Pilih satu dari masalah berikut, selesaikan di papan atau kertas, lalu jelaskan ke kelas.
 \end{block}
+\begin{enumerate}
+  \item Perbaiki fungsi rata-rata agar aman untuk data kosong.
+  \item Buat test untuk fungsi jarak Euclid.
+  \item Tentukan loop mana yang halt untuk $n=6$ dan $n=7$.
+  \item Telusuri call stack \texttt{faktorial(4)}.
+  \item Cari input yang membongkar bug fungsi \texttt{prima}.
+\end{enumerate}
 \end{frame}
 
-% 33
-\begin{frame}[fragile]{Latihan kelas: buat test case pembongkar bug}
-\begin{lstlisting}
-def maksimum(data):
-    m = 0
-    for x in data:
-        if x > m:
-            m = x
-    return m
-\end{lstlisting}
-\begin{block}{Pertanyaan}
-Fungsi ini tampak benar untuk \([1,4,2]\). Cari satu data yang membuat fungsi salah. Mengapa?
-\end{block}
-\vspace{1mm}
-\colorbox{LightTeal}{\parbox{.96\linewidth}{\small Petunjuk: coba data yang seluruh elemennya negatif.}}
-\end{frame}
-
-% 34
-\begin{frame}{Rangkuman kerja M4}
+% 23
+\begin{frame}{Quiz dan tugas mandiri M4}
 \begin{columns}[T]
 \column{.48\textwidth}
-\begin{block}{Untuk loop dan rekursi}
+\begin{block}{Quiz e-learning}
 \begin{itemize}\small
-  \item Tulis kondisi berhenti.
-  \item Tulis ukuran yang bergerak menuju berhenti.
-  \item Uji dengan kasus kecil.
-\end{itemize}
-\end{block}
-\begin{block}{Untuk debugging}
-\begin{itemize}\small
-  \item Hitung manual dulu.
-  \item Telusuri nilai variabel.
-  \item Cari baris pertama yang menyimpang.
+  \item Prediksi output kode salah.
+  \item Klasifikasi masalah setelah contoh dibahas.
+  \item Terminasi loop dan rekursi.
+  \item Base case dan recursive case.
 \end{itemize}
 \end{block}
 \column{.48\textwidth}
-\begin{block}{Untuk testing}
+\begin{block}{Tugas mandiri}
 \begin{itemize}\small
-  \item Uji kasus normal.
-  \item Uji kondisi batas.
-  \item Uji sifat matematis.
-  \item Gunakan \texttt{assert} untuk cek cepat.
+  \item Kerjakan soal M4 pada LKM.
+  \item Sertakan perhitungan manual untuk minimal dua soal.
+  \item Kode harus dapat dijalankan ulang dan memiliki test sederhana.
 \end{itemize}
 \end{block}
 \end{columns}
 \end{frame}
 
-% 35
-\begin{frame}{Tugas mandiri M4}
-\begin{block}{Yang dikumpulkan}
-\begin{enumerate}\small
-  \item Fungsi \texttt{rasio(a,b)} dengan penanganan \texttt{ValueError}, \texttt{TypeError}, dan \texttt{ZeroDivisionError} secara terpisah.
-  \item Perbaikan fungsi rata-rata dan penanganan data kosong.
-  \item Implementasi Newton yang aman untuk \(n=0\), \(n>0\), dan \(n<0\).
-  \item Fungsi \texttt{jarak(x,y)} dengan \texttt{assert} dan minimal empat test case.
-  \item Satu fungsi rekursif barisan beserta hitung manual tiga nilai awal.
-\end{enumerate}
-\end{block}
-\end{frame}
-
-% 36
-\begin{frame}{Quiz e-learning M4}
-\begin{block}{Materi quiz}
-\begin{itemize}\small
-  \item Membedakan syntax error, runtime error, dan logical error.
-  \item Menentukan output kode dengan \texttt{return} terlalu dini.
-  \item Membaca loop dan menentukan apakah halt.
-  \item Menentukan base case dan recursive case.
-  \item Mengisi satu langkah iterasi Newton.
-  \item Menentukan test case yang membongkar bug.
-\end{itemize}
-\end{block}
-\begin{block}{Cara belajar}
-Prediksi dulu di kertas. Jalankan Python hanya setelah alasan manual ditulis.
-\end{block}
-\end{frame}
-
-% 37
+% 24
 \begin{frame}{Penutup}
+\begin{block}{Yang perlu dibawa pulang}
+Kode yang baik bukan hanya ``berjalan'', tetapi juga dapat dijelaskan secara matematika, berhenti untuk input yang diizinkan, dan lolos uji kecil yang masuk akal.
+\end{block}
 \begin{center}
 \begin{tikzpicture}[node distance=8mm]
-\node[box,minimum width=3cm] (math) {matematika};
-\node[box,minimum width=3cm,right=of math] (manual) {hitung manual};
-\node[darkbox,minimum width=3cm,right=of manual] (alg) {algoritma};
-\node[box,minimum width=3cm,right=of alg] (code) {kode};
-\draw[arr] (math) -- (manual);
-\draw[arr] (manual) -- (alg);
-\draw[arr] (alg) -- (code);
+\node[box] (m) {manual};
+\node[box, right=of m] (a) {algoritma};
+\node[box, right=of a] (k) {kode};
+\node[goodbox, right=of k] (u) {uji};
+\draw[arr] (m)--(a);\draw[arr] (a)--(k);\draw[arr] (k)--(u);
 \end{tikzpicture}
 \end{center}
-\vspace{2mm}
-\begin{block}{Kalimat kunci}
-Jika mahasiswa belum bisa menghitung satu contoh kecil dengan tangan, kode Python akan terasa seperti menebak. Mulai dari nilai kecil, tabel, dan alasan berhenti.
-\end{block}
 \end{frame}
 
 \end{document}
+

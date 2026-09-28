@@ -117,7 +117,7 @@
 % 2
 \begin{frame}{Dari M4 ke M5: program berhenti, lalu seberapa berat?}
 \begin{columns}[T]
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Pertanyaan dari M4}
 \begin{itemize}
 \item Apakah program berhenti?
@@ -125,7 +125,7 @@
 \item Bagaimana menguji program dengan kasus batas?
 \end{itemize}
 \end{block}
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Pertanyaan hari ini}
 \begin{itemize}
 \item Jika dua program sama-sama benar, mana yang lebih hemat kerja?
@@ -149,7 +149,7 @@
 % 3
 \begin{frame}{Orde: dari ukuran biasa ke pertumbuhan fungsi}
 \begin{columns}[T]
-\column{.46\textwidth}
+\column{.45\textwidth}
 \begin{block}{Dalam bahasa sehari-hari}
 \begin{itemize}
 \item puluhan: kira-kira $10^1$
@@ -158,7 +158,7 @@
 \end{itemize}
 Kita tidak sedang mencari angka persis, tetapi kelas besarnya.
 \end{block}
-\column{.54\textwidth}
+\column{.45\textwidth}
 \begin{block}{Dalam algoritma}
 Misalnya ukuran input adalah $n$.
 \[
@@ -179,14 +179,14 @@ Secara matematis, $f(n)=O(g(n))$ berarti setelah $n$ cukup besar, $f(n)$ dapat d
 \end{frame}
 
 % 4
-\begin{frame}{Cara membaca $T(n)$}
-\begin{block}{Jangan dibaca sebagai turunan}
+\begin{frame}{Cara membaca banyak kerja dari sebuat program}
+\begin{block}{Ukuran kerja program}
 Di sini $T(n)$ berarti fungsi jumlah kerja terhadap ukuran input $n$.
 Kata yang lebih tepat: \textbf{merumuskan} atau \textbf{menghitung} $T(n)$.
 \end{block}
 \begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Langkah kerja di papan}
+\column{.45\textwidth}
+\begin{block}{Langkah kerja}
 \begin{enumerate}
 \item Tentukan ukuran input $n$.
 \item Tentukan operasi yang dihitung.
@@ -195,7 +195,7 @@ Kata yang lebih tepat: \textbf{merumuskan} atau \textbf{menghitung} $T(n)$.
 \item Ambil suku yang dominan untuk Big-O.
 \end{enumerate}
 \end{block}
-\column{.52\textwidth}
+\column{.45\textwidth}
 \begin{block}{Apa yang konstan?}
 \begin{itemize}
 \item Assign awal seperti \texttt{s = 0}: konstan.
@@ -210,7 +210,7 @@ Kata yang lebih tepat: \textbf{merumuskan} atau \textbf{menghitung} $T(n)$.
 % 5
 \begin{frame}[fragile]{Contoh 1: tujuan yang sama, cara kerja berbeda}
 \begin{columns}[T]
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Tujuan}
 Hitung
 \[
@@ -232,7 +232,7 @@ def jumlah_loop(n):
 \]
 \begin{lstlisting}
 def jumlah_rumus(n):
-    return n*(n+1)//2
+    return n*(n+1)/2
 \end{lstlisting}
 \end{block}
 \pause
@@ -243,9 +243,9 @@ Bagian mana yang diulang sebanyak $n$ kali?
 \end{frame}
 
 % 6
-\begin{frame}{Contoh 1: menghitung $T(n)$}
+\begin{frame}{Contoh 1: menghitung $T(n)$ dari penjumlahan 1 sampai $n$}
 \begin{columns}[T]
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Versi loop}
 Hitung operasi utama: \texttt{s = s + i}.
 \[
@@ -260,7 +260,7 @@ T(n)=n+2,
 \]
 orde tetap $O(n)$.
 \end{block}
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Versi rumus}
 Jumlah operasi aritmatika tidak bertambah saat $n$ membesar.
 \[
@@ -276,7 +276,7 @@ Dua program dapat menghasilkan jawaban yang sama, tetapi biaya komputasinya berb
 \end{frame}
 
 % 7
-\begin{frame}{Keluarga pertumbuhan yang sering muncul}
+\begin{frame}{''Keluarga'' pertumbuhan yang sering muncul}
 \begin{columns}[T]
 \column{.48\textwidth}
 \begin{table}\small
@@ -307,7 +307,8 @@ $O(n!)$ & semua permutasi\\
 \end{center}
 \end{columns}
 \begin{alertblock}{Catatan}
-Untuk $n$ kecil, beda kurva kadang belum terasa. Untuk $n$ besar, orde mulai menentukan.
+1. Untuk $n$ kecil, beda kurva kadang belum terasa. Untuk $n$ besar, orde mulai menentukan.\\
+2. Kebergantungan algoritma terhadap $n$ Biasanya sering disebut \textit{time complexity}
 \end{alertblock}
 \end{frame}
 
@@ -331,16 +332,17 @@ Semua susunan & semua permutasi karakter & $O(n!)$\\
 \end{frame}
 
 % 9
-\begin{frame}[fragile]{Contoh 2: mengapa membagi dua menjadi $\log n$?}
+\begin{frame}[fragile]{Contoh 2: Algoritma membagi dua hingga habis}
+\vspace{-0.2cm}
 \begin{columns}[T]
-\column{.46\textwidth}
+\column{.44\textwidth}
 \begin{lstlisting}
 def bagi_dua(n):
     i = n
     while i > 0:
         i = i // 2
 \end{lstlisting}
-\column{.54\textwidth}
+\column{.45\textwidth}
 \begin{block}{Telusuri untuk $n=40$}
 \[
 40 \to 20 \to 10 \to 5 \to 2 \to 1 \to 0.
@@ -356,6 +358,7 @@ Maka
 \]
 \end{block}
 \pause
+\vspace{-0.3cm}
 \begin{alertblock}{Kesimpulan}
 Jumlah iterasi bertambah lambat: $O(\log n)$.
 \end{alertblock}
@@ -465,7 +468,7 @@ Dominan: $3n^2$, koefisien diabaikan untuk orde, sehingga $O(n^2)$.
 % 13
 \begin{frame}{Benchmark waktu: berguna, tetapi bukan definisi Big-O}
 \begin{columns}[T]
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Benchmark menjawab}
 \begin{itemize}
 \item Program ini berjalan berapa detik di komputer ini?
@@ -473,7 +476,7 @@ Dominan: $3n^2$, koefisien diabaikan untuk orde, sehingga $O(n^2)$.
 \item Apakah dugaan orde tampak pada data eksperimen?
 \end{itemize}
 \end{block}
-\column{.50\textwidth}
+\column{.450\textwidth}
 \begin{block}{Yang memengaruhi waktu}
 \begin{itemize}
 \item mesin: processor, memori, sistem operasi;
