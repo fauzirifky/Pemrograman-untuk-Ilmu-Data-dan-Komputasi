@@ -10,7 +10,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,matrix}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{ragged2e}
@@ -18,9 +18,8 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage{multicol}
 
-\graphicspath{{assets/}{../M01/assets/}{../M02/assets/}}
+\graphicspath{{assets/}{../M01/assets/}}
 
 \definecolor{DeepNavy}{HTML}{0B1220}
 \definecolor{Navy}{HTML}{12355B}
@@ -33,8 +32,7 @@
 \definecolor{CodeBg}{HTML}{F8FAFC}
 \definecolor{DarkText}{HTML}{15202B}
 \definecolor{Purple}{HTML}{6F42C1}
-\definecolor{SoftRed}{HTML}{FDECEC}
-\definecolor{SoftGreen}{HTML}{EAF7EA}
+\definecolor{RedSoft}{HTML}{FDECEC}
 
 \setbeamercolor{title}{fg=white}
 \setbeamercolor{frametitle}{fg=white,bg=Navy}
@@ -51,7 +49,7 @@
 
 \lstdefinestyle{py}{
   language=Python,
-  basicstyle=\ttfamily\scriptsize,
+  basicstyle=\ttfamily\footnotesize,
   keywordstyle=\color{Blue}\bfseries,
   commentstyle=\color{Teal},
   stringstyle=\color{Gold!70!black},
@@ -66,10 +64,9 @@
 \lstset{style=py}
 
 \tikzset{
-  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=8mm, inner sep=2.2mm, align=center},
-  greenbox/.style={rounded corners=3pt, draw=Teal!70!black, fill=LightTeal, thick, minimum height=8mm, inner sep=2.2mm, align=center},
-  redbox/.style={rounded corners=3pt, draw=red!50!black, fill=SoftRed, thick, minimum height=8mm, inner sep=2.2mm, align=center},
-  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=8mm, inner sep=2.2mm, align=center},
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  warnbox/.style={rounded corners=3pt, draw=Gold!80!black, fill=Gold!12, thick, minimum height=9mm, inner sep=2.5mm, align=center},
   arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
 }
 
@@ -85,7 +82,7 @@
 }
 
 \title[\mkfooter]{Pertemuan 5: Kompleksitas Algoritma dan Big-O}
-\subtitle{Menghitung kerja program dari potongan kode}
+\subtitle{Menghitung usaha komputasi dari kode yang kita tulis}
 \author{Rifky Fauzi dan Triyana Muliawati, S.Si., M.Si.}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
@@ -95,17 +92,9 @@
 % 1
 \begin{frame}[plain]
 \begin{tikzpicture}[remember picture,overlay]
-\IfFileExists{assets/tech_bg.png}{%
-\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{assets/tech_bg.png}};%
-}{\IfFileExists{../M01/assets/tech_bg.png}{%
-\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M01/assets/tech_bg.png}};%
-}{%
-\fill[DeepNavy] (current page.south west) rectangle (current page.north east);
-\fill[Blue!20,opacity=.18] ([xshift=1.2cm,yshift=-1.2cm]current page.north west) circle (3.2cm);
-\fill[Teal!30,opacity=.16] ([xshift=-1.2cm,yshift=1cm]current page.south east) circle (3.8cm);%
-}}
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{tech_bg.png}};
 \fill[DeepNavy,opacity=.84] (current page.south west) rectangle ([xshift=8.15cm]current page.north west);
-\node[anchor=north west,text=white,align=left,text width=6.65cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
+\node[anchor=north west,text=white,align=left,text width=6.8cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
 {\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{20}{22.5}\selectfont\bfseries Pertemuan 5\\Kompleksitas Algoritma\\dan Big-O}\\[3mm]
 {\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
 {\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
@@ -113,58 +102,122 @@
 {\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
 };
 \node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.2mm,text width=6.95cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
-{\fontsize{13}{15}\selectfont\bfseries Alur pertemuan}\\[2mm]
+{\fontsize{13}{15}\selectfont\bfseries Hari ini}\\[2mm]
 \begin{itemize}\small
-  \item Dari terminasi ke jumlah langkah.
-  \item Menurunkan $T(n)$ dari kode.
-  \item Mengambil orde dominan: Big-O.
+  \item Mengubah kode menjadi hitungan langkah.
+  \item Merumuskan $T(n)$, lalu mengambil orde dominan.
+  \item Melihat contoh: penjumlahan, loop, pembagian dua, dan jumlah segitiga.
   \item Membandingkan beberapa algoritma anagram.
-  \item Membaca biaya operasi list melalui eksperimen.
+  \item Membaca hasil eksperimen Python dengan hati-hati.
 \end{itemize}
 };
 \end{tikzpicture}
 \end{frame}
 
 % 2
-\begin{frame}[fragile]{Dari M4: program berhenti, lalu berapa kerjanya?}
+\begin{frame}{Dari M4 ke M5: program berhenti, lalu seberapa berat?}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Pertanyaan M4}
-Program ini berhenti atau tidak?
+\column{.50\textwidth}
+\begin{block}{Pertanyaan dari M4}
+\begin{itemize}
+\item Apakah program berhenti?
+\item Jika salah, bagian mana yang salah?
+\item Bagaimana menguji program dengan kasus batas?
+\end{itemize}
 \end{block}
-\begin{lstlisting}
-i = n
-while i > 0:
-    i = i // 2
-\end{lstlisting}
-\column{.49\textwidth}
-\begin{block}{Pertanyaan M5}
-Jika berhenti, berapa banyak langkah yang kira-kira dilakukan saat $n$ membesar?
+\column{.50\textwidth}
+\begin{block}{Pertanyaan hari ini}
+\begin{itemize}
+\item Jika dua program sama-sama benar, mana yang lebih hemat kerja?
+\item Ketika data membesar, bagian kode mana yang mulai mahal?
+\item Apa konsekuensinya untuk data analysis dan scientific computing?
+\end{itemize}
 \end{block}
-\begin{lstlisting}
-test = 0
-for i in range(n):
-    for j in range(n):
-        test = test + i*j
-\end{lstlisting}
 \end{columns}
 \vspace{2mm}
 \begin{center}
-\begin{tikzpicture}[node distance=8mm]
-\node[box,minimum width=3.3cm] (halt) {terminasi};
-\node[darkbox,minimum width=3.3cm,right=of halt] (count) {jumlah langkah};
-\node[box,minimum width=3.3cm,right=of count] (order) {orde pertumbuhan};
-\draw[arr] (halt) -- (count);
-\draw[arr] (count) -- (order);
+\begin{tikzpicture}
+\node[box] (correct) {benar};
+\node[box,right=1.2cm of correct] (halt) {berhenti};
+\node[darkbox,right=1.2cm of halt] (cost) {terukur biayanya};
+\draw[arr] (correct) -- (halt);
+\draw[arr] (halt) -- (cost);
 \end{tikzpicture}
 \end{center}
 \end{frame}
 
 % 3
-\begin{frame}[fragile]{Kasus pembuka: menjumlahkan $1+2+\cdots+n$}
+\begin{frame}{Orde: dari ukuran biasa ke pertumbuhan fungsi}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Algoritma A: akumulasi}
+\column{.46\textwidth}
+\begin{block}{Dalam bahasa sehari-hari}
+\begin{itemize}
+\item puluhan: kira-kira $10^1$
+\item ratusan: kira-kira $10^2$
+\item ribuan: kira-kira $10^3$
+\end{itemize}
+Kita tidak sedang mencari angka persis, tetapi kelas besarnya.
+\end{block}
+\column{.54\textwidth}
+\begin{block}{Dalam algoritma}
+Misalnya ukuran input adalah $n$.
+\[
+\begin{array}{c|c}
+\text{kerja program} & \text{orde}\\
+\hline
+7n+3 & O(n)\\
+5n^2+27n+1005 & O(n^2)\\
+2n+26 & O(n)
+\end{array}
+\]
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{alertblock}{Catatan matematika}
+Secara matematis, $f(n)=O(g(n))$ berarti setelah $n$ cukup besar, $f(n)$ dapat dibatasi oleh konstanta kali $g(n)$.
+\end{alertblock}
+\end{frame}
+
+% 4
+\begin{frame}{Cara membaca $T(n)$}
+\begin{block}{Jangan dibaca sebagai turunan}
+Di sini $T(n)$ berarti fungsi jumlah kerja terhadap ukuran input $n$.
+Kata yang lebih tepat: \textbf{merumuskan} atau \textbf{menghitung} $T(n)$.
+\end{block}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Langkah kerja di papan}
+\begin{enumerate}
+\item Tentukan ukuran input $n$.
+\item Tentukan operasi yang dihitung.
+\item Hitung berapa kali operasi itu dieksekusi.
+\item Tulis $T(n)$ secara jelas.
+\item Ambil suku yang dominan untuk Big-O.
+\end{enumerate}
+\end{block}
+\column{.52\textwidth}
+\begin{block}{Apa yang konstan?}
+\begin{itemize}
+\item Assign awal seperti \texttt{s = 0}: konstan.
+\item \texttt{print} satu kali: konstan.
+\item Loop sebanyak $n$: bergantung $n$.
+\item Loop di dalam loop: biasanya bergantung hasil kali banyak iterasi.
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 5
+\begin{frame}[fragile]{Contoh 1: tujuan yang sama, cara kerja berbeda}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Tujuan}
+Hitung
+\[
+S(n)=1+2+\cdots+n.
+\]
+Dua algoritma di bawah menghasilkan nilai yang sama.
+\end{block}
 \begin{lstlisting}
 def jumlah_loop(n):
     s = 0
@@ -172,534 +225,600 @@ def jumlah_loop(n):
         s = s + i
     return s
 \end{lstlisting}
-\end{block}
-\column{.49\textwidth}
-\begin{block}{Algoritma B: rumus}
+\column{.50\textwidth}
+\begin{block}{Rumus tertutup}
+\[
+1+2+\cdots+n = \frac{n(n+1)}{2}.
+\]
 \begin{lstlisting}
 def jumlah_rumus(n):
     return n*(n+1)//2
 \end{lstlisting}
 \end{block}
-\end{columns}
-\vspace{1mm}
-\begin{block}{Diskusi di papan}
-Keduanya memberi jawaban sama. Untuk $n=10$, berapa kali baris \texttt{s = s + i} dijalankan? Bagaimana untuk $n=1000$?
-\end{block}
 \pause
-\begin{center}
-\colorbox{LightTeal}{\parbox{.92\linewidth}{\small Pada algoritma A, kerja utama bertambah mengikuti banyak suku. Pada algoritma B, tidak ada loop terhadap $n$.}}
-\end{center}
-\end{frame}
-
-% 4
-\begin{frame}{Dari jumlah operasi ke Big-O}
-\begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Langkah analisis}
-\begin{enumerate}
-  \item Tentukan ukuran input: biasanya $n$.
-  \item Pilih operasi yang dihitung.
-  \item Turunkan $T(n)$.
-  \item Ambil suku yang dominan saat $n$ besar.
-\end{enumerate}
-\end{block}
-\column{.48\textwidth}
-\begin{block}{Contoh}
-\[
-T(n)=5n^2+27n+1005
-\]
-\pause
-\[
-T(n)=O(n^2)
-\]
-\end{block}
-\begin{block}{Yang diabaikan}
-Konstanta dan suku yang tumbuh lebih lambat. Bukan karena tidak ada, tetapi karena pengaruhnya kalah saat $n$ besar.
-\end{block}
+\begin{alertblock}{Pertanyaan kelas}
+Bagian mana yang diulang sebanyak $n$ kali?
+\end{alertblock}
 \end{columns}
-\end{frame}
-
-% 5
-\begin{frame}{Tangga pertumbuhan yang sering muncul}
-\begin{center}
-\begin{tikzpicture}[x=1.25cm,y=.55cm]
-\draw[->,thick] (0,0) -- (8.9,0) node[right] {$n$};
-\draw[->,thick] (0,0) -- (0,6.8) node[above] {kerja};
-\draw[domain=.4:8,smooth,variable=\x,Blue,thick] plot ({\x},{.45*ln(\x)+.2});
-\node[Blue] at (7.2,1.25) {$\log n$};
-\draw[domain=0:8,smooth,variable=\x,Teal,thick] plot ({\x},{.42*\x});
-\node[Teal] at (7.3,3.0) {$n$};
-\draw[domain=.2:8,smooth,variable=\x,Purple,thick] plot ({\x},{.18*\x*ln(\x)});
-\node[Purple] at (6.9,4.0) {$n\log n$};
-\draw[domain=0:5.2,smooth,variable=\x,Gold!80!black,thick] plot ({\x},{.20*\x*\x});
-\node[Gold!60!black] at (5.5,5.6) {$n^2$};
-\draw[domain=0:2.7,smooth,variable=\x,red!70!black,thick] plot ({\x},{.55*exp(\x)});
-\node[red!70!black] at (3.2,6.2) {$2^n$};
-\end{tikzpicture}
-\end{center}
-\begin{block}{Catatan mengajar}
-Untuk $n$ kecil, grafik belum terlalu berpisah. Saat $n$ membesar, orde pertumbuhan mulai menentukan pilihan algoritma.
-\end{block}
 \end{frame}
 
 % 6
-\begin{frame}[fragile]{Contoh papan 1: nested loop}
+\begin{frame}{Contoh 1: menghitung $T(n)$}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Versi loop}
+Hitung operasi utama: \texttt{s = s + i}.
+\[
+\begin{aligned}
+T_{\text{loop}}(n) &= n \\
+\Rightarrow \quad T_{\text{loop}}(n) &= O(n).
+\end{aligned}
+\]
+Jika ikut menghitung inisialisasi dan return, misalnya
+\[
+T(n)=n+2,
+\]
+orde tetap $O(n)$.
+\end{block}
+\column{.50\textwidth}
+\begin{block}{Versi rumus}
+Jumlah operasi aritmatika tidak bertambah saat $n$ membesar.
+\[
+T_{\text{rumus}}(n)=c
+\quad \Rightarrow \quad O(1).
+\]
+\end{block}
+\pause
+\begin{alertblock}{Pesan}
+Dua program dapat menghasilkan jawaban yang sama, tetapi biaya komputasinya berbeda.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 7
+\begin{frame}{Keluarga pertumbuhan yang sering muncul}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{table}\small
+\begin{tabular}{ll}
+\toprule
+Notasi & Gambaran kerja\\
+\midrule
+$O(1)$ & tetap\\
+$O(\log n)$ & dibagi dua berulang\\
+$O(n)$ & satu kali menyapu data\\
+$O(n\log n)$ & pecah-bagi lalu gabung\\
+$O(n^2)$ & pasangan elemen\\
+$O(2^n)$ & pilihan biner bertingkat\\
+$O(n!)$ & semua permutasi\\
+\bottomrule
+\end{tabular}
+\end{table}
+\column{.52\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=.70]
+\draw[->] (0,0) -- (7.5,0) node[right] {$n$};
+\draw[->] (0,0) -- (0,4.5) node[above] {kerja};
+\draw[thick,Teal] plot[smooth] coordinates{(0.5,0.3)(1.5,0.45)(2.5,0.6)(3.5,0.75)(4.5,0.9)(5.5,1.05)(6.5,1.2)} node[right] {$n$};
+\draw[thick,Blue] plot[smooth] coordinates{(0.5,0.15)(1.5,0.4)(2.5,0.85)(3.5,1.5)(4.5,2.35)(5.5,3.3)} node[right] {$n^2$};
+\draw[thick,Gold!80!black] plot[smooth] coordinates{(0.5,0.1)(1.5,0.2)(2.5,0.45)(3.5,1)(4.5,2.1)(5.2,4.1)} node[right] {$2^n$};
+\draw[thick,Purple] plot[smooth] coordinates{(0.5,0.1)(1.5,0.25)(2.5,0.55)(3.5,1.0)(4.5,1.65)(5.5,2.45)(6.5,3.35)} node[right] {$n\log n$};
+\end{tikzpicture}
+\end{center}
+\end{columns}
+\begin{alertblock}{Catatan}
+Untuk $n$ kecil, beda kurva kadang belum terasa. Untuk $n$ besar, orde mulai menentukan.
+\end{alertblock}
+\end{frame}
+
+% 8
+\begin{frame}{Beberapa contoh asal orde}
+\begin{table}\small
+\begin{tabular}{p{.26\textwidth}p{.36\textwidth}p{.25\textwidth}}
+\toprule
+Pola komputasi & Contoh & Orde\\
+\midrule
+Akses satu elemen & \texttt{x[10]} & $O(1)$\\
+Satu penyapuan data & hitung total list & $O(n)$\\
+Dua loop bersarang penuh & semua pasangan $(i,j)$ & $O(n^2)$\\
+Ukuran dibagi dua & binary search, \texttt{i = i//2} & $O(\log n)$\\
+Sorting efisien & merge sort, TimSort rata-rata & $O(n\log n)$\\
+Semua subset & pilih/tidak pilih tiap elemen & $O(2^n)$\\
+Semua susunan & semua permutasi karakter & $O(n!)$\\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+% 9
+\begin{frame}[fragile]{Contoh 2: mengapa membagi dua menjadi $\log n$?}
 \begin{columns}[T]
 \column{.46\textwidth}
 \begin{lstlisting}
+def bagi_dua(n):
+    i = n
+    while i > 0:
+        i = i // 2
+\end{lstlisting}
+\column{.54\textwidth}
+\begin{block}{Telusuri untuk $n=40$}
+\[
+40 \to 20 \to 10 \to 5 \to 2 \to 1 \to 0.
+\]
+\pause
+Setelah $k$ kali:
+\[
+\frac{n}{2^k} < 1.
+\]
+Maka
+\[
+2^k > n \quad \Rightarrow \quad k > \log_2 n.
+\]
+\end{block}
+\pause
+\begin{alertblock}{Kesimpulan}
+Jumlah iterasi bertambah lambat: $O(\log n)$.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 10
+\begin{frame}[fragile]{Latihan kelas: tiga potongan kode}
+\begin{columns}[T]
+\column{.33\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 test = 0
 for i in range(n):
     for j in range(n):
         test = test + i*j
 \end{lstlisting}
-\column{.50\textwidth}
-\begin{block}{Hitung manual}
-\begin{itemize}
-  \item Loop luar: $n$ kali.
-  \item Untuk setiap $i$, loop dalam: $n$ kali.
-  \item Baris terdalam: $n\times n$ kali.
-\end{itemize}
-\end{block}
-\pause
-\begin{block}{Kesimpulan}
-\[
-T(n) \approx n^2 \quad \Rightarrow \quad O(n^2).
-\]
-\end{block}
-\end{columns}
-\begin{center}
-\begin{tikzpicture}[scale=.55]
-\foreach \i in {0,...,4}{\foreach \j in {0,...,4}{\fill[Blue!45] (\i,\j) rectangle +(0.82,0.82);}}
-\draw[step=1,DarkText] (0,0) grid (5,5);
-\node[right] at (5.3,2.5) {$n\times n$ kotak kerja};
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-% 7
-\begin{frame}[fragile]{Contoh papan 2: dua loop berurutan}
-\begin{lstlisting}
+\centering A
+\column{.33\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 test = 0
 for i in range(n):
     test = test + 1
 for j in range(n):
     test = test - 1
 \end{lstlisting}
-\begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Jangan langsung melihat dua loop sebagai kuadrat}
-Kedua loop tidak bersarang. Loop kedua mulai setelah loop pertama selesai.
-\end{block}
-\column{.48\textwidth}
-\pause
-\begin{block}{Hitungan}
-\[
-T(n)=n+n=2n.
-\]
-Konstanta 2 tidak mengubah orde.
-\[
-T(n)=O(n).
-\]
-\end{block}
-\end{columns}
-\end{frame}
-
-% 8
-\begin{frame}[fragile]{Contoh papan 3: setiap langkah dibagi dua}
-\begin{columns}[T]
-\column{.45\textwidth}
-\begin{lstlisting}
+\centering B
+\column{.33\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 i = n
 while i > 0:
     k = 2 + 2
     i = i // 2
 \end{lstlisting}
-\column{.51\textwidth}
-\begin{block}{Ambil contoh $n=32$}
-\[
-32 \rightarrow 16 \rightarrow 8 \rightarrow 4 \rightarrow 2 \rightarrow 1 \rightarrow 0
-\]
-\pause
-Banyak pembagian dua sampai mencapai 1 berkaitan dengan $\log_2 n$.
-\[
-T(n)=O(\log n).
-\]
-\end{block}
+\centering C
 \end{columns}
-\begin{center}
-\begin{tikzpicture}[node distance=6mm]
-\node[darkbox] (a) {32};
-\node[box,right=of a] (b) {16};
-\node[box,right=of b] (c) {8};
-\node[box,right=of c] (d) {4};
-\node[box,right=of d] (e) {2};
-\node[box,right=of e] (f) {1};
-\foreach \x/\y in {a/b,b/c,c/d,d/e,e/f}{\draw[arr] (\x) -- (\y);}
-\end{tikzpicture}
-\end{center}
+\vspace{2mm}
+\pause
+\begin{alertblock}{Petunjuk}
+A: pasangan $(i,j)$. B: dua sapuan berurutan. C: ukuran dibagi dua setiap iterasi.
+\end{alertblock}
 \end{frame}
 
-% 9
-\begin{frame}[fragile]{Contoh papan 4: jumlah segitiga}
+% 11
+\begin{frame}[fragile]{Contoh 3: jumlah segitiga}
 \begin{columns}[T]
-\column{.46\textwidth}
+\column{.47\textwidth}
 \begin{lstlisting}
 s = 0
 for i in range(n):
     for j in range(i + 1):
         s += 1
 \end{lstlisting}
-\column{.50\textwidth}
-\begin{block}{Tuliskan banyak eksekusi}
+\begin{block}{Tujuan}
+Berapa kali \texttt{s += 1} dieksekusi?
+\end{block}
+\column{.53\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=.42]
+\foreach \i in {1,...,6}{
+  \foreach \j in {1,...,\i}{
+    \fill[Blue!55] (\j,-\i) circle (0.18);
+  }
+}
+\node[anchor=west] at (7,-1) {$1$};
+\node[anchor=west] at (7,-2) {$2$};
+\node[anchor=west] at (7,-3) {$3$};
+\node[anchor=west] at (7,-4) {$4$};
+\node[anchor=west] at (7,-5) {$5$};
+\node[anchor=west] at (7,-6) {$6$};
+\end{tikzpicture}
+\end{center}
+\pause
 \[
-1+2+3+\cdots+n=\frac{n(n+1)}{2}
+T(n)=1+2+\cdots+n = \frac{n(n+1)}{2}.
 \]
 \pause
 \[
-T(n)=\frac{1}{2}n^2+\frac{1}{2}n=O(n^2).
+T(n)=\frac{1}{2}n^2+\frac{1}{2}n \quad \Rightarrow \quad O(n^2).
 \]
-\end{block}
 \end{columns}
-\begin{center}
-\begin{tikzpicture}[scale=.55]
-\foreach \i in {0,...,5}{\foreach \j in {0,...,\i}{\fill[Teal!45] (\i,-\j) rectangle +(0.82,0.82);}}
-\draw[DarkText] (0,0) -- (5.82,0) -- (5.82,-5.82) -- cycle;
-\node[right] at (6.2,-2.7) {bukan persegi penuh, tetapi tetap orde $n^2$};
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-% 10
-\begin{frame}{Loop versus rumus tertutup}
-\begin{columns}[T]
-\column{.47\textwidth}
-\begin{block}{Loop}
-\[
-S(n)=1+2+\cdots+n
-\]
-\[
-T(n)=n \Rightarrow O(n)
-\]
-\end{block}
-\column{.47\textwidth}
-\begin{block}{Rumus}
-\[
-S(n)=\frac{n(n+1)}{2}
-\]
-\[
-T(n)=1 \Rightarrow O(1)
-\]
-\end{block}
-\end{columns}
-\vspace{2mm}
-\begin{block}{Poin penting}
-Benchmark waktu boleh dilakukan, tetapi Big-O menilai pertumbuhan kerja algoritma terhadap ukuran input. Waktu aktual dipengaruhi mesin, sistem operasi, dan kondisi saat percobaan.
-\end{block}
-\end{frame}
-
-% 11
-\begin{frame}{Kasus utama: apakah dua daftar karakter anagram?}
-\begin{center}
-\begin{tikzpicture}[node distance=8mm]
-\node[box,minimum width=4.2cm] (a) {\texttt{earth}};
-\node[darkbox,minimum width=4.2cm,right=of a] (b) {\texttt{heart}};
-\node[box,minimum width=4.2cm,right=of b] (c) {jawaban: sama susunan huruf};
-\draw[arr] (a) -- (b);
-\draw[arr] (b) -- (c);
-\end{tikzpicture}
-\end{center}
-\begin{block}{Pertanyaan yang dikerjakan}
-Diberikan dua list/string dengan panjang sama. Kita ingin fungsi bernilai \texttt{True} jika keduanya berisi elemen yang sama dengan frekuensi yang sama.
-\end{block}
-\begin{block}{Tiga strategi}
-\begin{enumerate}
-  \item Periksa satu per satu dan coret yang sudah dipakai.
-  \item Urutkan, lalu bandingkan.
-  \item Hitung frekuensi setiap karakter.
-\end{enumerate}
-\end{block}
 \end{frame}
 
 % 12
-\begin{frame}{Anagram A: periksa lalu coret}
-\begin{columns}[T]
-\column{.52\textwidth}
-\begin{center}
-\begin{tikzpicture}[x=.7cm,y=.7cm]
-\foreach \i/\ch in {0/h,1/e,2/a,3/r,4/t}{\node[box,minimum width=.55cm] at (\i,0) {\ch};}
-\node[left] at (-.8,0) {list kedua};
-\foreach \i/\ch in {0/e,1/a,2/r,3/t,4/h}{\node[darkbox,minimum width=.55cm] at (\i,-1.25) {\ch};}
-\node[left] at (-.8,-1.25) {list pertama};
-\draw[arr] (0,-1.05) -- (1,-.25);
-\draw[arr] (1,-1.05) -- (2,-.25);
-\draw[arr] (2,-1.05) -- (3,-.25);
-\node at (1,.62) {\Large $\times$};
-\node at (2,.62) {\Large $\times$};
-\node at (3,.62) {\Large $\times$};
-\end{tikzpicture}
-\end{center}
-\column{.44\textwidth}
-\begin{block}{Analisis}
-Karakter pertama mungkin mencari hampir sepanjang list kedua. Begitu seterusnya.
-\[
-1+2+\cdots+n=\frac{n(n+1)}{2}
-\]
+\begin{frame}[fragile]{Contoh 4: menghitung bagian yang bergantung pada $n$}
+\begin{lstlisting}
+a = 5
+b = 6
+c = 10
+for i in range(n):
+    for j in range(n):
+        x = i*i
+        y = j*j
+        z = i*j
+for k in range(n):
+    w = a*k + 45
+    v = b*b
+d = 33
+\end{lstlisting}
 \pause
 \[
-O(n^2)
+T(n) = 3 + 3n^2 + 2n + 1 = 3n^2+2n+4.
 \]
-\end{block}
-\begin{block}{Catatan}
-Perlu tempat yang dapat diubah, karena string bersifat immutable. Maka string sering diubah dulu menjadi list.
-\end{block}
-\end{columns}
+\pause
+Dominan: $3n^2$, koefisien diabaikan untuk orde, sehingga $O(n^2)$.
 \end{frame}
 
 % 13
-\begin{frame}{Anagram B: urutkan lalu bandingkan}
-\begin{center}
-\begin{tikzpicture}[node distance=7mm]
-\node[box,minimum width=3cm] (a1) {\texttt{earth}};
-\node[box,minimum width=3cm,below=of a1] (a2) {\texttt{heart}};
-\node[darkbox,minimum width=3cm,right=14mm of a1] (s1) {\texttt{aehrt}};
-\node[darkbox,minimum width=3cm,right=14mm of a2] (s2) {\texttt{aehrt}};
-\node[greenbox,minimum width=3cm,right=14mm of s1,yshift=-.45cm] (cmp) {bandingkan};
-\draw[arr] (a1) -- node[above]{sort} (s1);
-\draw[arr] (a2) -- node[below]{sort} (s2);
-\draw[arr] (s1) -- (cmp);
-\draw[arr] (s2) -- (cmp);
-\end{tikzpicture}
-\end{center}
+\begin{frame}{Benchmark waktu: berguna, tetapi bukan definisi Big-O}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Bagian kerja}
+\column{.50\textwidth}
+\begin{block}{Benchmark menjawab}
 \begin{itemize}
-  \item Mengurutkan list pertama.
-  \item Mengurutkan list kedua.
-  \item Membandingkan posisi demi posisi.
+\item Program ini berjalan berapa detik di komputer ini?
+\item Apakah implementasi A lebih cepat daripada B pada ukuran data tertentu?
+\item Apakah dugaan orde tampak pada data eksperimen?
 \end{itemize}
 \end{block}
-\column{.47\textwidth}
-\pause
-\begin{block}{Analisis}
-Perbandingan setelah sort adalah $O(n)$. Biaya dominan berasal dari sorting, biasanya $O(n\log n)$.
+\column{.50\textwidth}
+\begin{block}{Yang memengaruhi waktu}
+\begin{itemize}
+\item mesin: processor, memori, sistem operasi;
+\item bahasa dan interpreter/compiler;
+\item library yang digunakan;
+\item proses lain di komputer;
+\item ukuran dan bentuk data.
+\end{itemize}
 \end{block}
 \end{columns}
+\begin{alertblock}{Prinsip}
+Big-O berasal dari hitungan langkah terhadap $n$. Benchmark dipakai untuk memeriksa dan membandingkan implementasi.
+\end{alertblock}
 \end{frame}
 
 % 14
-\begin{frame}{Anagram C: hitung frekuensi}
+\begin{frame}[fragile]{Eksperimen Python: membership pada list dan dictionary}
 \begin{columns}[T]
-\column{.52\textwidth}
-\begin{center}
-\begin{tikzpicture}[x=.55cm,y=.55cm]
-\foreach \i/\ch in {0/a,1/b,2/c,3/d,4/e,5/\dots,6/h,7/r,8/t}{\node[box,minimum width=.43cm] at (\i,1.2) {\ch};}
-\foreach \i/\v in {0/1,1/0,2/0,3/0,4/1,5/\dots,6/1,7/1,8/1}{\node[greenbox,minimum width=.43cm] at (\i,0) {\v};}
-\node[left] at (-1,1.2) {huruf};
-\node[left] at (-1,0) {count};
-\end{tikzpicture}
-\end{center}
-\column{.44\textwidth}
-\begin{block}{Ide}
-Hitung berapa kali setiap karakter muncul pada kedua daftar. Jika semua hitungan sama, maka anagram.
+\column{.43\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+# ide eksperimen
+x = list(range(n))
+target = n-1
+target in x
+
+x = {i: None for i in range(n)}
+target in x
+\end{lstlisting}
+\begin{block}{Dugaan sebelum menjalankan}
+\begin{itemize}
+\item Pada list, pencarian dapat menyapu banyak elemen.
+\item Pada dictionary, pencarian key rata-rata hampir tetap.
+\end{itemize}
 \end{block}
-\pause
-\begin{block}{Analisis}
-Dua kali membaca input dan satu kali membandingkan counter:
-\[
-T(n)=2n+26=O(n).
-\]
-Ruang tambahan dipakai untuk counter.
-\end{block}
+\column{.57\textwidth}
+\includegraphics[width=\linewidth]{list_dict_membership.png}
 \end{columns}
 \end{frame}
 
 % 15
-\begin{frame}{Tiga algoritma, satu masalah}
-\begin{center}
-\begin{tabular}{p{3.0cm}p{4.2cm}p{2.2cm}p{2.4cm}}
+\begin{frame}{Operasi list yang sering menipu}
+\begin{table}\small
+\begin{tabular}{llp{.42\textwidth}}
 \toprule
-Strategi & Gagasan & Waktu & Ruang tambahan \\
+Operasi & Orde & Mengapa penting\\
 \midrule
-Coret satu per satu & cari pasangan karakter dalam list kedua & $O(n^2)$ & list penanda \\
-Sort lalu bandingkan & urutkan dua list, lalu cocokkan posisi & $O(n\log n)$ & tergantung sorting \\
-Hitung frekuensi & simpan jumlah kemunculan setiap karakter & $O(n)$ & counter \\
+\texttt{x[i]} & $O(1)$ & akses langsung ke posisi\\
+\texttt{x.append(v)} & $O(1)$ & menambah di belakang biasanya murah\\
+\texttt{x.pop()} & $O(1)$ & ambil elemen terakhir\\
+\texttt{x.pop(0)} & $O(n)$ & elemen lain bergeser\\
+\texttt{v in x} & $O(n)$ & bisa perlu menyapu list\\
+\texttt{x.sort()} & $O(n\log n)$ & sorting efisien tetapi tidak gratis\\
 \bottomrule
 \end{tabular}
-\end{center}
-\begin{block}{Pertanyaan kelas}
-Jika alfabet hanya 26 huruf, strategi counter tampak murah. Bagaimana jika simbol yang mungkin jutaan jenis? Bagian mana yang berubah?
+\end{table}
+\pause
+\begin{alertblock}{Self check}
+Mana yang tidak $O(1)$: \texttt{pop(0)}, \texttt{pop()}, \texttt{append()}, atau \texttt{x[10]}?
+\end{alertblock}
+\pause
+\begin{block}{Petunjuk}
+Cari operasi yang membuat banyak elemen harus berpindah atau diperiksa.
 \end{block}
 \end{frame}
 
 % 16
-\begin{frame}{Operasi list: beberapa murah, beberapa mahal}
+\begin{frame}{Kasus utama: apakah dua kata anagram?}
+\begin{block}{Definisi kerja}
+Dua string disebut anagram jika keduanya memakai karakter yang sama dengan banyak kemunculan yang sama, hanya urutannya berbeda.
+\end{block}
 \begin{center}
-\begin{tabular}{p{4.5cm}p{2.2cm}p{5cm}}
-\toprule
-Operasi & Orde & Catatan \\
-\midrule
-\texttt{x[i]} & $O(1)$ & akses langsung ke indeks \\
-\texttt{x.append(a)} & $O(1)$ & menambah di belakang \\
-\texttt{x.pop()} & $O(1)$ & mengambil elemen terakhir \\
-\texttt{x.pop(0)} & $O(n)$ & elemen lain harus bergeser \\
-\texttt{a in x} & $O(n)$ & pencarian berurutan \\
-\texttt{x.sort()} & $O(n\log n)$ & biaya sorting dominan \\
-\bottomrule
-\end{tabular}
+\begin{tikzpicture}
+\node[box] (a) {\texttt{heart}};
+\node[box,right=2cm of a] (b) {\texttt{earth}};
+\draw[arr] (a) -- node[above]{susun ulang} (b);
+\end{tikzpicture}
 \end{center}
-\begin{block}{Kaitkan dengan M3}
-List mudah dipakai untuk data berurutan, tetapi tidak semua operasi pada list cocok untuk data besar.
+\begin{block}{Tiga strategi yang akan dibandingkan}
+\begin{enumerate}
+\item Cek satu per satu dan tandai yang sudah dipakai.
+\item Urutkan dua string, lalu bandingkan.
+\item Hitung frekuensi setiap huruf, lalu bandingkan penghitungnya.
+\end{enumerate}
 \end{block}
 \end{frame}
 
 % 17
-\begin{frame}{Eksperimen Python: membuat list}
+\begin{frame}[fragile]{Anagram A: cek dan tandai}
 \begin{columns}[T]
-\column{.46\textwidth}
-\begin{block}{Empat cara}
-\begin{itemize}
-  \item Konkatenasi: \texttt{l = l + [i]}
-  \item \texttt{append}
-  \item List comprehension
-  \item \texttt{list(range(n))}
-\end{itemize}
-\end{block}
-\column{.50\textwidth}
+\column{.45\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+def anagram_A(s1, s2):
+    data = list(s2)
+    for ch in s1:
+        ketemu = False
+        for j in range(len(data)):
+            if ch == data[j]:
+                data[j] = None
+                ketemu = True
+                break
+        if not ketemu:
+            return False
+    return True
+\end{lstlisting}
+\column{.55\textwidth}
 \begin{center}
-\begin{tikzpicture}[x=.95cm,y=.55cm]
-\draw[->,thick] (0,0) -- (5.4,0);
-\draw[->,thick] (0,0) -- (0,6.2) node[above]{log waktu};
-\foreach \x/\h/\lab in {0.7/5.4/concat,1.8/1.35/append,2.9/1.20/comp,4.0/1.03/range}{
-  \fill[Blue!55] (\x,0) rectangle +(0.55,\h);
-  \node[rotate=35,anchor=east] at (\x+.45,-.15) {\scriptsize \lab};
-}
-\node[align=center,text width=5.3cm] at (2.8,5.8) {hasil timeit lokal: concat paling mahal};
+\begin{tikzpicture}[scale=.85]
+\matrix[matrix of nodes,nodes={draw,minimum width=8mm,minimum height=7mm,anchor=center},column sep=-\pgflinewidth] (m) { e & a & r & t & h\\};
+\node[left=8mm of m-1-1] {\texttt{heart}: cari h};
+\draw[->,thick,Blue] (m-1-5.north) ++(0,6mm) -- (m-1-5.north);
+\node[below=5mm of m-1-5,fill=Gold!20,draw,rounded corners=2pt] {tandai};
 \end{tikzpicture}
 \end{center}
-\scriptsize
-\begin{center}
-\begin{tabular}{lrrrr}
-\toprule
-cara & concat & append & comp & range \\
-\midrule
-waktu 200 kali, $n=1000$ & 0.168s & 0.0046s & 0.0037s & 0.0028s \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{columns}
-\begin{block}{Pelajaran}
-Konkatenasi berulang membuat list baru berkali-kali. Untuk membangun list bertahap, gunakan \texttt{append} atau comprehension.
+\pause
+\begin{block}{Pertanyaan}
+Jika huruf yang dicari baru ketemu di akhir list, berapa elemen yang diperiksa?
 \end{block}
+\end{columns}
 \end{frame}
 
 % 18
-\begin{frame}{Eksperimen Python: \texttt{pop()} dan \texttt{pop(0)}}
-\begin{center}
-\begin{tikzpicture}[x=1.0cm,y=.62cm]
-\draw[->,thick] (0,0) -- (8.5,0) node[right]{ukuran list};
-\draw[->,thick] (0,0) -- (0,5.7) node[above]{waktu};
-\draw[domain=0.5:8,smooth,variable=\x,Blue,thick] plot ({\x},{.18+.05*sin(\x r)});
-\draw[domain=0.5:8,smooth,variable=\x,red!70!black,thick] plot ({\x},{.55*\x+.2});
-\node[Blue] at (7.3,.75) {\texttt{pop()}: hampir datar};
-\node[red!70!black] at (6.6,4.5) {\texttt{pop(0)}: naik linear};
-\end{tikzpicture}
-\end{center}
-\begin{block}{Penjelasan di papan}
-\texttt{pop()} mengambil elemen belakang. \texttt{pop(0)} mengambil elemen depan sehingga elemen lain harus digeser satu posisi.
+\begin{frame}{Anagram A: dari hitungan ke $O(n^2)$}
+\begin{block}{Ukuran input}
+Misalkan panjang string adalah $n$.
 \end{block}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Pada kasus yang berat}
+\begin{itemize}
+\item Huruf pertama bisa memeriksa sampai $n$ posisi.
+\item Huruf kedua bisa memeriksa sampai $n-1$ posisi yang tersisa.
+\item Dan seterusnya.
+\end{itemize}
+\end{block}
+\column{.50\textwidth}
+\[
+T(n) = n+(n-1)+\cdots+1.
+\]
+\pause
+\[
+T(n)=\frac{n(n+1)}{2}=\frac{1}{2}n^2+\frac{1}{2}n.
+\]
+\pause
+\[
+T(n)=O(n^2).
+\]
+\end{columns}
 \end{frame}
 
 % 19
-\begin{frame}[fragile]{Self Check 1}
-\begin{block}{Tentukan Big-O}
+\begin{frame}[fragile]{Anagram B: urutkan, lalu bandingkan}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+def anagram_B(s1, s2):
+    a = sorted(s1)
+    b = sorted(s2)
+    return a == b
+\end{lstlisting}
+\begin{center}
+\texttt{heart} $\to$ \texttt{aehrt}\qquad
+\texttt{earth} $\to$ \texttt{aehrt}
+\end{center}
+\column{.52\textwidth}
+\begin{block}{Hitung bagian kerjanya}
+\begin{itemize}
+\item Mengurutkan string pertama.
+\item Mengurutkan string kedua.
+\item Membandingkan hasil urutan.
+\end{itemize}
+\end{block}
+\pause
+Jika sorting yang dipakai $O(n\log n)$, maka
+\[
+T(n) = 2\,O(n\log n) + O(n).
+\]
+\pause
+Suku dominan: $O(n\log n)$.
+\end{columns}
+\end{frame}
+
+% 20
+\begin{frame}[fragile]{Anagram C: hitung frekuensi}
+\begin{columns}[T]
+\column{.44\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+def anagram_C(s1, s2):
+    c1 = [0]*26
+    c2 = [0]*26
+    for ch in s1:
+        c1[ord(ch)-ord('a')] += 1
+    for ch in s2:
+        c2[ord(ch)-ord('a')] += 1
+    return c1 == c2
+\end{lstlisting}
+\column{.56\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=.72]
+\foreach \i/\c/\v in {0/a/1,1/b/0,2/c/0,3/d/0,4/e/1,5/f/0,6/g/0,7/h/1,8/i/0,9/r/1,10/t/1}{
+  \node[draw,minimum width=6.5mm,minimum height=6mm,fill=LightBlue] at (\i*0.75,0) {\scriptsize \c};
+  \node[draw,minimum width=6.5mm,minimum height=6mm,fill=white] at (\i*0.75,-0.62) {\scriptsize \v};
+}
+\end{tikzpicture}
+\end{center}
+\begin{block}{Ide}
+Karakter tidak dicari satu per satu. Setiap karakter langsung menambah penghitungnya.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 21
+\begin{frame}{Anagram C: mengapa $O(n)$?}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Bagian yang dihitung}
+\begin{itemize}
+\item Menyapu \texttt{s1}: $n$ langkah.
+\item Menyapu \texttt{s2}: $n$ langkah.
+\item Membandingkan 26 penghitung: 26 langkah.
+\end{itemize}
+\end{block}
+\column{.50\textwidth}
+\[
+T(n)=n+n+26=2n+26.
+\]
+\pause
+\[
+T(n)=O(n).
+\]
+\pause
+\begin{alertblock}{Trade-off}
+Lebih cepat, tetapi memakai memori tambahan untuk penghitung.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 22
+\begin{frame}{Tiga algoritma anagram: ringkas}
+\begin{table}\small
+\begin{tabular}{p{.27\textwidth}p{.36\textwidth}p{.18\textwidth}p{.12\textwidth}}
+\toprule
+Strategi & Kerja utama & $T(n)$ kasar & Orde\\
+\midrule
+Cek dan tandai & pencarian bersarang & $\frac{1}{2}n^2+\frac{1}{2}n$ & $O(n^2)$\\
+Sort dan bandingkan & sorting dua kali + bandingkan & $2n\log n+n$ & $O(n\log n)$\\
+Hitung frekuensi & dua sapuan + 26 pembanding & $2n+26$ & $O(n)$\\
+\bottomrule
+\end{tabular}
+\end{table}
+\pause
+\begin{block}{Diskusi kelas}
+Mana yang paling mudah ditulis? Mana yang paling hemat waktu? Mana yang memakai ruang tambahan?
+\end{block}
+\end{frame}
+
+% 23
+\begin{frame}[fragile]{Self check: baca kode, bukan tebak notasi}
 \begin{lstlisting}
 test = 0
 for i in range(n):
     for j in range(n):
         test = test + i*j
 \end{lstlisting}
+\pause
+\begin{block}{Petunjuk}
+Untuk setiap nilai $i$, loop $j$ berjalan $n$ kali. Ada $n$ pilihan $i$.
 \end{block}
 \pause
-\begin{block}{Hint}
-Gambar kotak kerja $n\times n$. Baris terdalam dijalankan satu kali untuk setiap pasangan $(i,j)$.
-\end{block}
+\[
+T(n)=n\cdot n=n^2 \quad \Rightarrow \quad O(n^2).
+\]
 \end{frame}
 
-% 20
-\begin{frame}[fragile]{Self Check 2}
-\begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{A}
+% 24
+\begin{frame}[fragile]{Self check: dua loop berurutan}
 \begin{lstlisting}
+test = 0
 for i in range(n):
     test = test + 1
 for j in range(n):
     test = test - 1
 \end{lstlisting}
+\pause
+\begin{block}{Petunjuk}
+Loop kedua tidak berada di dalam loop pertama. Kerjanya dijumlahkan, bukan dikalikan.
 \end{block}
 \pause
-\begin{block}{Hint A}
-Dua loop ini berurutan, bukan bersarang.
-\end{block}
-\column{.49\textwidth}
-\begin{block}{B}
+\[
+T(n)=n+n=2n \quad \Rightarrow \quad O(n).
+\]
+\end{frame}
+
+% 25
+\begin{frame}[fragile]{Self check: dibagi dua}
 \begin{lstlisting}
 i = n
 while i > 0:
     k = 2 + 2
     i = i // 2
 \end{lstlisting}
+\pause
+\begin{block}{Petunjuk}
+Tulis nilai $i$ setelah setiap iterasi: $n, n/2, n/4, n/8, \ldots$.
 \end{block}
 \pause
-\begin{block}{Hint B}
-Tuliskan contoh $32,16,8,4,2,1$. Banyak langkah terkait pembagian dua berulang.
-\end{block}
-\end{columns}
+Berhenti ketika $n/2^k < 1$, sehingga $k > \log_2 n$.
+\[
+T(n)=O(\log n).
+\]
 \end{frame}
 
-% 21
-\begin{frame}{Self Check 3}
-\begin{block}{Pilih operasi list yang bukan $O(1)$}
+% 26
+\begin{frame}{Menyiapkan LKM 5}
+\begin{block}{Yang harus bisa dilakukan}
 \begin{enumerate}
-  \item \texttt{list.pop(0)}
-  \item \texttt{list.pop()}
-  \item \texttt{list.append(x)}
-  \item \texttt{list[10]}
+\item Mengurutkan orde pertumbuhan: $1$, $\log n$, $n$, $n\log n$, $n^2$, $n^3$, $2^n$, $n!$.
+\item Menghitung $T(n)$ dari potongan kode.
+\item Membedakan loop bersarang dan loop berurutan.
+\item Menjelaskan mengapa pembagian dua menghasilkan $\log n$.
+\item Membandingkan algoritma yang sama-sama benar, termasuk kasus anagram.
+\item Membaca benchmark sebagai bukti empiris, bukan definisi matematis.
 \end{enumerate}
 \end{block}
-\pause
-\begin{block}{Hint}
-Pikirkan apakah operasi tersebut perlu menggeser banyak elemen atau cukup mengakses posisi tertentu.
-\end{block}
-\vspace{1mm}
-\begin{block}{Pertanyaan lanjutan}
-Mengapa \texttt{x in list} dan \texttt{x in dict} dapat memiliki perilaku waktu yang berbeda?
-\end{block}
 \end{frame}
 
-% 22
-\begin{frame}{Penutup dan latihan M5}
-\begin{block}{Yang perlu dikuasai}
-\begin{itemize}
-  \item Menurunkan $T(n)$ dari potongan kode.
-  \item Membedakan loop bersarang dan loop berurutan.
-  \item Mengenali $O(1)$, $O(\log n)$, $O(n)$, $O(n\log n)$, dan $O(n^2)$.
-  \item Menganalisis beberapa algoritma untuk masalah yang sama.
-  \item Menafsirkan eksperimen waktu sebagai bukti pendukung, bukan definisi Big-O.
-\end{itemize}
-\end{block}
-\begin{block}{Latihan yang disiapkan}
-Kerjakan LKM M5.1--M5.10. Untuk setiap soal, tulis ukuran input, operasi yang dihitung, $T(n)$ atau argumen pertumbuhan, lalu simpulkan Big-O.
-\end{block}
+% 27
+\begin{frame}{Latihan akhir pertemuan}
+\begin{enumerate}
+\item Hitung $T(n)$ dan Big-O untuk kode jumlah segitiga.
+\item Jelaskan dengan kalimat sendiri mengapa \texttt{pop(0)} lebih mahal daripada \texttt{pop()}.
+\item Buat contoh dua algoritma yang menghasilkan output sama, tetapi satu $O(n)$ dan satu $O(1)$.
+\item Untuk anagram, tuliskan satu alasan memilih strategi hitung frekuensi dan satu konsekuensinya.
+\end{enumerate}
+\vspace{2mm}
+\begin{alertblock}{Cara menjawab}
+Tulis proses hitungnya. Jangan hanya menulis notasi Big-O.
+\end{alertblock}
 \end{frame}
 
-% 23
+% 28
 \begin{frame}{Referensi}
 \small
 \begin{itemize}
-  \item Bradley N. Miller dan David L. Ranum. \textit{Problem Solving with Algorithms and Data Structures Using Python}. Release 3.0. Bab 2: Algorithm Analysis.
-  \item Lembar Kerja Mandiri Pemrograman untuk Ilmu Data dan Komputasi, Bab M5: Kompleksitas Algoritma Big-O.
+\item Bradley N. Miller dan David L. Ranum. \textit{Problem Solving with Algorithms and Data Structures Using Python}. Release 3.0. Bab 2: Algorithm Analysis.
+\item Lembar Kerja Mandiri M5: Kompleksitas Algoritma Big-O.
 \end{itemize}
 \end{frame}
 
