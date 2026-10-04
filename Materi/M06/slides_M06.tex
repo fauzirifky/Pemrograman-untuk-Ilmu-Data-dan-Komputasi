@@ -1,0 +1,550 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[indonesian]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{multicol}
+
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{Purple}{HTML}{6F42C1}
+\definecolor{Warn}{HTML}{D97706}
+\definecolor{Good}{HTML}{16A34A}
+
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Warn}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{Blue}\bfseries,
+  commentstyle=\color{Teal},
+  stringstyle=\color{Gold!70!black},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{Navy!35},
+  backgroundcolor=\color{CodeBg},
+  tabsize=4,
+  columns=fullflexible
+}
+\lstset{style=py}
+
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=8mm, inner sep=2.1mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=8mm, inner sep=2.1mm, align=center},
+  greenbox/.style={rounded corners=3pt, draw=Good!70!black, fill=Good!10, thick, minimum height=8mm, inner sep=2.1mm, align=center},
+  warnbox/.style={rounded corners=3pt, draw=Warn!85!black, fill=Warn!10, thick, minimum height=8mm, inner sep=2.1mm, align=center},
+  arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
+}
+
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\newcommand{\cellbox}[2]{\tikz[baseline=(X.base)]\node[draw=Navy!40,fill=#1,rounded corners=1pt,inner sep=1.5pt,minimum width=7mm](X){\scriptsize #2};}
+\newcommand{\smalltag}[1]{\tikz[baseline=(X.base)]\node[fill=Navy!10,draw=Navy!25,rounded corners=2pt,inner sep=1.3pt](X){\scriptsize #1};}
+
+\title[Searching dan Sorting]{Pertemuan 6: Searching, Sorting, dan Analisis Kinerja}
+\subtitle{Dari jejak eksekusi ke $T(n)$ dan orde kompleksitas}
+\author{Rifky Fauzi}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+\fill[DeepNavy] (current page.south west) rectangle (current page.north east);
+\foreach \x/\y/\r/\o in {1.0/1.0/1.8/.10, 11.2/6.8/2.2/.12, 13.0/1.2/1.5/.09, 5.5/7.1/1.3/.08}{\fill[Blue,opacity=\o] (\x,\y) circle (\r);}
+\coordinate (p0) at (8.0,1.15);
+\coordinate (p1) at (8.7,2.05);
+\coordinate (p2) at (9.4,1.15);
+\coordinate (p3) at (10.1,2.05);
+\coordinate (p4) at (10.8,1.15);
+\coordinate (p5) at (11.5,2.05);
+\coordinate (p6) at (12.2,1.15);
+\coordinate (p7) at (12.9,2.05);
+\foreach \i/\j in {0/1,1/2,2/3,3/4,4/5,5/6,6/7}{
+  \draw[Teal!45,opacity=.45,line width=.5pt] (p\i) -- (p\j);
+}
+\foreach \i in {0,...,7}{\fill[Teal!70,opacity=.8] (p\i) circle (1.5pt);}
+\fill[Navy,opacity=.88] (current page.south west) rectangle ([xshift=8.55cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=7.15cm] at ([xshift=.65cm,yshift=-.62cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{20}{22.5}\selectfont\bfseries Pertemuan 6\\Searching, Sorting,\\dan Analisis Kinerja}\\[3mm]
+{\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10}{11.5}\selectfont Rifky Fauzi}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4mm,text width=6.35cm] at ([xshift=-.55cm,yshift=-.78cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Fokus pertemuan}\\[2mm]
+\begin{itemize}\small
+  \item Menelusuri cara kerja search dan sort.
+  \item Menghitung perbandingan dan operasi utama.
+  \item Menulis $T(n)$ lalu menyederhanakan ke orde.
+  \item Membaca hasil benchmark dengan hati-hati.
+\end{itemize}
+};
+\end{tikzpicture}
+\end{frame}
+
+% 2
+\begin{frame}{Masalah yang akan dikerjakan}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Searching}
+Diberikan data dan satu nilai target. Kita perlu memutuskan:
+\begin{itemize}
+  \item target ada atau tidak;
+  \item posisi target jika ditemukan;
+  \item berapa banyak perbandingan yang diperlukan.
+\end{itemize}
+\end{block}
+\column{.47\textwidth}
+\begin{block}{Sorting}
+Diberikan data acak. Kita perlu menyusun data menjadi terurut, lalu memahami:
+\begin{itemize}
+  \item keadaan data setelah setiap langkah;
+  \item operasi yang paling sering terjadi;
+  \item mengapa beberapa algoritma lebih cepat.
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{center}
+\begin{tikzpicture}[node distance=8mm]
+\node[box,minimum width=3.0cm] (trace) {trace algoritma};
+\node[box,minimum width=3.0cm,right=of trace] (count) {hitung operasi};
+\node[darkbox,minimum width=3.0cm,right=of count] (order) {$T(n) \rightarrow O(\cdot)$};
+\draw[arr] (trace) -- (count); \draw[arr] (count) -- (order);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+% 3
+\begin{frame}[fragile]{Sequential search: memeriksa satu per satu}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{lstlisting}
+def sequential_search(a, key):
+    for i in range(len(a)):
+        if a[i] == key:
+            return i
+    return -1
+\end{lstlisting}
+\begin{block}{Operasi utama}
+Perbandingan \texttt{a[i] == key}. Banyaknya perbandingan bergantung posisi target.
+\end{block}
+\column{.46\textwidth}
+\begin{center}
+\begin{tikzpicture}[x=8mm,y=7mm]
+\foreach \i/\v in {0/3,1/5,2/6,3/8,4/11,5/12,6/14,7/15,8/17,9/18}{
+  \node[draw=Navy!40,fill=SoftGray,minimum width=7mm,minimum height=7mm] at (\i,0) {\scriptsize \v};
+  \node[below] at (\i,-.55) {\tiny \i};
+}
+\draw[decorate,decoration={brace,amplitude=3pt},Navy,thick] (-.4,.65) -- (3.4,.65) node[midway,above=3pt]{\scriptsize key = 8};
+\foreach \i in {0,1,2,3}{\draw[->,Warn,thick] (\i,.85) -- (\i,.35);}
+\end{tikzpicture}
+\end{center}
+\vspace{1mm}
+\begin{itemize}
+  \item awal: $1$ perbandingan.
+  \item tengah: sekitar $n/2$ perbandingan.
+  \item akhir/tidak ada: $n$ perbandingan.
+\end{itemize}
+\[
+T_{\text{worst}}(n)=n \quad \Rightarrow \quad O(n)
+\]
+\end{columns}
+\end{frame}
+
+% 4
+\begin{frame}{Sequential search: empat posisi target}
+\small
+Gunakan list terurut berikut hanya untuk memudahkan pelacakan:
+\[
+[3,5,6,8,11,12,14,15,17,18]
+\]
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Kasus & Target & Banyak perbandingan & Orde terburuk \\
+\midrule
+Target di awal & $3$ & $1$ & $O(n)$ \\
+Target di tengah & $12$ & $6$ & $O(n)$ \\
+Target di akhir & $18$ & $10$ & $O(n)$ \\
+Target tidak ada & $16$ & $10$ & $O(n)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{2mm}
+\begin{block}{Catatan penting}
+Terurut atau tidak terurut, sequential search tetap memeriksa elemen satu per satu. Data terurut baru benar-benar dimanfaatkan oleh binary search.
+\end{block}
+\end{frame}
+
+% 5
+\begin{frame}{Binary search: setiap langkah membuang separuh kandidat}
+\small
+Konvensi contoh rekursif: ambil \textit{midpoint} dari sublist, lalu lanjut ke kiri atau kanan.
+\begin{columns}[T]
+\column{.51\textwidth}
+\begin{block}{Mencari key = 8}
+\begin{center}
+\begin{tabular}{ccl}
+\toprule
+Langkah & Bandingkan & Keputusan \\
+\midrule
+1 & 12 & kiri \\
+2 & 6 & kanan \\
+3 & 11 & kiri \\
+4 & 8 & ditemukan \\
+\bottomrule
+\end{tabular}
+\end{center}
+\[
+\text{urutan: }12,6,11,8
+\]
+\end{block}
+\column{.45\textwidth}
+\begin{block}{Mencari key = 16}
+\begin{center}
+\begin{tabular}{ccl}
+\toprule
+Langkah & Bandingkan & Keputusan \\
+\midrule
+1 & 12 & kanan \\
+2 & 17 & kiri \\
+3 & 15 & kanan \\
+4 & kosong & berhenti \\
+\bottomrule
+\end{tabular}
+\end{center}
+\[
+\text{urutan: }12,17,15
+\]
+\end{block}
+\end{columns}
+\end{frame}
+
+% 6
+\begin{frame}{Mengapa binary search menghasilkan $O(\log n)$?}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[box,minimum width=5.5cm] (a) {$n$ kandidat};
+\node[box,minimum width=4.2cm,below=of a] (b) {$n/2$ kandidat};
+\node[box,minimum width=3.1cm,below=of b] (c) {$n/4$ kandidat};
+\node[box,minimum width=2.2cm,below=of c] (d) {$n/8$ kandidat};
+\node[darkbox,minimum width=1.5cm,below=of d] (e) {$1$ kandidat};
+\draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d); \draw[arr] (d) -- (e);
+\end{tikzpicture}
+\end{center}
+\column{.49\textwidth}
+Setelah $k$ langkah:
+\[
+\frac{n}{2^k}\le 1
+\]
+\[
+n\le 2^k
+\]
+\[
+k\ge \log_2 n
+\]
+\begin{block}{Orde}
+\[
+T(n)\approx \lfloor \log_2 n\rfloor+1 \quad \Rightarrow \quad O(\log n)
+\]
+\end{block}
+\end{columns}
+\end{frame}
+
+% 7
+\begin{frame}{Selection sort: satu pass mencari nilai terkecil}
+\small
+Data awal:
+\[
+[11,7,12,14,19,1,6,18,8,20]
+\]
+\begin{block}{Definisi satu pass}
+Pada pass ke-$k$, cari nilai terkecil pada bagian belum terurut, lalu tukar ke posisi ke-$k$.
+\end{block}
+\begin{center}
+\begin{tabular}{ccl}
+\toprule
+Pass & Nilai minimum bagian belum terurut & Keadaan list \\
+\midrule
+0 & -- & $[11,7,12,14,19,1,6,18,8,20]$ \\
+1 & $1$ & $[1,7,12,14,19,11,6,18,8,20]$ \\
+2 & $6$ & $[1,6,12,14,19,11,7,18,8,20]$ \\
+3 & $7$ & $[1,6,7,14,19,11,12,18,8,20]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\colorbox{LightTeal}{\parbox{.94\linewidth}{\small Setelah pass ke-$k$, $k$ elemen pertama sudah berada pada posisi final.}}
+\end{frame}
+
+% 8
+\begin{frame}{Selection sort: dari invariant ke $T(n)$}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Invariant}
+Setelah pass ke-$k$, bagian kiri sepanjang $k$ elemen berisi $k$ nilai terkecil dan sudah terurut.
+\end{block}
+\begin{center}
+\begin{tikzpicture}[x=8mm,y=7mm]
+\foreach \i/\v in {0/1,1/6,2/7,3/14,4/19,5/11,6/12,7/18,8/8,9/20}{
+  \node[draw=Navy!35,fill=SoftGray,minimum width=7mm,minimum height=7mm] at (\i,0) {\scriptsize \v};
+}
+\draw[decorate,decoration={brace,amplitude=3pt},Good!80!black,thick] (-.4,.65) -- (2.4,.65) node[midway,above=3pt]{\scriptsize final};
+\draw[decorate,decoration={brace,amplitude=3pt},Warn!90!black,thick] (2.6,-.65) -- (9.4,-.65) node[midway,below=3pt]{\scriptsize belum terurut};
+\end{tikzpicture}
+\end{center}
+\column{.48\textwidth}
+Banyak perbandingan untuk mencari minimum:
+\[
+(n-1)+(n-2)+\cdots+1
+\]
+\[
+T(n)=\frac{n(n-1)}{2}=\frac{1}{2}n^2-\frac{1}{2}n
+\]
+\[
+T(n)\in O(n^2)
+\]
+\begin{block}{Makna}
+Selection sort tetap membandingkan hampir semua pasangan kandidat, walaupun swap hanya sekali per pass.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 9
+\begin{frame}{Merge sort: pecah dahulu, gabung terurut}
+\begin{columns}[T]
+\column{.53\textwidth}
+\small
+Data:
+\[
+[21,1,26,45,29,28,2,9,16,49,39,27,43,34,46,40]
+\]
+\begin{center}
+\begin{tikzpicture}[level distance=9mm,sibling distance=22mm, every node/.style={font=\scriptsize,align=center}]
+\node[darkbox,text width=5.4cm]{16 elemen}
+ child {node[box,text width=3.0cm]{8 kiri}
+   child {node[box,text width=2.1cm]{4 kiri}
+     child {node[warnbox,text width=1.4cm]{2 kiri}}
+     child {node[box,text width=1.4cm]{2 kanan}}
+   }
+   child {node[box,text width=2.1cm]{4 kanan}}
+ }
+ child {node[box,text width=3.0cm]{8 kanan}};
+\end{tikzpicture}
+\end{center}
+\column{.43\textwidth}
+Tiga pemanggilan rekursif pada cabang kiri:
+\[
+16 \rightarrow 8 \rightarrow 4 \rightarrow 2
+\]
+Sublist yang sedang diproses:
+\[
+[21,1]
+\]
+Dua list pertama yang digabung:
+\[
+[21]\quad \text{dan}\quad [1]
+\]
+Hasil merge:
+\[
+[1,21]
+\]
+\end{columns}
+\end{frame}
+
+% 10
+\begin{frame}{Merge sort: mengapa $O(n\log n)$?}
+\begin{columns}[T]
+\column{.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=.65cm]
+\foreach \lvl/\cnt/\lab in {0/1/$n$,1/2/$n$,2/4/$n$,3/8/$n$}{
+  \node[left] at (-.2,-\lvl) {\scriptsize level \lvl};
+  \draw[Navy!60,thick] (0,-\lvl) -- (5,-\lvl);
+  \node[right] at (5.15,-\lvl) {\scriptsize kerja total $\approx n$};
+}
+\draw[decorate,decoration={brace,amplitude=4pt},Warn,thick] (-.7,.2) -- (-.7,-3.2) node[midway,left=5pt]{\scriptsize $\log_2 n$ level};
+\end{tikzpicture}
+\end{center}
+\column{.51\textwidth}
+Pada setiap level, seluruh elemen ikut dalam proses merge.
+\[
+\text{kerja per level} \approx n
+\]
+Jumlah level pemecahan:
+\[
+\log_2 n
+\]
+Maka:
+\[
+T(n)\approx n\log_2 n \quad \Rightarrow \quad O(n\log n)
+\]
+\begin{block}{Perbandingan intuisi}
+Selection sort membandingkan berulang pada bagian besar. Merge sort mengatur kerja dalam level-level pemecahan.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 11
+\begin{frame}{Sorting: algoritma berbeda, biaya berbeda}
+\small
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Algoritma & Ide utama & Worst-case \\
+\midrule
+Bubble sort & Tukar elemen bertetangga yang salah urut & $O(n^2)$ \\
+Selection sort & Pilih minimum, pindahkan ke depan & $O(n^2)$ \\
+Insertion sort & Sisipkan elemen ke bagian kiri yang sudah terurut & $O(n^2)$ \\
+Merge sort & Pecah dua, urutkan, lalu gabung & $O(n\log n)$ \\
+Quicksort standar & Pilih pivot, partisi kiri-kanan & $O(n^2)$ \\
+Python \texttt{sort} & Timsort, sangat kuat untuk data nyata & $O(n\log n)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{2mm}
+\begin{block}{Yang dijamin $O(n\log n)$ pada worst-case}
+Dari daftar klasik di atas: merge sort. Python \texttt{sort} juga memiliki worst-case $O(n\log n)$ dalam implementasi modernnya.
+\end{block}
+\end{frame}
+
+% 12
+\begin{frame}[fragile]{Benchmark yang adil: bukan sekadar mengukur waktu}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{lstlisting}
+for n in ukuran:
+    data = buat_data_acak(n)
+    for ulang in range(R):
+        x = data.copy()
+        ukur(insertion_sort, x)
+        y = data.copy()
+        ukur(merge_sort, y)
+\end{lstlisting}
+\column{.46\textwidth}
+\begin{block}{Syarat penting}
+\begin{itemize}
+  \item ukuran input meningkat bertahap;
+  \item kedua algoritma mendapat data yang sama;
+  \item data harus di-\texttt{copy} sebelum diurutkan;
+  \item pengukuran diulang, gunakan median/rata-rata;
+  \item uji data acak, terurut, dan hampir terurut.
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{block}{Membaca hasil}
+Big-O menjelaskan pola asimtotik. Waktu aktual masih dipengaruhi komputer, implementasi, konstanta, dan bentuk data.
+\end{block}
+\end{frame}
+
+% 13
+\begin{frame}{Cek pemahaman}
+\small
+\begin{enumerate}
+  \item Binary search pada $[3,5,6,8,11,12,14,15,17,18]$ dengan konvensi midpoint sublist. Urutan perbandingan untuk key $8$ dan key $16$ apa?
+    \begin{itemize}\footnotesize
+    \item Petunjuk: tulis sublist aktif setiap langkah, bukan hanya indeks awal.
+  \end{itemize}
+  \item Selection sort pada $[11,7,12,14,19,1,6,18,8,20]$. Keadaan list setelah tiga pass?
+    \begin{itemize}\footnotesize
+    \item Petunjuk: setiap pass memilih minimum dari bagian yang belum final.
+  \end{itemize}
+  \item Merge sort pada list 16 elemen. Setelah tiga pemanggilan rekursif kiri, sublist mana yang diproses?
+    \begin{itemize}\footnotesize
+    \item Petunjuk: ikuti cabang kiri: 16, 8, 4, 2.
+  \end{itemize}
+  \item Bagaimana menurunkan $T(n)$ selection sort dari jumlah perbandingan?
+    \begin{itemize}\footnotesize
+    \item Petunjuk: jumlahkan $(n-1)+(n-2)+\cdots+1$.
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+% 14
+\begin{frame}{Arah kerja setelah kelas}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Untuk LKM M6}
+\begin{itemize}
+  \item Tuliskan trace, bukan hanya jawaban akhir.
+  \item Definisikan satu pass atau satu langkah rekursif.
+  \item Hitung operasi utama: perbandingan, assignment, atau merge.
+  \item Baru simpulkan orde kompleksitas.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Kebiasaan yang dibangun}
+\begin{itemize}
+  \item Setiap algoritma punya keadaan awal dan keadaan setelah langkah.
+  \item Data terurut mengubah strategi pencarian.
+  \item Benchmark harus dirancang, bukan sekadar dijalankan.
+  \item Hasil cepat pada satu ukuran input belum cukup untuk menyimpulkan kompleksitas.
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{2mm}
+\begin{center}
+\begin{tikzpicture}[node distance=6mm]
+\node[box] (trace) {trace};
+\node[box,right=of trace] (ops) {hitung operasi};
+\node[box,right=of ops] (tn) {$T(n)$};
+\node[darkbox,right=of tn] (big) {$O(\cdot)$};
+\draw[arr] (trace)--(ops); \draw[arr] (ops)--(tn); \draw[arr] (tn)--(big);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\end{document}
+
