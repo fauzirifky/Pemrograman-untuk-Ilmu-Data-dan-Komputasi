@@ -677,79 +677,555 @@ Kriteria berhenti dapat diperbaiki dengan toleransi $|x_{k+1}-x_k|<\varepsilon$.
 
 % ================= P5 =================
 \chapter{Praktikum 5: Kompleksitas Algoritma dan Sorting Dasar}
+
 \begin{tujuanbox}
-Mahasiswa mampu menghubungkan struktur loop dengan jumlah operasi, membaca orde pertumbuhan Big-O, membedakan analisis asimtotik dari waktu aktual, dan menelusuri algoritma sorting dasar.
+Mahasiswa mampu membaca program sebagai rangkaian kerja komputasi, menghitung banyak eksekusi operasi utama sebagai fungsi ukuran input, menghubungkannya dengan Big-O, membedakan jumlah operasi dari waktu eksekusi aktual, serta menguji beberapa algoritma pada Python.
 \end{tujuanbox}
 
-\section{Ukuran input dan orde pertumbuhan}
-Big-O menggambarkan bagaimana kebutuhan komputasi tumbuh ketika ukuran input $n$ membesar. Urutan umum:
+\section{Dari program ke fungsi banyak kerja}
+
+Pada praktikum ini kita tidak hanya melihat keluaran program. Kita juga bertanya:
+\begin{quote}
+Jika ukuran input menjadi lebih besar, seberapa cepat banyak pekerjaan program bertambah?
+\end{quote}
+
+Kita tulis $W(n)$ untuk \textbf{fungsi banyak kerja} terhadap ukuran input $n$.
+Dalam satu analisis, operasi yang dihitung harus dinyatakan dengan jelas. Misalnya:
+\begin{itemize}
+  \item banyak eksekusi baris terdalam;
+  \item banyak perbandingan;
+  \item banyak pertukaran;
+  \item atau banyak operasi aritmetika yang tampak pada kode.
+\end{itemize}
+
+\begin{catatanbox}
+$W(n)$ bukan waktu dalam detik. Nilai $W(n)$ diperoleh dari struktur algoritma. Waktu aktual baru diukur kemudian dengan \kode{timeit}. Keduanya berhubungan, tetapi bukan hal yang sama.
+\end{catatanbox}
+
+\subsection{Contoh pertama: menjumlahkan $1+2+\cdots+n$}
+
+Mulai dari versi yang langsung mengikuti definisi penjumlahan.
+
+\begin{lstlisting}
+def jumlah_loop(n):
+    total = 0
+    for i in range(1, n + 1):
+        total = total + i
+    return total
+\end{lstlisting}
+
+Jika yang dihitung adalah operasi yang tampak pada kode:
+\begin{itemize}
+  \item \kode{total = 0}: 1 assignment;
+  \item \kode{n + 1}: 1 penjumlahan, dihitung sekali saat membentuk \kode{range};
+  \item \kode{total = total + i}: 1 penjumlahan dan 1 assignment, dilakukan $n$ kali;
+  \item \kode{return total}: 1 return.
+\end{itemize}
+
+Dengan model hitung tersebut,
 \[
-1 \prec \log n \prec n \prec n\log n \prec n^2 \prec n^3 \prec 2^n \prec n!.
+W_{\text{loop}}(n)=1+1+2n+1=2n+3,
+\]
+maka
+\[
+W_{\text{loop}}(n)=O(n).
 \]
 
-\section{Menghitung operasi dari struktur loop}
+Sekarang tambahkan beberapa baris yang hanya bersifat tampilan.
+
 \begin{lstlisting}
-for i in range(n):
+def jumlah_loop_dekoratif(n):
+    print("Halo")
+    print("Menghitung jumlah 1 sampai", n)
+    print("---------------------------")
+
+    total = 0
+    for i in range(1, n + 1):
+        total = total + i
+
+    return total
+\end{lstlisting}
+
+Tiga \kode{print} menambah tiga pekerjaan tetap:
+\[
+W_{\text{dekoratif}}(n)=2n+6.
+\]
+Pertumbuhannya tetap
+\[
+O(n).
+\]
+
+Artinya, menambah beberapa baris tetap dapat mengubah jumlah pekerjaan nyata, tetapi tidak mengubah orde pertumbuhan terhadap $n$.
+
+\subsection{Algoritma lain untuk persoalan yang sama}
+
+Identitas
+\[
+1+2+\cdots+n=\frac{n(n+1)}{2}
+\]
+memberikan algoritma berbeda.
+
+\begin{lstlisting}
+def jumlah_rumus(n):
+    return n * (n + 1) // 2
+\end{lstlisting}
+
+Pada ekspresi tersebut terdapat penjumlahan, perkalian, pembagian bilangan bulat, dan return. Banyaknya tidak berubah ketika $n$ membesar, sehingga
+\[
+W_{\text{rumus}}(n)=4=O(1)
+\]
+dengan konvensi hitung di atas.
+
+\begin{idebox}{Yang penting}
+Dua program dapat menghasilkan nilai matematika yang sama, tetapi melakukan jumlah pekerjaan yang berbeda:
+\[
+\text{loop}: O(n),
+\qquad
+\text{rumus tertutup}: O(1).
+\]
+\end{idebox}
+
+\subsection{Praktik langsung}
+
+Jalankan kode berikut untuk beberapa nilai $n$.
+
+\begin{lstlisting}
+for n in [5, 10, 100, 1000]:
+    a = jumlah_loop(n)
+    b = jumlah_rumus(n)
+    print(n, a, b, a == b)
+\end{lstlisting}
+
+Sebelum menjalankan program, hitung terlebih dahulu $W_{\text{loop}}(n)$ dan
+$W_{\text{dekoratif}}(n)$ untuk nilai $n$ yang sama.
+
+\section{Struktur loop dan banyak eksekusi}
+
+Untuk melihat struktur algoritma secara langsung, kita dapat menggunakan counter.
+Counter ini adalah alat observasi: ia membantu memeriksa berapa kali bagian tertentu dijalankan.
+
+\subsection{Dua loop bersarang}
+
+\begin{lstlisting}
+def hitung_persegi(n):
+    operasi = 0
+    for i in range(n):
+        for j in range(n):
+            operasi += 1
+    return operasi
+\end{lstlisting}
+
+Baris \kode{operasi += 1} dijalankan
+\[
+n\times n=n^2
+\]
+kali. Jadi, jika baris terdalam dipilih sebagai operasi utama,
+\[
+W(n)=n^2,
+\qquad
+O(n^2).
+\]
+
+\subsection{Dua loop yang berurutan}
+
+\begin{lstlisting}
+def hitung_berurutan(n):
+    operasi = 0
+
+    for i in range(n):
+        operasi += 1
+
     for j in range(n):
-        kerja()
+        operasi += 1
+
+    return operasi
 \end{lstlisting}
-Baris \kode{kerja()} dieksekusi $n^2$ kali, sehingga orde pertumbuhan adalah $O(n^2)$.
 
-Dua loop berurutan masing-masing $O(n)$ menghasilkan $O(n)+O(n)=O(n)$, bukan $O(n^2)$.
+Loop pertama menjalankan baris utama $n$ kali dan loop kedua juga $n$ kali:
+\[
+W(n)=n+n=2n,
+\qquad
+O(n).
+\]
 
-\section{Loop yang membagi dua}
+Dua loop tidak otomatis menghasilkan $O(n^2)$. Yang menentukan adalah apakah loop
+\textbf{bersarang} atau \textbf{berurutan}.
+
+\subsection{Loop segitiga}
+
 \begin{lstlisting}
-i = n
-while i > 0:
-    i = i // 2
+def hitung_segitiga(n):
+    operasi = 0
+
+    for i in range(n):
+        for j in range(i + 1):
+            operasi += 1
+
+    return operasi
 \end{lstlisting}
-Jumlah iterasi sebanding dengan $\log_2 n$.
 
-\section{Sorting dasar}
-Selection sort memilih elemen minimum dari bagian yang belum terurut dan menempatkannya di posisi berikutnya. Insertion sort menyisipkan elemen ke bagian kiri yang sudah terurut. Bubble sort melakukan pertukaran elemen bertetangga.
+Untuk $i=0$ ada 1 iterasi, untuk $i=1$ ada 2 iterasi, dan seterusnya:
+\[
+W(n)=1+2+\cdots+n
+    =\frac{n(n+1)}{2}.
+\]
+
+Karena suku dominannya adalah $\frac12n^2$,
+\[
+W(n)=O(n^2).
+\]
+
+Verifikasi dengan:
 
 \begin{lstlisting}
-def selection_sort(data):
+for n in range(1, 8):
+    hasil = hitung_segitiga(n)
+    rumus = n * (n + 1) // 2
+    print(n, hasil, rumus)
+\end{lstlisting}
+
+\subsection{Loop yang membagi dua}
+
+\begin{lstlisting}
+def hitung_bagi_dua(n):
+    i = n
+    operasi = 0
+
+    while i > 0:
+        operasi += 1
+        i = i // 2
+
+    return operasi
+\end{lstlisting}
+
+Coba untuk
+\[
+n=1,2,4,8,16,32,64.
+\]
+
+Setiap iterasi mengurangi ukuran masalah kira-kira menjadi setengah. Untuk $n\ge1$,
+banyak iterasinya
+\[
+\lfloor \log_2 n\rfloor+1,
+\]
+sehingga
+\[
+W(n)=O(\log n).
+\]
+
+\section{Mengukur waktu dengan \texttt{timeit}}
+
+Jumlah operasi berasal dari analisis algoritma. Kita juga dapat mengukur waktu implementasi,
+tetapi hasilnya dipengaruhi Python, implementasi fungsi, komputer, proses lain pada sistem,
+cache, dan bentuk input.
+
+Gunakan beberapa pengulangan dan ambil nilai tengah.
+
+\begin{lstlisting}
+from timeit import repeat
+from statistics import median
+
+def waktu_per_panggilan(f, n, number=1000):
+    hasil = repeat(
+        lambda: f(n),
+        repeat=7,
+        number=number
+    )
+    return median(hasil) / number
+\end{lstlisting}
+
+Contoh:
+
+\begin{lstlisting}
+for n in [10, 100, 1000, 10000]:
+    t_loop = waktu_per_panggilan(jumlah_loop, n)
+    t_rumus = waktu_per_panggilan(jumlah_rumus, n)
+
+    print(n, t_loop, t_rumus)
+\end{lstlisting}
+
+\begin{catatanbox}
+Jangan memasukkan \kode{print} ke dalam fungsi yang sedang dibandingkan waktunya.
+Input/output ke layar dapat jauh lebih mahal daripada operasi aritmetika dan menutupi
+perilaku algoritma yang sebenarnya ingin diamati.
+
+\textbf{timeit tidak menghitung kompleksitas.}
+Ia hanya mengukur waktu implementasi tertentu untuk input tertentu.
+Big-O diperoleh dari pertumbuhan $W(n)$ ketika $n$ membesar.
+\end{catatanbox}
+
+\section{Anagram: satu masalah, dua algoritma}
+
+Dua string disebut anagram jika memiliki karakter yang sama dengan frekuensi yang sama,
+hanya urutannya berbeda.
+
+Contoh:
+\[
+\texttt{listen}
+\qquad\text{dan}\qquad
+\texttt{silent}.
+\]
+
+\subsection{Cara 1: urutkan lalu bandingkan}
+
+\begin{lstlisting}
+def anagram_sort(a, b):
+    if len(a) != len(b):
+        return False
+
+    return sorted(a) == sorted(b)
+\end{lstlisting}
+
+Untuk string panjang $n$, sorting membutuhkan pertumbuhan sekitar
+\[
+O(n\log n).
+\]
+
+Perbandingan dua hasil sorting membutuhkan paling banyak $O(n)$, sehingga orde keseluruhan
+tetap
+\[
+O(n\log n).
+\]
+
+\subsection{Cara 2: hitung frekuensi karakter}
+
+Untuk latihan ini anggap string hanya berisi huruf kecil \kode{a} sampai \kode{z}.
+
+\begin{lstlisting}
+def anagram_frekuensi(a, b):
+    if len(a) != len(b):
+        return False
+
+    freq = [0] * 26
+
+    for ch in a:
+        indeks = ord(ch) - ord('a')
+        freq[indeks] += 1
+
+    for ch in b:
+        indeks = ord(ch) - ord('a')
+        freq[indeks] -= 1
+
+    return all(x == 0 for x in freq)
+\end{lstlisting}
+
+Dua loop masing-masing melalui $n$ karakter. Pemeriksaan terakhir hanya melalui 26 posisi:
+\[
+W(n)\sim n+n+26,
+\]
+maka
+\[
+O(n).
+\]
+
+Array frekuensi memakai 26 tempat tambahan. Untuk alfabet yang ukurannya dianggap tetap,
+kebutuhan ruang tambahan tersebut adalah $O(1)$ terhadap $n$.
+
+\begin{idebox}{Time-space trade-off}
+Versi frekuensi menggunakan struktur tambahan untuk menghindari sorting.
+Ini adalah contoh bahwa algoritma yang lebih cepat dapat memakai representasi data tambahan.
+\end{idebox}
+
+\subsection{Uji kedua algoritma}
+
+\begin{lstlisting}
+pasangan = [
+    ("listen", "silent"),
+    ("matematika", "matemaatik"),
+    ("algoritma", "logaritma"),
+    ("data", "adat"),
+    ("python", "typhon"),
+]
+
+for a, b in pasangan:
+    print(a, b,
+          anagram_sort(a, b),
+          anagram_frekuensi(a, b))
+\end{lstlisting}
+
+Buat pula input lebih panjang dan ukur kedua implementasi.
+
+\begin{lstlisting}
+def buat_anagram(n):
+    pola = "matematika"
+    a = (pola * (n // len(pola) + 1))[:n]
+    b = a[::-1]
+    return a, b
+
+for n in [100, 1000, 10000]:
+    a, b = buat_anagram(n)
+
+    t_sort = median(repeat(
+        lambda: anagram_sort(a, b),
+        repeat=7, number=100
+    )) / 100
+
+    t_freq = median(repeat(
+        lambda: anagram_frekuensi(a, b),
+        repeat=7, number=100
+    )) / 100
+
+    print(n, t_sort, t_freq)
+\end{lstlisting}
+
+Jangan menyimpulkan orde hanya dari satu tabel waktu. Gunakan analisis algoritma untuk
+menentukan Big-O, lalu gunakan data waktu untuk melihat apakah kecenderungan empiris
+masuk akal.
+
+\section{Sorting dasar dengan penghitung operasi}
+
+Selain hasil sorting, kita dapat mencatat apa yang dilakukan algoritma.
+
+\subsection{Selection sort}
+
+\begin{lstlisting}
+def selection_sort_hitung(data):
     a = data.copy()
     n = len(a)
+    perbandingan = 0
+    pertukaran = 0
+
     for i in range(n - 1):
-        k = i
+        min_index = i
+
         for j in range(i + 1, n):
-            if a[j] < a[k]:
-                k = j
-        a[i], a[k] = a[k], a[i]
-    return a
+            perbandingan += 1
+
+            if a[j] < a[min_index]:
+                min_index = j
+
+        if min_index != i:
+            a[i], a[min_index] = a[min_index], a[i]
+            pertukaran += 1
+
+    return a, perbandingan, pertukaran
 \end{lstlisting}
 
-\section{Konstanta dan titik silang}
-Misalkan
+Jumlah perbandingan selection sort:
 \[
-T_1(n)=7n^2+3n+40,\qquad T_2(n)=0.001n^3+100n.
+(n-1)+(n-2)+\cdots+1
+=
+\frac{n(n-1)}{2},
 \]
-Secara asimtotik $T_1=O(n^2)$ dan $T_2=O(n^3)$, tetapi pada rentang input terbatas konstanta dapat membuat perbandingan praktis berbeda.
+sehingga
+\[
+O(n^2).
+\]
+
+Perhatikan bahwa jumlah \textbf{pertukaran} tidak harus sama dengan jumlah
+\textbf{perbandingan}.
+
+\subsection{Insertion sort}
+
+\begin{lstlisting}
+def insertion_sort_hitung(data):
+    a = data.copy()
+    perbandingan = 0
+
+    for i in range(1, len(a)):
+        key = a[i]
+        j = i - 1
+
+        while j >= 0:
+            perbandingan += 1
+
+            if a[j] <= key:
+                break
+
+            a[j + 1] = a[j]
+            j -= 1
+
+        a[j + 1] = key
+
+    return a, perbandingan
+\end{lstlisting}
+
+Jumlah perbandingan insertion sort sangat dipengaruhi susunan awal data.
+Data yang sudah hampir terurut dapat membutuhkan jauh lebih sedikit kerja daripada data terbalik.
+
+\subsection{Bubble sort}
+
+\begin{lstlisting}
+def bubble_sort_hitung(data):
+    a = data.copy()
+    n = len(a)
+    perbandingan = 0
+    pertukaran = 0
+
+    for akhir in range(n - 1, 0, -1):
+        for i in range(akhir):
+            perbandingan += 1
+
+            if a[i] > a[i + 1]:
+                a[i], a[i + 1] = a[i + 1], a[i]
+                pertukaran += 1
+
+    return a, perbandingan, pertukaran
+\end{lstlisting}
+
+Uji ketiganya pada:
+
+\begin{lstlisting}
+data_acak = [8, 3, 7, 4, 9, 2, 6, 5]
+data_urut = sorted(data_acak)
+data_terbalik = sorted(data_acak, reverse=True)
+
+print(selection_sort_hitung(data_acak))
+print(insertion_sort_hitung(data_acak))
+print(bubble_sort_hitung(data_acak))
+\end{lstlisting}
+
+Bandingkan hasil, banyak perbandingan, dan banyak pertukaran.
+Jangan hanya membandingkan waktu.
+
+\section{Eksperimen pertumbuhan}
+
+Gunakan beberapa ukuran input, misalnya
+\[
+n=100,\;200,\;400,\;800.
+\]
+
+Untuk setiap ukuran:
+\begin{enumerate}
+  \item buat input sebelum pengukuran waktu;
+  \item gunakan input yang sama ketika dua algoritma dibandingkan;
+  \item catat jumlah operasi yang relevan;
+  \item ukur waktu beberapa kali;
+  \item ambil median;
+  \item lihat apa yang terjadi ketika $n$ digandakan.
+\end{enumerate}
+
+Jika algoritma mendekati $O(n)$, menggandakan $n$ cenderung membuat banyak kerja sekitar
+dua kali. Untuk $O(n^2)$, banyak kerja cenderung sekitar empat kali. Ini adalah pola
+pertumbuhan, bukan aturan bahwa waktu di komputer harus tepat 2 atau 4 kali.
 
 \begin{latihanbox}{Latihan Praktikum 5}
 \begin{enumerate}
-  \item Urutkan $1,\log n,n,n\log n,n^2,n^3,2^n,n!$ dari pertumbuhan paling lambat.
-  \item Hitung jumlah eksekusi baris terdalam pada dua loop $n\times n$.
-  \item Jelaskan mengapa dua loop $O(n)$ yang berurutan tetap $O(n)$.
-  \item Hitung jumlah iterasi loop yang membagi \kode{i} dengan dua sampai nol.
-  \item Untuk loop segitiga \kode{for i in range(n): for j in range(i+1)}, tunjukkan bahwa jumlah operasi $1+2+\cdots+n$.
-  \item Bandingkan fungsi penjumlahan $1+\cdots+n$ berbasis loop dengan rumus $n(n+1)/2$.
-  \item Klasifikasikan indexing list, \kode{append}, \kode{pop()}, \kode{pop(0)}, membership, dan sorting menurut orde pertumbuhannya.
-  \item Gunakan \kode{timeit} untuk memeriksa minimal dua operasi list pada beberapa ukuran $n$.
-  \item Analisis time-space trade-off antara deteksi anagram dengan sorting dan dengan array frekuensi.
-  \item Tentukan Big-O $T_1(n)$ dan $T_2(n)$ di atas.
-  \item Cari secara numerik interval $n$ ketika $T_1(n)<T_2(n)$.
-  \item Rancang eksperimen untuk membedakan fungsi $O(n)$ dan $O(n^2)$ dari rasio waktu ketika $n$ digandakan.
-  \item Trace tiga pass pertama selection sort untuk \kode{[11,7,12,14,19,1,6,18,8,20]}.
-  \item Implementasikan insertion sort dan catat jumlah perbandingan.
-  \item Implementasikan bubble sort dan catat jumlah pertukaran.
-  \item Uji ketiga sorting pada data acak, terurut, dan terbalik.
-  \item Jelaskan kondisi ketika insertion sort dapat tampak cepat pada data kecil walaupun worst-case tetap $O(n^2)$.
-  \item Bandingkan hasil sorting buatan dengan \kode{sorted}. Pastikan urutannya sama.
-  \item Buat tabel $n$, waktu, dan jumlah operasi untuk sekurangnya empat ukuran input.
-  \item Tulis kesimpulan singkat yang membedakan Big-O, jumlah operasi, dan waktu eksekusi aktual.
+  \item Buat tabel nilai $1$, $\log_2 n$, $n$, $n\log_2 n$, $n^2$, $n^3$, $2^n$, dan $n!$ untuk beberapa $n$ kecil. Dari tabel tersebut, susun urutan pertumbuhan dari paling lambat.
+  \item Jalankan \kode{hitung_persegi(n)} untuk $n=2,4,8,16$. Bandingkan keluaran dengan $n^2$.
+  \item Jalankan \kode{hitung_berurutan(n)} pada nilai $n$ yang sama. Verifikasi bahwa banyak eksekusi baris utama adalah $2n$, bukan $n^2$.
+  \item Jalankan \kode{hitung_bagi_dua(n)} untuk $n=1,2,4,\ldots,1024$. Buat tabel $n$ dan banyak iterasi.
+  \item Jalankan \kode{hitung_segitiga(n)} untuk $n=1,\ldots,10$ dan verifikasi terhadap $n(n+1)/2$.
+  \item Untuk \kode{jumlah_loop}, hitung $W(n)$ dari kode, lalu cek keluaran untuk $n=5,10,100$. Tunjukkan mengapa pertumbuhannya $O(n)$.
+  \item Tambahkan tiga \kode{print} seperti pada \kode{jumlah_loop_dekoratif}. Hitung kembali $W(n)$. Jelaskan apa yang berubah dan apa yang tidak berubah.
+  \item Bandingkan \kode{jumlah_loop} dan \kode{jumlah_rumus} dengan \kode{timeit} untuk minimal lima ukuran $n$. Pastikan kedua fungsi menghasilkan nilai yang sama sebelum mengukur waktu.
+  \item Pilih dua operasi list, misalnya indexing dan \kode{pop(0)}. Gunakan \kode{timeit} pada beberapa ukuran list dan catat kecenderungannya.
+  \item Implementasikan \kode{anagram_sort}. Uji sedikitnya lima pasangan string: anagram, bukan anagram, panjang berbeda, karakter berulang, dan string kosong.
+  \item Implementasikan \kode{anagram_frekuensi}. Pastikan hasilnya sama dengan \kode{anagram_sort} untuk seluruh test case.
+  \item Untuk kedua algoritma anagram, tuliskan operasi yang paling sering dilakukan, fungsi banyak kerjanya terhadap $n$, Big-O waktu, dan kebutuhan ruang tambahan.
+  \item Gunakan \kode{timeit} untuk membandingkan kedua algoritma anagram pada $n=10^2,10^3,10^4$. Jelaskan mengapa hasil waktu tidak boleh dipakai sebagai definisi kompleksitas.
+  \item Untuk
+  \[
+  W_1(n)=7n^2+3n+40,\qquad
+  W_2(n)=0.001n^3+100n,
+  \]
+  tentukan orde keduanya dan cari secara numerik rentang $n$ ketika $W_1(n)<W_2(n)$.
+  \item Trace tiga pass pertama selection sort untuk list \kode{[9,4,7,1,6,3,8,2]}. Setelah setiap pass, tulis bagian yang sudah berada pada posisi final.
+  \item Jalankan \kode{selection_sort_hitung} pada data terurut, acak, dan terbalik dengan panjang yang sama. Bandingkan banyak perbandingan dan pertukaran.
+  \item Jalankan \kode{insertion_sort_hitung} pada tiga bentuk data yang sama. Bandingkan banyak perbandingan dan jelaskan perbedaannya.
+  \item Jalankan \kode{bubble_sort_hitung} pada tiga bentuk data yang sama. Catat banyak perbandingan dan pertukaran.
+  \item Untuk sekurangnya empat ukuran input, buat tabel berisi $n$, bentuk input, jumlah operasi, dan waktu aktual untuk selection, insertion, dan bubble sort. Verifikasi seluruh hasil dengan \kode{sorted}.
+  \item Tulis kesimpulan praktikum yang membedakan dengan jelas: fungsi banyak kerja $W(n)$, Big-O, jumlah operasi yang benar-benar tercatat, dan waktu eksekusi aktual dari \kode{timeit}.
 \end{enumerate}
 \end{latihanbox}
 
