@@ -1,0 +1,449 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[indonesian]{babel}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{multicol}
+
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{Warn}{HTML}{D97706}
+
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Warn}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{Blue}\bfseries,
+  commentstyle=\color{Teal},
+  stringstyle=\color{Gold!70!black},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{Navy!35},
+  backgroundcolor=\color{CodeBg},
+  tabsize=4,
+  columns=fullflexible
+}
+\lstset{style=py}
+
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\title[\mkfooter]{Pertemuan 7: Aljabar Linier Komputasional}
+\subtitle{Vektor, matriks, SPL, residual, eigen, dan data sebagai matriks}
+\author{Rifky Fauzi dan Triyana Muliawati, S.Si., M.Si.}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+\begin{frame}[plain]
+\begingroup
+\setbeamertemplate{footline}{}
+\begin{columns}[T]
+\column{.58\textwidth}
+\vspace{7mm}
+{\color{Navy}\fontsize{22}{25}\selectfont\bfseries Pertemuan 7\\Aljabar Linier Komputasional}\\[4mm]
+{\large Pemrograman untuk Ilmu Data dan Komputasi}\\[2mm]
+{\normalsize MA25-21008 \quad Kelas RA dan RB}\\[6mm]
+{\small Rifky Fauzi\\Triyana Muliawati, S.Si., M.Si.}\\[2mm]
+{\small Program Studi Matematika, ITERA\\Semester Ganjil 2026/2027}
+\column{.38\textwidth}
+\vspace{9mm}
+\begin{block}{Fokus hari ini}
+\small
+\begin{itemize}
+  \item membaca vektor dan matriks sebagai struktur data;
+  \item menulis algoritma manual sebelum memakai NumPy;
+  \item menghitung banyak kerja dari loop;
+  \item memakai residual untuk memeriksa hasil numerik.
+\end{itemize}
+\end{block}
+\end{columns}
+\endgroup
+\end{frame}
+
+% 2
+\begin{frame}{Apa yang harus siap untuk LKM M7}
+\small
+\begin{center}
+\begin{tabular}{p{2.2cm}p{5.2cm}p{5.0cm}}
+\toprule
+Bagian & Yang dikerjakan & Ide algoritma \\
+\midrule
+M7.1--M7.2 & operasi vektor, norm, element-wise, $A@B$ & loop komponen dan operasi array \\
+M7.3--M7.4 & perkalian matriks manual dan transpose & loop bersarang, cek dimensi \\
+M7.5--M7.8 & invers 2x2, SPL, residual & determinan, solve, verifikasi $Ax\approx b$ \\
+M7.9--M7.10 & eigen dan data sebagai matriks & cek $Av\approx\lambda v$, mean kolom, Gram matrix \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\begin{alertblock}{Pola kerja}
+Tuliskan rumus matematika, ubah menjadi indeks, baru tulis loop. Setelah itu, jika perlu, bandingkan dengan NumPy.
+\end{alertblock}
+\end{frame}
+
+% 3
+\begin{frame}[fragile]{Vektor: operasi komponen dan norm}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Contoh dari LKM}
+\[
+x=(1,-2,3),\qquad y=(4,0,-1)
+\]
+\[
+x+y=(5,-2,2),\qquad 2x-y=(-2,-4,7)
+\]
+\[
+x\cdot y=\sum_{i=1}^{n}x_i y_i,
+\qquad
+\|x\|_2=\sqrt{\sum_{i=1}^{n}x_i^2}
+\]
+\end{block}
+\column{.47\textwidth}
+\begin{lstlisting}
+def dot(x, y):
+    total = 0
+    for i in range(len(x)):
+        total += x[i] * y[i]
+    return total
+
+# norm(x) = sqrt(dot(x,x))
+\end{lstlisting}
+\begin{alertblock}{Banyak kerja}
+Loop berjalan $n$ kali.
+\[
+T(n)=c_0+c_1 n \quad\Rightarrow\quad O(n)
+\]
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 4
+\begin{frame}[fragile]{Element-wise, matrix product, dan operator \texttt{@}}
+\begin{columns}[T]
+\column{.45\textwidth}
+\[
+A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\qquad
+B=\begin{pmatrix}2&0\\1&5\end{pmatrix}
+\]
+\[
+A\odot B=\begin{pmatrix}1\cdot2&2\cdot0\\3\cdot1&4\cdot5\end{pmatrix}
+=\begin{pmatrix}2&0\\3&20\end{pmatrix}
+\]
+\[
+AB=\begin{pmatrix}
+1\cdot2+2\cdot1 & 1\cdot0+2\cdot5\\
+3\cdot2+4\cdot1 & 3\cdot0+4\cdot5
+\end{pmatrix}
+=\begin{pmatrix}4&10\\10&20\end{pmatrix}
+\]
+\column{.51\textwidth}
+\begin{lstlisting}
+import numpy as np
+A = np.array([[1,2],[3,4]])
+B = np.array([[2,0],[1,5]])
+
+A * B   # element-wise
+A @ B   # perkalian matriks
+\end{lstlisting}
+\begin{block}{Perbedaan penting}
+\texttt{*} bekerja per elemen dengan posisi yang sama. \texttt{@} memakai baris-kali-kolom.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 5
+\begin{frame}[fragile]{Perkalian matriks manual: tiga loop}
+Untuk $A\in\mathbb{R}^{m\times p}$ dan $B\in\mathbb{R}^{p\times n}$,
+\[
+C_{ij}=\sum_{k=1}^{p} A_{ik}B_{kj}.
+\]
+\begin{columns}[T]
+\column{.55\textwidth}
+\begin{lstlisting}
+def matmul_manual(A, B):
+    m, p = len(A), len(A[0])
+    p2, n = len(B), len(B[0])
+    if p != p2:
+        raise ValueError("dimensi tidak cocok")
+    C = [[0 for j in range(n)] for i in range(m)]
+    for i in range(m):
+        for j in range(n):
+            for k in range(p):
+                C[i][j] += A[i][k] * B[k][j]
+    return C
+\end{lstlisting}
+\column{.41\textwidth}
+\begin{alertblock}{Menghitung $T$}
+Operasi terdalam berjalan untuk semua pasangan $(i,j,k)$.
+\[
+T(m,p,n)=m\cdot n\cdot p
+\]
+Jika matriks persegi $n\times n$:
+\[
+T(n)=n^3\quad\Rightarrow\quad O(n^3).
+\]
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 6
+\begin{frame}[fragile]{Transpose: menukar peran baris dan kolom}
+Jika $A\in\mathbb{R}^{m\times n}$, maka $A^T\in\mathbb{R}^{n\times m}$ dan
+\[
+(A^T)_{ij}=A_{ji}.
+\]
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{lstlisting}
+def transpose(A):
+    m, n = len(A), len(A[0])
+    T = [[0 for i in range(m)] for j in range(n)]
+    for i in range(m):
+        for j in range(n):
+            T[j][i] = A[i][j]
+    return T
+\end{lstlisting}
+\column{.47\textwidth}
+\begin{block}{Contoh}
+\[
+\begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}^T
+=
+\begin{pmatrix}1&4\\2&5\\3&6\end{pmatrix}
+\]
+\end{block}
+\begin{alertblock}{Banyak kerja}
+Setiap elemen dipindahkan sekali.
+\[
+T(m,n)=mn\quad\Rightarrow\quad O(mn)
+\]
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 7
+\begin{frame}{Invers 2x2 dan SPL}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Invers matriks 2x2}
+\[
+A=\begin{pmatrix}a&b\\c&d\end{pmatrix},\qquad
+\det(A)=ad-bc
+\]
+Jika $\det(A)\neq0$,
+\[
+A^{-1}=\frac{1}{ad-bc}
+\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.
+\]
+Jika $\det(A)=0$, matriks singular dan invers tidak ada.
+\end{block}
+\column{.46\textwidth}
+\begin{block}{SPL sebagai $Ax=b$}
+\[
+A=\begin{pmatrix}2&1\\5&3\end{pmatrix},\qquad
+b=\begin{pmatrix}1\\4\end{pmatrix}
+\]
+\[
+\det(A)=2\cdot3-1\cdot5=1\neq0.
+\]
+Untuk 2x2, rumus invers manual masih masuk akal. Untuk ukuran besar, gunakan \texttt{np.linalg.solve(A,b)}, bukan membentuk invers terlebih dahulu.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 8
+\begin{frame}[fragile]{Residual: cara memeriksa solusi numerik}
+Solusi numerik $\hat{x}$ tidak cukup hanya dilihat nilainya. Periksa sisa persamaan:
+\[
+r=b-A\hat{x},\qquad \|r\|_2.
+\]
+\begin{columns}[T]
+\column{.53\textwidth}
+\begin{lstlisting}
+def matvec(A, x):
+    m, n = len(A), len(A[0])
+    y = [0 for i in range(m)]
+    for i in range(m):
+        for j in range(n):
+            y[i] += A[i][j] * x[j]
+    return y
+\end{lstlisting}
+\column{.43\textwidth}
+\begin{alertblock}{Banyak kerja}
+Matrix-vector product memakai dua loop.
+\[
+T(m,n)=mn
+\]
+Menghitung $r=b-A\hat{x}$ dan norm menambah orde $O(m)$.
+\[
+T(m,n)=mn+m\quad\Rightarrow\quad O(mn)
+\]
+\end{alertblock}
+\begin{block}{Makna residual}
+Jika $\|r\|_2$ kecil, maka $\hat{x}$ membuat $A\hat{x}$ dekat dengan $b$.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 9
+\begin{frame}{Nilai eigen dan verifikasi}
+Untuk matriks kecil, nilai eigen dapat dihitung dari
+\[
+\det(A-\lambda I)=0.
+\]
+Contoh:
+\[
+A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
+\quad
+A-\lambda I=\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix}
+\]
+\[
+\det(A-\lambda I)=(2-\lambda)^2-1=0
+\]
+\[
+\lambda=1\quad\text{atau}\quad \lambda=3.
+\]
+\begin{alertblock}{Yang dicek di komputer}
+Untuk setiap pasangan $(\lambda,v)$ dari \texttt{np.linalg.eig}, hitung
+\[
+\|Av-\lambda v\|_2.
+\]
+Untuk $A\in\mathbb{R}^{n\times n}$, verifikasi $Av$ membutuhkan $O(n^2)$.
+\end{alertblock}
+\end{frame}
+
+% 10
+\begin{frame}{Data sebagai matriks}
+Misalkan $X\in\mathbb{R}^{m\times d}$: $m$ observasi dan $d$ fitur.
+\[
+\bar{x}_j=\frac{1}{m}\sum_{i=1}^{m}X_{ij},
+\qquad
+(X_c)_{ij}=X_{ij}-\bar{x}_j.
+\]
+\[
+G=X_c^T X_c.
+\]
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Algoritma}
+\begin{enumerate}\small
+  \item hitung rata-rata tiap kolom;
+  \item kurangi setiap kolom dengan rata-ratanya;
+  \item hitung $X_c^T X_c$;
+  \item periksa $G$ simetris.
+\end{enumerate}
+\end{block}
+\column{.48\textwidth}
+\begin{alertblock}{Banyak kerja}
+Mean kolom dan centering:
+\[
+O(md)
+\]
+Gram matrix:
+\[
+G_{jk}=\sum_{i=1}^{m}(X_c)_{ij}(X_c)_{ik}
+\]
+Ada $d^2$ pasangan fitur, masing-masing menjumlahkan $m$ baris:
+\[
+O(md^2).
+\]
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 11
+\begin{frame}{Ringkasan algoritma dan orde}
+\small
+\begin{center}
+\begin{tabular}{p{4.4cm}p{4.2cm}p{3.0cm}}
+\toprule
+Masalah & Operasi utama & Orde \\
+\midrule
+Dot product, norm vektor & loop semua komponen & $O(n)$ \\
+Transpose $m\times n$ & pindahkan tiap elemen & $O(mn)$ \\
+Matrix-vector product & dua loop baris-kolom & $O(mn)$ \\
+Matrix product $m\times p$ dengan $p\times n$ & tiga loop & $O(mpn)$ \\
+Matrix product persegi & tiga loop ukuran $n$ & $O(n^3)$ \\
+Verifikasi eigen $Av\approx\lambda v$ & matrix-vector product & $O(n^2)$ \\
+Mean dan centering data $m\times d$ & semua entri data & $O(md)$ \\
+Gram matrix $X_c^TX_c$ & fitur-pasangan-baris & $O(md^2)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{alertblock}{Kebiasaan yang dipakai di LKM}
+Jawaban numerik perlu disertai cara cek: dimensi cocok, hasil manual kecil, hasil NumPy, dan residual/norm selisih.
+\end{alertblock}
+\end{frame}
+
+% 12
+\begin{frame}{Arah kerja setelah kelas}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Saat mengerjakan LKM M7}
+\begin{itemize}
+  \item Untuk soal kecil, hitung manual terlebih dahulu.
+  \item Untuk list of lists, tulis loop dan cek dimensi.
+  \item Untuk NumPy, bedakan \texttt{*}, \texttt{@}, dan \texttt{np.linalg.solve}.
+  \item Untuk SPL dan eigen, selalu verifikasi dengan residual atau norm selisih.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Pertanyaan yang harus selalu dijawab}
+\begin{itemize}
+  \item Ukuran inputnya apa?
+  \item Operasi terdalamnya apa?
+  \item Berapa kali operasi itu dieksekusi?
+  \item Apakah hasilnya bisa diperiksa kembali?
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{1mm}
+\begin{center}
+\Large rumus $\rightarrow$ indeks $\rightarrow$ loop $\rightarrow$ cek hasil
+\end{center}
+\end{frame}
+
+\end{document}
+
