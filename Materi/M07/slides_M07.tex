@@ -156,10 +156,11 @@ Rumus linear algebra tidak hilang. Kita menerjemahkannya menjadi struktur data, 
 
 % 3
 \begin{frame}[fragile]{Vektor: indeks, operasi komponen, dan norma}
+\vspace{-0.3cm}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Dari rumus ke indeks}
-\small
+\column{.45\textwidth}
+\begin{block}{\small Dari rumus ke indeks}
+\footnotesize
 \[
 x=(x_1,\ldots,x_n),\qquad y=(y_1,\ldots,y_n)
 \]
@@ -172,16 +173,18 @@ x\cdot y=\sum_{i=1}^{n}x_i y_i
 \]
 \end{block}
 \pause
-\begin{block}{Fungsi kerja}
+\vspace{-0.3cm}
+\begin{block}{\small Fungsi kerja}
+\footnotesize
 Jika loop berjalan pada $n$ komponen, maka banyak kerja bertambah sebanding dengan $n$.
 \[
-W(n)=\text{kerja tetap}+\text{kerja per komponen}\cdot n
+T(n)=\text{kerja tetap}+\text{kerja per komponen}\cdot n
 \]
 \[
-W(n)\in O(n)
+T(n)\in O(n)
 \]
 \end{block}
-\column{.47\textwidth}
+\column{.5\textwidth}
 \begin{lstlisting}
 def dot(x, y):
     if len(x) != len(y):
@@ -216,7 +219,7 @@ AB=\mat{
 3\cdot2+4\cdot1 & 3\cdot0+4\cdot5}
 =\mat{4&10\\10&20}
 \]
-\column{.49\textwidth}
+\column{.4\textwidth}
 \begin{lstlisting}
 import numpy as np
 A = np.array([[1, 2], [3, 4]])
@@ -300,7 +303,7 @@ W(m,p,n)=5+mn+mn+2mnp+mn=5+3mn+2mnp.
 \]
 Jika matriks bujur sangkar $n\times n$:
 \[
-W(n)=5+3n^2+2n^3 \quad\Rightarrow\quad W(n)\in O(n^3).
+T(n)=5+3n^2+2n^3 \quad\Rightarrow\quad T(n)\in O(n^3).
 \]
 \end{frame}
 
@@ -345,7 +348,7 @@ def transpose(A):
 # np.array(A).T
 \end{lstlisting}
 \begin{alertblock}{Fungsi kerja}
-Ada $mn$ elemen yang dipindahkan. Maka $W(m,n)$ sebanding dengan $mn$.
+Ada $mn$ elemen yang dipindahkan. Maka $T(m,n)$ sebanding dengan $mn$.
 \end{alertblock}
 \end{columns}
 \end{frame}
@@ -365,7 +368,7 @@ ad-bc\ne 0.
 \]
 Jika determinan nol, program harus menolak input.
 \end{alertblock}
-\column{.52\textwidth}
+\column{.4\textwidth}
 \begin{lstlisting}
 def inv2(A):
     a, b = A[0]
@@ -377,7 +380,8 @@ def inv2(A):
             [-c/det,  a/det]]
 \end{lstlisting}
 \pause
-\begin{block}{Verifikasi}
+\begin{block}{\small Verifikasi}
+\footnotesize
 Hasil invers tidak cukup dilihat dari bentuknya. Periksa
 \[
 AA^{-1}\approx I.
@@ -421,7 +425,8 @@ Untuk menyelesaikan $Ax=b$, gunakan \texttt{solve}. Jangan membentuk $A^{-1}$ ha
 
 % 10
 \begin{frame}{Pengayaan: invers ukuran $n\times n$ dan biaya komputasi}
-\begin{block}{Satu cara berpikir}
+\begin{block}{\small Satu cara berpikir}
+\footnotesize
 Untuk matriks besar, invers dapat dipandang sebagai menyelesaikan
 \[
 AX=I.
@@ -434,6 +439,7 @@ Artinya, menghitung invers berarti menyelesaikan banyak sistem linear.
 \end{block}
 \pause
 \begin{center}
+\footnotesize
 \begin{tikzpicture}[node distance=6mm]
 \node[box,text width=2.8cm] (a) {Eliminasi Gaussian / faktorisasi};
 \node[box,text width=2.5cm,right=of a] (b) {banyak operasi bertingkat};
@@ -442,8 +448,9 @@ Artinya, menghitung invers berarti menyelesaikan banyak sistem linear.
 \draw[arr] (b) -- (c);
 \end{tikzpicture}
 \end{center}
+\footnotesize
 \[
-W(n)\in O(n^3),\qquad \text{memori matriks }\in O(n^2).
+T(n)\in O(n^3),\qquad \text{memori matriks }\in O(n^2).
 \]
 \begin{alertblock}{Kaitannya dengan data besar}
 Jika $n$ ribuan atau lebih, membentuk invers eksplisit sering mahal dan tidak stabil. Pilih algoritma yang langsung menjawab kebutuhan: solve, least squares, sparse solver, atau metode iteratif.
@@ -521,41 +528,177 @@ Jika $\|Av-\lambda v\|_2$ kecil, pasangan $(\lambda,v)$ konsisten secara numerik
 \end{frame}
 
 % 13
-\begin{frame}{Data sebagai matriks dan pintu masuk PCA}
-\begin{columns}[T]
-\column{.46\textwidth}
-\begin{block}{Data}
-Baris adalah observasi, kolom adalah fitur.
+\begin{frame}{Principal Component Analysis}
+\footnotesize
+\begin{block}{Masalah pada data berdimensi tinggi}
+Dalam analisis data, satu objek dapat dijelaskan oleh banyak variabel.
+
+\medskip
+Misalnya suatu dataset memiliki
 \[
-X=\begin{pmatrix}
-1&2&0\\
-2&1&1\\
-4&3&2\\
-3&4&1
-\end{pmatrix}
+20,\;100,\;\text{atau bahkan ribuan fitur}.
 \]
-Rata-rata kolom:
-\[
-\bar{x}=\frac{1}{m}\sum_{i=1}^{m}X_{i,:}.
-\]
-Centered matrix:
-\[
-X_c=X-\mathbf{1}\bar{x}^{T}.
-\]
+
+Semakin banyak fitur, semakin sulit untuk:
+\begin{itemize}
+    \item melihat pola data;
+    \item membandingkan antarobservasi;
+    \item mengetahui fitur mana yang benar-benar membawa informasi baru;
+    \item melakukan komputasi secara efisien.
+\end{itemize}
 \end{block}
-\column{.50\textwidth}
-\begin{block}{Gram / covariance direction}
-\[
-G=X_c^T X_c.
-\]
-Matriks ini simetris dan memuat hubungan antarfitur.
-\end{block}
+
 \pause
-\begin{alertblock}{Ide PCA}
-PCA mencari arah baru yang menjelaskan variasi data sebesar mungkin. Secara aljabar linear, arah ini diperoleh dari eigenvector matriks kovariansi atau Gram yang sesuai.
+
+\begin{alertblock}{Masalah lain: fitur dapat saling berkaitan}
+Dua atau lebih fitur dapat berubah dengan pola yang hampir sama.
+
+Artinya, sebagian informasi yang kita simpan sebenarnya
+\textbf{berulang atau saling tumpang tindih}.
 \end{alertblock}
-\end{columns}
+
+\pause
+
+\begin{center}
+\footnotesize
+Bisakah banyak fitur tersebut diringkas menjadi lebih sedikit
+fitur tanpa kehilangan terlalu banyak informasi?
+\end{center}
+
 \end{frame}
+
+% 14
+\begin{frame}{Principal Component Analysis}
+
+PCA adalah metode untuk \textbf{meringkas data berdimensi tinggi}
+dengan membentuk sejumlah variabel baru yang disebut
+\textbf{principal components}.
+
+\pause
+
+\begin{center}
+\[
+\underbrace{
+\begin{matrix}
+x_1 & x_2 & x_3 & x_4 & \cdots & x_p
+\end{matrix}}_{\text{banyak fitur}}
+\qquad
+\longrightarrow
+\qquad
+\underbrace{
+\begin{matrix}
+z_1 & z_2 & \cdots & z_k
+\end{matrix}}_{\text{lebih sedikit komponen}},
+\qquad k<p.
+\]
+\end{center}
+
+\pause
+
+\begin{block}{\footnotesize Apa yang dilakukan PCA?}
+footnotesize  PCA tidak sekadar membuang beberapa kolom. PCA membuat \textbf{kombinasi baru dari fitur-fitur lama} sehingga komponen pertama mempertahankan variasi data sebanyak mungkin,
+kemudian komponen berikutnya mempertahankan variasi yang masih tersisa.
+\end{block}
+
+\pause
+
+\begin{alertblock}{\footnotesize Hubungannya dengan aljabar linear}
+\footnotesize  Principal component adalah sebuah \textbf{arah}. Karena arah dapat dinyatakan sebagai vektor,
+masalah PCA akhirnya menjadi masalah mencari
+\textbf{vektor-vektor tertentu dari sebuah matriks}.
+\end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}{Bagaimana PCA bekerja?}
+\footnotesize
+
+Misalkan data memiliki $m$ observasi dan $p$ fitur:
+\[
+X\in\mathbb{R}^{m\times p}.
+\]
+
+\begin{columns}[T]
+
+\column{0.49\textwidth}
+
+\begin{enumerate}
+    \item \textbf{Pusatkan data}
+
+    Hitung rata-rata setiap fitur:
+    \[
+    \bar{x}_j=\frac{1}{m}\sum_{i=1}^{m}X_{ij},
+    \]
+    kemudian
+    \[
+    X_c=X-\mathbf{1}\bar{x}^{T}.
+    \]
+
+    \pause
+
+    \item \textbf{Hitung matriks kovariansi}
+    \[
+    S=\frac{1}{m-1}X_c^T X_c.
+    \]
+
+    \pause
+
+    \item \textbf{Cari eigenvalue dan eigenvector}
+    \[
+    Sv_i=\lambda_i v_i.
+    \]
+
+    Urutkan:
+    \[
+    \lambda_1\geq\lambda_2\geq\cdots\geq\lambda_p.
+    \]
+\end{enumerate}
+
+\column{0.47\textwidth}
+
+\begin{enumerate}
+    \setcounter{enumi}{3}
+
+    \pause
+    \item \textbf{Ambil $k$ arah utama}
+    \[
+    W=
+    \begin{pmatrix}
+    v_1 & v_2 & \cdots & v_k
+    \end{pmatrix}.
+    \]
+
+    Eigenvector dengan eigenvalue terbesar
+    menjadi arah yang dipertahankan.
+
+    \pause
+
+    \item \textbf{Proyeksikan data}
+    \[
+    Z=X_cW,
+    \]
+    dengan
+    \[
+    Z\in\mathbb{R}^{m\times k}.
+    \]
+
+    \begin{block}{\footnotesize Hasil}
+    footnotesize 
+    Data semula memiliki $p$ fitur.
+
+    Setelah PCA:
+    \(
+    p \longrightarrow k,
+    \qquad k<p.
+    \)
+    \end{block}
+\end{enumerate}
+
+\end{columns}
+
+\end{frame}
+
 
 % 14
 \begin{frame}[fragile]{Algoritma data sebagai matriks}
@@ -596,7 +739,6 @@ Menghitung $X_c^T X_c$ untuk $X_c$ berukuran $m\times n$ memerlukan pola seperti
 % 15
 \begin{frame}{Latihan penutup yang layak menjadi soal ujian}
 \small
-\begin{block}{Satu paket soal}
 Diberikan
 \[
 A=\begin{pmatrix}2&1&0\\1&3&1\\0&1&2\end{pmatrix},\qquad
@@ -611,8 +753,9 @@ Kerjakan berurutan:
   \item hitung residual $r=b-A\hat{x}$ dan $\|r\|_2$;
   \item jelaskan mengapa memeriksa residual lebih aman daripada hanya melihat nilai $\hat{x}$.
 \end{enumerate}
-\end{block}
+
 \begin{alertblock}{Target berpikir}
+\footnotesize
 Bukan sekadar memakai fungsi pustaka, tetapi memahami apa yang dihitung, bagaimana mengecek hasilnya, dan bagaimana biayanya bertumbuh.
 \end{alertblock}
 \end{frame}
