@@ -6,15 +6,21 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[indonesian]{babel}
+\usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,matrix,decorations.pathreplacing}
 \usepackage{listings}
-\usepackage{amsmath}
-\usepackage{amsfonts}
+\usepackage{xcolor}
 \usepackage{ragged2e}
 \usepackage{adjustbox}
-\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+\graphicspath{{assets/}{../M05/assets/}{../M01/assets/}}
 
 \definecolor{DeepNavy}{HTML}{0B1220}
 \definecolor{Navy}{HTML}{12355B}
@@ -26,7 +32,9 @@
 \definecolor{SoftGray}{HTML}{F4F6F8}
 \definecolor{CodeBg}{HTML}{F8FAFC}
 \definecolor{DarkText}{HTML}{15202B}
-\definecolor{Warn}{HTML}{D97706}
+\definecolor{Purple}{HTML}{6F42C1}
+\definecolor{RedSoft}{HTML}{FDECEC}
+\definecolor{GreenSoft}{HTML}{E9F7EF}
 
 \setbeamercolor{title}{fg=white}
 \setbeamercolor{frametitle}{fg=white,bg=Navy}
@@ -34,7 +42,7 @@
 \setbeamercolor{normal text}{fg=DarkText,bg=white}
 \setbeamercolor{block title}{fg=white,bg=Navy}
 \setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
-\setbeamercolor{alerted text}{fg=Warn}
+\setbeamercolor{alerted text}{fg=Gold}
 \setbeamerfont{title}{size=\LARGE,series=\bfseries}
 \setbeamerfont{subtitle}{size=\large}
 \setbeamerfont{frametitle}{size=\large,series=\bfseries}
@@ -43,7 +51,7 @@
 
 \lstdefinestyle{py}{
   language=Python,
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\scriptsize,
   keywordstyle=\color{Blue}\bfseries,
   commentstyle=\color{Teal},
   stringstyle=\color{Gold!70!black},
@@ -57,6 +65,15 @@
 }
 \lstset{style=py}
 
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  warnbox/.style={rounded corners=3pt, draw=Gold!80!black, fill=Gold!12, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  greenbox/.style={rounded corners=3pt, draw=Teal!70!black, fill=LightTeal, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  redbox/.style={rounded corners=3pt, draw=red!60!black, fill=RedSoft, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
+}
+
 \newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
 \newcommand{\prodi}{Program Studi Matematika ITERA}
 \setbeamertemplate{footline}{%
@@ -69,380 +86,535 @@
 }
 
 \title[\mkfooter]{Pertemuan 7: Aljabar Linier Komputasional}
-\subtitle{Vektor, matriks, SPL, residual, eigen, dan data sebagai matriks}
-\author{Rifky Fauzi dan Triyana Muliawati, S.Si., M.Si.}
+\subtitle{Dari rumus, indeks, algoritma, sampai verifikasi numerik}
+\author{Triyana Muliawati, S.Si., M.Si. dan Rifky Fauzi}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
+
+\newcommand{\mat}[1]{\begin{pmatrix}#1\end{pmatrix}}
 
 \begin{document}
 
 % 1
 \begin{frame}[plain]
-\begingroup
-\setbeamertemplate{footline}{}
-\begin{columns}[T]
-\column{.58\textwidth}
-\vspace{7mm}
-{\color{Navy}\fontsize{22}{25}\selectfont\bfseries Pertemuan 7\\Aljabar Linier Komputasional}\\[4mm]
-{\large Pemrograman untuk Ilmu Data dan Komputasi}\\[2mm]
-{\normalsize MA25-21008 \quad Kelas RA dan RB}\\[6mm]
-{\small Rifky Fauzi\\Triyana Muliawati, S.Si., M.Si.}\\[2mm]
-{\small Program Studi Matematika, ITERA\\Semester Ganjil 2026/2027}
-\column{.38\textwidth}
-\vspace{9mm}
-\begin{block}{Fokus hari ini}
-\small
-\begin{itemize}
-  \item membaca vektor dan matriks sebagai struktur data;
-  \item menulis algoritma manual sebelum memakai NumPy;
-  \item menghitung banyak kerja dari loop;
-  \item memakai residual untuk memeriksa hasil numerik.
+\begin{tikzpicture}[remember picture,overlay]
+\IfFileExists{../M05/assets/tech_bg.png}{%
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M05/assets/tech_bg.png}};%
+}{\IfFileExists{../M01/assets/tech_bg.png}{\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M01/assets/tech_bg.png}};}{\fill[DeepNavy!7] (current page.south west) rectangle (current page.north east);}}
+\fill[DeepNavy,opacity=.84] (current page.south west) rectangle ([xshift=8.15cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=7.0cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{20}{22.5}\selectfont\bfseries Pertemuan 7\\Aljabar Linier\\Komputasional}\\[3mm]
+{\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10}{11.5}\selectfont Triyana Muliawati, S.Si., M.Si.\\Rifky Fauzi}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.0mm,text width=6.95cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Hari ini}\\[2mm]
+\begin{itemize}\small
+  \item Vektor dan matriks sebagai data.
+  \item Operasi baris--kolom sebagai algoritma.
+  \item Verifikasi numerik: residual dan norma.
+  \item Invers, SPL, eigenvalue, dan PCA sebagai komputasi.
+  \item Fungsi kerja dari kode, lalu orde pertumbuhannya.
 \end{itemize}
-\end{block}
-\end{columns}
-\endgroup
+};
+\end{tikzpicture}
 \end{frame}
 
 % 2
-\begin{frame}{Apa yang harus siap untuk LKM M7}
+\begin{frame}{Aljabar linear dari sisi komputasi}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Objek matematika}
 \small
-\begin{center}
-\begin{tabular}{p{2.2cm}p{5.2cm}p{5.0cm}}
-\toprule
-Bagian & Yang dikerjakan & Ide algoritma \\
-\midrule
-M7.1--M7.2 & operasi vektor, norm, element-wise, $A@B$ & loop komponen dan operasi array \\
-M7.3--M7.4 & perkalian matriks manual dan transpose & loop bersarang, cek dimensi \\
-M7.5--M7.8 & invers 2x2, SPL, residual & determinan, solve, verifikasi $Ax\approx b$ \\
-M7.9--M7.10 & eigen dan data sebagai matriks & cek $Av\approx\lambda v$, mean kolom, Gram matrix \\
-\bottomrule
-\end{tabular}
-\end{center}
-\vspace{1mm}
-\begin{alertblock}{Pola kerja}
-Tuliskan rumus matematika, ubah menjadi indeks, baru tulis loop. Setelah itu, jika perlu, bandingkan dengan NumPy.
+\begin{itemize}
+  \item Vektor: daftar komponen.
+  \item Matriks: tabel dua dimensi.
+  \item Transformasi linear: operasi terhadap vektor.
+  \item SPL: mencari $x$ pada $Ax=b$.
+  \item Eigen: arah yang hanya berubah skala.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Sudut pandang program}
+\small
+\begin{itemize}
+  \item Bagaimana indeks dibaca?
+  \item Loop mana yang diperlukan?
+  \item Apakah dimensi cocok?
+  \item Berapa banyak kerja ketika ukuran data membesar?
+  \item Bagaimana memeriksa jawaban numerik?
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{2mm}
+\begin{alertblock}{Prinsip kerja}
+Rumus linear algebra tidak hilang. Kita menerjemahkannya menjadi struktur data, indeks, algoritma, dan pemeriksaan hasil.
 \end{alertblock}
 \end{frame}
 
 % 3
-\begin{frame}[fragile]{Vektor: operasi komponen dan norm}
+\begin{frame}[fragile]{Vektor: indeks, operasi komponen, dan norma}
 \begin{columns}[T]
 \column{.49\textwidth}
-\begin{block}{Contoh dari LKM}
+\begin{block}{Dari rumus ke indeks}
+\small
 \[
-x=(1,-2,3),\qquad y=(4,0,-1)
+x=(x_1,\ldots,x_n),\qquad y=(y_1,\ldots,y_n)
 \]
 \[
-x+y=(5,-2,2),\qquad 2x-y=(-2,-4,7)
+x+y=(x_i+y_i)_{i=1}^{n},\quad
+x\cdot y=\sum_{i=1}^{n}x_i y_i
 \]
 \[
-x\cdot y=\sum_{i=1}^{n}x_i y_i,
-\qquad
-\|x\|_2=\sqrt{\sum_{i=1}^{n}x_i^2}
+\|x-y\|_2=\sqrt{\sum_{i=1}^{n}(x_i-y_i)^2}
+\]
+\end{block}
+\pause
+\begin{block}{Fungsi kerja}
+Jika loop berjalan pada $n$ komponen, maka banyak kerja bertambah sebanding dengan $n$.
+\[
+W(n)=\text{kerja tetap}+\text{kerja per komponen}\cdot n
+\]
+\[
+W(n)\in O(n)
 \]
 \end{block}
 \column{.47\textwidth}
 \begin{lstlisting}
 def dot(x, y):
+    if len(x) != len(y):
+        raise ValueError("dimensi beda")
     total = 0
     for i in range(len(x)):
         total += x[i] * y[i]
     return total
 
-# norm(x) = sqrt(dot(x,x))
+def norm_diff(x, y):
+    return dot([x[i]-y[i] for i in range(len(x))],
+               [x[i]-y[i] for i in range(len(x))]) ** 0.5
 \end{lstlisting}
-\begin{alertblock}{Banyak kerja}
-Loop berjalan $n$ kali.
-\[
-T(n)=c_0+c_1 n \quad\Rightarrow\quad O(n)
-\]
-\end{alertblock}
 \end{columns}
 \end{frame}
 
 % 4
-\begin{frame}[fragile]{Element-wise, matrix product, dan operator \texttt{@}}
+\begin{frame}[fragile]{Element-wise dan perkalian matriks}
 \begin{columns}[T]
-\column{.45\textwidth}
+\column{.47\textwidth}
 \[
-A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\qquad
-B=\begin{pmatrix}2&0\\1&5\end{pmatrix}
+A=\mat{1&2\\3&4},\qquad
+B=\mat{2&0\\1&5}
 \]
 \[
-A\odot B=\begin{pmatrix}1\cdot2&2\cdot0\\3\cdot1&4\cdot5\end{pmatrix}
-=\begin{pmatrix}2&0\\3&20\end{pmatrix}
+A\odot B=\mat{1\cdot2&2\cdot0\\3\cdot1&4\cdot5}
+=\mat{2&0\\3&20}
 \]
 \[
-AB=\begin{pmatrix}
+AB=\mat{
 1\cdot2+2\cdot1 & 1\cdot0+2\cdot5\\
-3\cdot2+4\cdot1 & 3\cdot0+4\cdot5
-\end{pmatrix}
-=\begin{pmatrix}4&10\\10&20\end{pmatrix}
+3\cdot2+4\cdot1 & 3\cdot0+4\cdot5}
+=\mat{4&10\\10&20}
 \]
-\column{.51\textwidth}
+\column{.49\textwidth}
 \begin{lstlisting}
 import numpy as np
-A = np.array([[1,2],[3,4]])
-B = np.array([[2,0],[1,5]])
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[2, 0], [1, 5]])
 
 A * B   # element-wise
-A @ B   # perkalian matriks
+A @ B   # matrix product
 \end{lstlisting}
-\begin{block}{Perbedaan penting}
-\texttt{*} bekerja per elemen dengan posisi yang sama. \texttt{@} memakai baris-kali-kolom.
-\end{block}
-\end{columns}
-\end{frame}
-
-% 5
-\begin{frame}[fragile]{Perkalian matriks manual: tiga loop}
-Untuk $A\in\mathbb{R}^{m\times p}$ dan $B\in\mathbb{R}^{p\times n}$,
-\[
-C_{ij}=\sum_{k=1}^{p} A_{ik}B_{kj}.
-\]
-\begin{columns}[T]
-\column{.55\textwidth}
-\begin{lstlisting}
-def matmul_manual(A, B):
-    m, p = len(A), len(A[0])
-    p2, n = len(B), len(B[0])
-    if p != p2:
-        raise ValueError("dimensi tidak cocok")
-    C = [[0 for j in range(n)] for i in range(m)]
-    for i in range(m):
-        for j in range(n):
-            for k in range(p):
-                C[i][j] += A[i][k] * B[k][j]
-    return C
-\end{lstlisting}
-\column{.41\textwidth}
-\begin{alertblock}{Menghitung $T$}
-Operasi terdalam berjalan untuk semua pasangan $(i,j,k)$.
-\[
-T(m,p,n)=m\cdot n\cdot p
-\]
-Jika matriks persegi $n\times n$:
-\[
-T(n)=n^3\quad\Rightarrow\quad O(n^3).
-\]
+\pause
+\begin{alertblock}{Catatan}
+\texttt{*} membaca posisi yang sama. \texttt{@} membaca baris pada $A$ dan kolom pada $B$.
 \end{alertblock}
 \end{columns}
 \end{frame}
 
-% 6
-\begin{frame}[fragile]{Transpose: menukar peran baris dan kolom}
-Jika $A\in\mathbb{R}^{m\times n}$, maka $A^T\in\mathbb{R}^{n\times m}$ dan
-\[
-(A^T)_{ij}=A_{ji}.
-\]
+% 5
+\begin{frame}[fragile]{Perkalian matriks: pseudocode dulu, kode kemudian}
 \begin{columns}[T]
-\column{.49\textwidth}
+\column{.48\textwidth}
+\begin{block}{Pseudocode}
+\scriptsize
+\begin{verbatim}
+INPUT: A berukuran m x p, B berukuran p x n
+OUTPUT: C = A B berukuran m x n
+
+cek banyak kolom A = banyak baris B
+buat C berisi nol, ukuran m x n
+FOR i = 0 sampai m-1:
+  FOR j = 0 sampai n-1:
+    s = 0
+    FOR k = 0 sampai p-1:
+      s = s + A[i][k] * B[k][j]
+    C[i][j] = s
+RETURN C
+\end{verbatim}
+\end{block}
+\pause
+\column{.48\textwidth}
+\begin{lstlisting}
+def matmul_manual(A, B):
+    m = len(A)
+    p = len(A[0])
+    p2 = len(B)
+    n = len(B[0])
+    if p != p2:
+        raise ValueError("dimensi tidak cocok")
+
+    C = [[0 for j in range(n)] for i in range(m)]
+    for i in range(m):
+        for j in range(n):
+            s = 0
+            for k in range(p):
+                s += A[i][k] * B[k][j]
+            C[i][j] = s
+    return C
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 6
+\begin{frame}{Fungsi kerja dari kode perkalian matriks}
+Kita hitung dari struktur kode, bukan dari nama algoritmanya.
+\vspace{2mm}
+\begin{center}
+\begin{tabular}{p{7.4cm}r}
+\toprule
+Bagian kode & Banyak kerja pokok \\
+\midrule
+\texttt{m=len(A)}, \texttt{p=len(A[0])}, \texttt{p2=len(B)}, \texttt{n=len(B[0])} & $4$ \\
+\texttt{if p != p2} & $1$ perbandingan \\
+Membuat matriks \texttt{C} berisi nol & $mn$ penulisan \\
+\texttt{s = 0} untuk setiap pasangan $(i,j)$ & $mn$ penulisan \\
+\texttt{s += A[i][k] * B[k][j]} & $mnp$ kali; tiap kali $1$ kali dan $1$ tambah \\
+\texttt{C[i][j] = s} & $mn$ penulisan \\
+\bottomrule
+\end{tabular}
+\end{center}
+\pause
+\[
+W(m,p,n)=5+mn+mn+2mnp+mn=5+3mn+2mnp.
+\]
+Jika matriks bujur sangkar $n\times n$:
+\[
+W(n)=5+3n^2+2n^3 \quad\Rightarrow\quad W(n)\in O(n^3).
+\]
+\end{frame}
+
+% 7
+\begin{frame}[fragile]{Transpose: algoritma sederhana, biaya linear terhadap jumlah elemen}
+\begin{columns}[T]
+\column{.42\textwidth}
+\[
+A=\begin{pmatrix}
+1&2&3\\
+4&5&6
+\end{pmatrix}
+\quad\Rightarrow\quad
+A^T=\begin{pmatrix}
+1&4\\2&5\\3&6
+\end{pmatrix}
+\]
+\begin{block}{Pseudocode}
+\scriptsize
+\begin{verbatim}
+INPUT: A berukuran m x n
+buat T berukuran n x m
+FOR i = 0..m-1:
+  FOR j = 0..n-1:
+    T[j][i] = A[i][j]
+RETURN T
+\end{verbatim}
+\end{block}
+\pause
+\column{.54\textwidth}
 \begin{lstlisting}
 def transpose(A):
-    m, n = len(A), len(A[0])
+    m = len(A)
+    n = len(A[0])
     T = [[0 for i in range(m)] for j in range(n)]
     for i in range(m):
         for j in range(n):
             T[j][i] = A[i][j]
     return T
-\end{lstlisting}
-\column{.47\textwidth}
-\begin{block}{Contoh}
-\[
-\begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}^T
-=
-\begin{pmatrix}1&4\\2&5\\3&6\end{pmatrix}
-\]
-\end{block}
-\begin{alertblock}{Banyak kerja}
-Setiap elemen dipindahkan sekali.
-\[
-T(m,n)=mn\quad\Rightarrow\quad O(mn)
-\]
-\end{alertblock}
-\end{columns}
-\end{frame}
 
-% 7
-\begin{frame}{Invers 2x2 dan SPL}
-\begin{columns}[T]
-\column{.50\textwidth}
-\begin{block}{Invers matriks 2x2}
-\[
-A=\begin{pmatrix}a&b\\c&d\end{pmatrix},\qquad
-\det(A)=ad-bc
-\]
-Jika $\det(A)\neq0$,
-\[
-A^{-1}=\frac{1}{ad-bc}
-\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.
-\]
-Jika $\det(A)=0$, matriks singular dan invers tidak ada.
-\end{block}
-\column{.46\textwidth}
-\begin{block}{SPL sebagai $Ax=b$}
-\[
-A=\begin{pmatrix}2&1\\5&3\end{pmatrix},\qquad
-b=\begin{pmatrix}1\\4\end{pmatrix}
-\]
-\[
-\det(A)=2\cdot3-1\cdot5=1\neq0.
-\]
-Untuk 2x2, rumus invers manual masih masuk akal. Untuk ukuran besar, gunakan \texttt{np.linalg.solve(A,b)}, bukan membentuk invers terlebih dahulu.
-\end{block}
+# NumPy:
+# np.array(A).T
+\end{lstlisting}
+\begin{alertblock}{Fungsi kerja}
+Ada $mn$ elemen yang dipindahkan. Maka $W(m,n)$ sebanding dengan $mn$.
+\end{alertblock}
 \end{columns}
 \end{frame}
 
 % 8
-\begin{frame}[fragile]{Residual: cara memeriksa solusi numerik}
-Solusi numerik $\hat{x}$ tidak cukup hanya dilihat nilainya. Periksa sisa persamaan:
-\[
-r=b-A\hat{x},\qquad \|r\|_2.
-\]
+\begin{frame}[fragile]{Invers 2x2: rumus, domain, dan pemeriksaan}
 \begin{columns}[T]
-\column{.53\textwidth}
-\begin{lstlisting}
-def matvec(A, x):
-    m, n = len(A), len(A[0])
-    y = [0 for i in range(m)]
-    for i in range(m):
-        for j in range(n):
-            y[i] += A[i][j] * x[j]
-    return y
-\end{lstlisting}
-\column{.43\textwidth}
-\begin{alertblock}{Banyak kerja}
-Matrix-vector product memakai dua loop.
+\column{.44\textwidth}
 \[
-T(m,n)=mn
+A=\mat{a&b\\c&d},\qquad
+A^{-1}=\frac{1}{ad-bc}\mat{d&-b\\-c&a}
 \]
-Menghitung $r=b-A\hat{x}$ dan norm menambah orde $O(m)$.
+\begin{alertblock}{Syarat}
+Invers ada jika dan hanya jika
 \[
-T(m,n)=mn+m\quad\Rightarrow\quad O(mn)
+ad-bc\ne 0.
 \]
+Jika determinan nol, program harus menolak input.
 \end{alertblock}
-\begin{block}{Makna residual}
-Jika $\|r\|_2$ kecil, maka $\hat{x}$ membuat $A\hat{x}$ dekat dengan $b$.
+\column{.52\textwidth}
+\begin{lstlisting}
+def inv2(A):
+    a, b = A[0]
+    c, d = A[1]
+    det = a*d - b*c
+    if det == 0:
+        raise ValueError("matriks singular")
+    return [[ d/det, -b/det],
+            [-c/det,  a/det]]
+\end{lstlisting}
+\pause
+\begin{block}{Verifikasi}
+Hasil invers tidak cukup dilihat dari bentuknya. Periksa
+\[
+AA^{-1}\approx I.
+\]
+Pada komputer, gunakan toleransi, bukan kesamaan desimal mentah.
 \end{block}
 \end{columns}
 \end{frame}
 
 % 9
-\begin{frame}{Nilai eigen dan verifikasi}
-Untuk matriks kecil, nilai eigen dapat dihitung dari
+\begin{frame}[fragile]{SPL: selesaikan, lalu ukur residual}
+\begin{columns}[T]
+\column{.46\textwidth}
+Untuk $Ax=b$, solusi numerik $\hat{x}$ sebaiknya diperiksa dengan residual:
 \[
-\det(A-\lambda I)=0.
+r=b-A\hat{x}.
 \]
-Contoh:
-\[
-A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
-\quad
-A-\lambda I=\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix}
-\]
-\[
-\det(A-\lambda I)=(2-\lambda)^2-1=0
-\]
-\[
-\lambda=1\quad\text{atau}\quad \lambda=3.
-\]
-\begin{alertblock}{Yang dicek di komputer}
-Untuk setiap pasangan $(\lambda,v)$ dari \texttt{np.linalg.eig}, hitung
-\[
-\|Av-\lambda v\|_2.
-\]
-Untuk $A\in\mathbb{R}^{n\times n}$, verifikasi $Av$ membutuhkan $O(n^2)$.
+Jika $\|r\|_2$ kecil, solusi konsisten dengan sistem.
+\begin{block}{Mengapa residual?}
+\small
+Kesalahan kecil pada komponen $x$ dapat sulit dilihat langsung, tetapi $A\hat{x}$ harus tetap dekat dengan $b$.
+\end{block}
+\column{.50\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+A = np.array([[2, 1], [5, 3]], dtype=float)
+b = np.array([1, 4], dtype=float)
+
+x = np.linalg.solve(A, b)
+r = b - A @ x
+err = np.linalg.norm(r)
+print(x, err)
+\end{lstlisting}
+\pause
+\begin{alertblock}{Praktik komputasi}
+Untuk menyelesaikan $Ax=b$, gunakan \texttt{solve}. Jangan membentuk $A^{-1}$ hanya untuk mengalikan $A^{-1}b$.
 \end{alertblock}
+\end{columns}
 \end{frame}
 
 % 10
-\begin{frame}{Data sebagai matriks}
-Misalkan $X\in\mathbb{R}^{m\times d}$: $m$ observasi dan $d$ fitur.
+\begin{frame}{Pengayaan: invers ukuran $n\times n$ dan biaya komputasi}
+\begin{block}{Satu cara berpikir}
+Untuk matriks besar, invers dapat dipandang sebagai menyelesaikan
 \[
-\bar{x}_j=\frac{1}{m}\sum_{i=1}^{m}X_{ij},
-\qquad
-(X_c)_{ij}=X_{ij}-\bar{x}_j.
+AX=I.
 \]
+Kolom ke-$j$ dari $X$ diperoleh dari
 \[
-G=X_c^T X_c.
+Ax_j=e_j.
 \]
-\begin{columns}[T]
-\column{.48\textwidth}
-\begin{block}{Algoritma}
-\begin{enumerate}\small
-  \item hitung rata-rata tiap kolom;
-  \item kurangi setiap kolom dengan rata-ratanya;
-  \item hitung $X_c^T X_c$;
-  \item periksa $G$ simetris.
-\end{enumerate}
+Artinya, menghitung invers berarti menyelesaikan banyak sistem linear.
 \end{block}
-\column{.48\textwidth}
-\begin{alertblock}{Banyak kerja}
-Mean kolom dan centering:
+\pause
+\begin{center}
+\begin{tikzpicture}[node distance=6mm]
+\node[box,text width=2.8cm] (a) {Eliminasi Gaussian / faktorisasi};
+\node[box,text width=2.5cm,right=of a] (b) {banyak operasi bertingkat};
+\node[box,text width=2.4cm,right=of b] (c) {orde kubik};
+\draw[arr] (a) -- (b);
+\draw[arr] (b) -- (c);
+\end{tikzpicture}
+\end{center}
 \[
-O(md)
+W(n)\in O(n^3),\qquad \text{memori matriks }\in O(n^2).
 \]
-Gram matrix:
-\[
-G_{jk}=\sum_{i=1}^{m}(X_c)_{ij}(X_c)_{ik}
-\]
-Ada $d^2$ pasangan fitur, masing-masing menjumlahkan $m$ baris:
-\[
-O(md^2).
-\]
+\begin{alertblock}{Kaitannya dengan data besar}
+Jika $n$ ribuan atau lebih, membentuk invers eksplisit sering mahal dan tidak stabil. Pilih algoritma yang langsung menjawab kebutuhan: solve, least squares, sparse solver, atau metode iteratif.
 \end{alertblock}
-\end{columns}
 \end{frame}
 
 % 11
-\begin{frame}{Ringkasan algoritma dan orde}
-\small
-\begin{center}
-\begin{tabular}{p{4.4cm}p{4.2cm}p{3.0cm}}
-\toprule
-Masalah & Operasi utama & Orde \\
-\midrule
-Dot product, norm vektor & loop semua komponen & $O(n)$ \\
-Transpose $m\times n$ & pindahkan tiap elemen & $O(mn)$ \\
-Matrix-vector product & dua loop baris-kolom & $O(mn)$ \\
-Matrix product $m\times p$ dengan $p\times n$ & tiga loop & $O(mpn)$ \\
-Matrix product persegi & tiga loop ukuran $n$ & $O(n^3)$ \\
-Verifikasi eigen $Av\approx\lambda v$ & matrix-vector product & $O(n^2)$ \\
-Mean dan centering data $m\times d$ & semua entri data & $O(md)$ \\
-Gram matrix $X_c^TX_c$ & fitur-pasangan-baris & $O(md^2)$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-\begin{alertblock}{Kebiasaan yang dipakai di LKM}
-Jawaban numerik perlu disertai cara cek: dimensi cocok, hasil manual kecil, hasil NumPy, dan residual/norm selisih.
+\begin{frame}{Eigenvalue: lebih dari sekadar menghitung akar}
+\begin{columns}[T]
+\column{.47\textwidth}
+\begin{block}{Definisi}
+\[
+Av=\lambda v,
+\qquad v\ne 0.
+\]
+Vektor $v$ hanya berubah skala oleh transformasi $A$.
+\end{block}
+\begin{block}{Persamaan karakteristik}
+\[
+\det(A-\lambda I)=0.
+\]
+Untuk matriks kecil, ini masih dapat dihitung manual.
+\end{block}
+\column{.49\textwidth}
+\begin{alertblock}{Teorema yang berguna}
+Untuk matriks bujur sangkar $A$:
+\begin{itemize}\small
+  \item $A$ invertible $\Longleftrightarrow \det(A)\ne0$.
+  \item $A$ invertible $\Longleftrightarrow 0$ bukan eigenvalue $A$.
+  \item Jika eigenvalue $A$ adalah $\lambda_i$, maka
+  \[
+  \det(A)=\prod_i \lambda_i.
+  \]
+  \item Jika $A$ invertible, eigenvalue $A^{-1}$ adalah $1/\lambda_i$.
+\end{itemize}
 \end{alertblock}
+\end{columns}
 \end{frame}
 
 % 12
-\begin{frame}{Arah kerja setelah kelas}
+\begin{frame}[fragile]{Eigen di Python: hitung dan verifikasi}
 \begin{columns}[T]
-\column{.50\textwidth}
-\begin{block}{Saat mengerjakan LKM M7}
-\begin{itemize}
-  \item Untuk soal kecil, hitung manual terlebih dahulu.
-  \item Untuk list of lists, tulis loop dan cek dimensi.
-  \item Untuk NumPy, bedakan \texttt{*}, \texttt{@}, dan \texttt{np.linalg.solve}.
-  \item Untuk SPL dan eigen, selalu verifikasi dengan residual atau norm selisih.
-\end{itemize}
-\end{block}
-\column{.46\textwidth}
-\begin{block}{Pertanyaan yang harus selalu dijawab}
-\begin{itemize}
-  \item Ukuran inputnya apa?
-  \item Operasi terdalamnya apa?
-  \item Berapa kali operasi itu dieksekusi?
-  \item Apakah hasilnya bisa diperiksa kembali?
-\end{itemize}
+\column{.42\textwidth}
+\[
+A=\mat{2&1\\1&2}
+\]
+\[
+\det(A-\lambda I)=
+\det\mat{2-\lambda&1\\1&2-\lambda}
+\]
+\[
+=(2-\lambda)^2-1=0
+\]
+\[
+\lambda=1,3.
+\]
+\column{.54\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+A = np.array([[2, 1], [1, 2]], dtype=float)
+w, V = np.linalg.eig(A)
+
+for k in range(len(w)):
+    lam = w[k]
+    v = V[:, k]
+    cek = np.linalg.norm(A @ v - lam * v)
+    print(lam, cek)
+\end{lstlisting}
+\pause
+\begin{block}{Makna pemeriksaan}
+Jika $\|Av-\lambda v\|_2$ kecil, pasangan $(\lambda,v)$ konsisten secara numerik.
 \end{block}
 \end{columns}
+\end{frame}
+
+% 13
+\begin{frame}{Data sebagai matriks dan pintu masuk PCA}
+\begin{columns}[T]
+\column{.46\textwidth}
+\begin{block}{Data}
+Baris adalah observasi, kolom adalah fitur.
+\[
+X=\begin{pmatrix}
+1&2&0\\
+2&1&1\\
+4&3&2\\
+3&4&1
+\end{pmatrix}
+\]
+Rata-rata kolom:
+\[
+\bar{x}=\frac{1}{m}\sum_{i=1}^{m}X_{i,:}.
+\]
+Centered matrix:
+\[
+X_c=X-\mathbf{1}\bar{x}^{T}.
+\]
+\end{block}
+\column{.50\textwidth}
+\begin{block}{Gram / covariance direction}
+\[
+G=X_c^T X_c.
+\]
+Matriks ini simetris dan memuat hubungan antarfitur.
+\end{block}
+\pause
+\begin{alertblock}{Ide PCA}
+PCA mencari arah baru yang menjelaskan variasi data sebesar mungkin. Secara aljabar linear, arah ini diperoleh dari eigenvector matriks kovariansi atau Gram yang sesuai.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 14
+\begin{frame}[fragile]{Algoritma data sebagai matriks}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Pseudocode}
+\scriptsize
+\begin{verbatim}
+INPUT: X berukuran m x n
+hitung mean setiap kolom
+buat Xc = X - mean_kolom
+hitung G = Xc^T Xc
+cek G simetris
+ambil eigenvalue/eigenvector G jika perlu
+\end{verbatim}
+\end{block}
+\pause
+\column{.48\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+X = np.array([[1,2,0], [2,1,1],
+              [4,3,2], [3,4,1]], dtype=float)
+
+xbar = X.mean(axis=0)
+Xc = X - xbar
+G = Xc.T @ Xc
+print(G)
+print(np.allclose(G, G.T))
+\end{lstlisting}
+\end{columns}
 \vspace{1mm}
-\begin{center}
-\Large rumus $\rightarrow$ indeks $\rightarrow$ loop $\rightarrow$ cek hasil
-\end{center}
+\begin{alertblock}{Fungsi kerja}
+Menghitung $X_c^T X_c$ untuk $X_c$ berukuran $m\times n$ memerlukan pola seperti perkalian matriks: $n\times m$ dikali $m\times n$, orde utamanya $O(mn^2)$.
+\end{alertblock}
+\end{frame}
+
+% 15
+\begin{frame}{Latihan penutup yang layak menjadi soal ujian}
+\small
+\begin{block}{Satu paket soal}
+Diberikan
+\[
+A=\begin{pmatrix}2&1&0\\1&3&1\\0&1&2\end{pmatrix},\qquad
+b=\begin{pmatrix}1\\4\\2\end{pmatrix}.
+\]
+Kerjakan berurutan:
+\begin{enumerate}\small
+  \item tulis pseudocode perkalian matriks-vektor $Ax$;
+  \item tulis fungsi Python untuk menghitung $Ax$ tanpa NumPy;
+  \item hitung fungsi kerja untuk kode tersebut jika $A$ berukuran $n\times n$;
+  \item selesaikan $Ax=b$ dengan \texttt{np.linalg.solve};
+  \item hitung residual $r=b-A\hat{x}$ dan $\|r\|_2$;
+  \item jelaskan mengapa memeriksa residual lebih aman daripada hanya melihat nilai $\hat{x}$.
+\end{enumerate}
+\end{block}
+\begin{alertblock}{Target berpikir}
+Bukan sekadar memakai fungsi pustaka, tetapi memahami apa yang dihitung, bagaimana mengecek hasilnya, dan bagaimana biayanya bertumbuh.
+\end{alertblock}
 \end{frame}
 
 \end{document}
