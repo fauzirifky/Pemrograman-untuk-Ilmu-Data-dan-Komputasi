@@ -1,0 +1,550 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,array,multicol}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{pifont}
+
+\definecolor{pidkblue}{HTML}{0F4165}
+\definecolor{pidkblue2}{HTML}{173F5F}
+\definecolor{pidklight}{HTML}{EAF3FA}
+\definecolor{pidklighter}{HTML}{F5F9FC}
+\definecolor{pidkteal}{HTML}{0EA5A8}
+\definecolor{pidkgray}{HTML}{2F3B44}
+\definecolor{pidkgold}{HTML}{B88700}
+\definecolor{codebg}{HTML}{F7F9FB}
+\definecolor{codeframe}{HTML}{C9D3DD}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=pidkgray,bg=white}
+\setbeamercolor{frametitle}{fg=white,bg=pidkblue}
+\setbeamercolor{title}{fg=pidkblue}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=0.86cm,dp=0.27cm,leftskip=0.35cm]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}%
+}
+
+\newcommand{\coursefooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\programfooter}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\ifnum\value{framenumber}>1
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.38\paperwidth,ht=2.6ex,dp=1ex,leftskip=0.25cm]{author in head/foot}%
+    \scriptsize\color{white}\coursefooter
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.44\paperwidth,ht=2.6ex,dp=1ex,center]{title in head/foot}%
+    \scriptsize\color{white}\programfooter
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.18\paperwidth,ht=2.6ex,dp=1ex,rightskip=0.25cm plus1fil]{date in head/foot}%
+    \scriptsize\color{white}\hfill\insertframenumber/\inserttotalframenumber
+  \end{beamercolorbox}}%
+  \vskip0pt%
+\fi}
+\setbeamercolor{author in head/foot}{bg=pidkblue}
+\setbeamercolor{title in head/foot}{bg=pidkblue}
+\setbeamercolor{date in head/foot}{bg=pidkblue}
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{pidkblue}\bfseries,
+  stringstyle=\color{teal!70!black},
+  commentstyle=\color{gray!75!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  framerule=0.4pt,
+  xleftmargin=0.5mm,
+  xrightmargin=0.5mm,
+  aboveskip=0.5em,
+  belowskip=0.3em
+}
+\lstset{style=py}
+
+\setbeamertemplate{blocks}[rounded][shadow=true]
+\newenvironment{card}[1]{\begin{block}{#1}}{\end{block}}
+\setbeamercolor{block title}{fg=white,bg=pidkblue}
+\setbeamercolor{block body}{fg=pidkgray,bg=pidklight}
+\newenvironment{goldcard}[1]{\begingroup\setbeamercolor{block title}{fg=white,bg=pidkgold}\setbeamercolor{block body}{fg=pidkgray,bg=yellow!7}\begin{block}{#1}}{\end{block}\endgroup}
+\newcommand{\smallnote}[1]{\vspace{0.10cm}\begin{beamercolorbox}[wd=\linewidth,sep=0.14cm]{note}\small #1\end{beamercolorbox}}
+\setbeamercolor{note}{fg=pidkgray,bg=pidklighter}
+
+\title{Pertemuan 9: Regresi Linier, Least Squares, dan Pandas}
+\author{\textbf{Triyana Muliawati, S.Si., M.Si.}\\Rifky Fauzi}
+\date{Semester Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[pidkgray!96] (current page.south west) rectangle ([xshift=0.48\paperwidth]current page.north west);
+  \fill[white] ([xshift=0.48\paperwidth]current page.south west) rectangle (current page.north east);
+  \draw[pidkteal,line width=1.3pt] ([xshift=0.05\paperwidth,yshift=0.24\paperheight]current page.south west) -- ([xshift=0.42\paperwidth,yshift=0.64\paperheight]current page.south west);
+  \foreach \x/\y in {0.07/0.31,0.12/0.34,0.18/0.42,0.23/0.39,0.29/0.52,0.35/0.54,0.40/0.63}{
+    \fill[white] ([xshift=\x\paperwidth,yshift=\y\paperheight]current page.south west) circle (2pt);
+  }
+  \node[anchor=west,align=left,text=pidkblue] at ([xshift=0.53\paperwidth,yshift=0.80\paperheight]current page.south west) {\parbox{0.42\paperwidth}{\fontsize{28}{31}\selectfont Pertemuan 9}};
+  \node[anchor=west,align=left,text=pidkblue] at ([xshift=0.53\paperwidth,yshift=0.63\paperheight]current page.south west) {\parbox{0.42\paperwidth}{\fontsize{20}{23}\selectfont Regresi Linier,\\Least Squares,\\dan Pandas}};
+  \node[anchor=west,align=left,text=black] at ([xshift=0.53\paperwidth,yshift=0.40\paperheight]current page.south west) {\parbox{0.42\paperwidth}{\fontsize{12}{15}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi\\[0.08cm]MA25-21008}};
+  \node[anchor=west,align=left,text=black] at ([xshift=0.53\paperwidth,yshift=0.16\paperheight]current page.south west) {\parbox{0.42\paperwidth}{\fontsize{11}{14}\selectfont \textbf{Triyana Muliawati, S.Si., M.Si.}\\Rifky Fauzi\\[0.16cm]Program Studi Matematika\\Institut Teknologi Sumatera\\[0.12cm]Semester Ganjil 2026/2027}};
+\end{tikzpicture}
+\end{frame}}
+
+% 2
+\begin{frame}{Era Big Data dan Peran Matematika}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{card}{Data sebagai objek komputasi}
+Data modern dapat berukuran besar, banyak variabel, cepat bertambah, dan berasal dari berbagai sumber:
+\begin{itemize}\itemsep0.28em
+  \item transaksi dan aktivitas digital;
+  \item sensor, cuaca, dan pengamatan lingkungan;
+  \item proses industri dan produksi;
+  \item data pendidikan, ekonomi, dan sosial.
+\end{itemize}
+\end{card}
+\column{0.49\textwidth}
+\begin{goldcard}{Peran matematika}
+Matematika memberi kerangka untuk
+\begin{itemize}\itemsep0.28em
+  \item merepresentasikan data sebagai vektor dan matriks;
+  \item merumuskan hubungan antarvariabel;
+  \item menentukan ukuran galat atau fungsi objektif;
+  \item mencari parameter melalui optimisasi;
+  \item memeriksa kewajaran hasil komputasi.
+\end{itemize}
+\end{goldcard}
+\end{columns}
+\vspace{0.15cm}
+\centering
+\textbf{Data $\longrightarrow$ representasi matematis $\longrightarrow$ algoritma $\longrightarrow$ informasi}
+\end{frame}
+
+% 3
+\begin{frame}{Pemodelan Hubungan Antarvariabel}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{card}{Pertanyaan matematis}
+Untuk pasangan pengamatan $(x_i,y_i)$, matematika dapat digunakan untuk menjawab:
+\begin{itemize}\itemsep0.30em
+  \item apakah perubahan $x$ berkaitan dengan perubahan $y$?
+  \item seberapa besar perubahan $y$ ketika $x$ berubah?
+  \item bagaimana memperkirakan $y$ untuk $x$ yang belum diamati?
+\end{itemize}
+Model umum:
+\[
+ y_i=f(x_i)+\varepsilon_i.
+\]
+\end{card}
+\column{0.49\textwidth}
+\begin{goldcard}{Model linier sebagai pendekatan awal}
+Pilih fungsi paling sederhana
+\[
+ f(x)=b_0+b_1x,
+\]
+sehingga
+\[
+ y_i=b_0+b_1x_i+\varepsilon_i.
+\]
+Menentukan $b_0$ dan $b_1$ dari data disebut \textbf{regresi linier sederhana}.
+\end{goldcard}
+\vspace{0.12cm}
+\textbf{Contoh:} jam belajar $\to$ nilai; luas bangunan $\to$ harga; suhu $\to$ konsumsi listrik; curah hujan $\to$ tinggi muka air.
+\end{columns}
+\end{frame}
+
+% 4
+\begin{frame}{Regresi Linier Sederhana dan Metode Kuadrat Terkecil}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\begin{card}{Residual dan fungsi objektif}
+Prediksi untuk titik ke-$i$:
+\[
+\widehat y_i=b_0+b_1x_i.
+\]
+Residual:
+\[
+e_i=y_i-\widehat y_i.
+\]
+Metode kuadrat terkecil memilih $b_0,b_1$ yang meminimumkan
+\[
+S(b_0,b_1)=\sum_{i=1}^{n}(y_i-b_0-b_1x_i)^2.
+\]
+\end{card}
+\column{0.50\textwidth}
+\begin{goldcard}{Kondisi minimum}
+Dengan
+\[
+\frac{\partial S}{\partial b_0}=0,\qquad
+\frac{\partial S}{\partial b_1}=0,
+\]
+diperoleh
+\[
+ b_1=\frac{\sum (x_i-\bar x)(y_i-\bar y)}{\sum (x_i-\bar x)^2},
+\qquad
+ b_0=\bar y-b_1\bar x.
+\]
+\end{goldcard}
+\smallnote{Rumus koefisien bukan rumus yang muncul begitu saja: ia merupakan solusi masalah minimisasi jumlah kuadrat residual.}
+\end{columns}
+\end{frame}
+
+% 5
+\begin{frame}[fragile]{Algoritma Regresi Linier Sederhana}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.46\textwidth}
+\begin{card}{Prosedur komputasi}
+\begin{enumerate}\itemsep0.36em
+  \item Hitung $\bar x$ dan $\bar y$.
+  \item Hitung $N=\sum (x_i-\bar x)(y_i-\bar y)$.
+  \item Hitung $D=\sum (x_i-\bar x)^2$.
+  \item Jika $D=0$, model tidak dapat menentukan kemiringan.
+  \item Hitung $b_1=N/D$ dan $b_0=\bar y-b_1\bar x$.
+  \item Gunakan $\widehat y=b_0+b_1x$ untuk prediksi.
+\end{enumerate}
+\end{card}
+\column{0.51\textwidth}
+\begin{lstlisting}
+def fit_linear(x, y):
+    n = len(x)
+    xbar = sum(x) / n
+    ybar = sum(y) / n
+
+    num, den = 0.0, 0.0
+    for xi, yi in zip(x, y):
+        num += (xi-xbar)*(yi-ybar)
+        den += (xi-xbar)**2
+
+    if den == 0:
+        raise ValueError("x tidak bervariasi")
+
+    b1 = num / den
+    b0 = ybar - b1*xbar
+    return b0, b1
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 6
+\begin{frame}[fragile]{Representasi dan Eksplorasi Data Tabular}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\begin{lstlisting}
+import pandas as pd
+
+df = pd.read_csv("data_regresi_m09.csv")
+
+print(df.head())
+print(df.shape)
+print(df.dtypes)
+print(df.isna().sum())
+
+# visualisasi hubungan satu prediktor
+df.plot.scatter(
+    x="jam_belajar",
+    y="nilai",
+    grid=True
+)
+\end{lstlisting}
+\column{0.47\textwidth}
+\begin{card}{Struktur data}
+Dataset latihan mempunyai tiga kolom:
+\begin{itemize}\itemsep0.38em
+  \item \texttt{jam\_belajar}: prediktor pertama;
+  \item \texttt{jumlah\_latihan}: prediktor kedua;
+  \item \texttt{nilai}: variabel respons.
+\end{itemize}
+Pada tahap awal, gunakan hanya \texttt{jam\_belajar} untuk regresi sederhana.
+\end{card}
+\begin{goldcard}{Tujuan eksplorasi}
+Periksa tipe data, nilai hilang, rentang nilai, dan pola visual sebelum melakukan estimasi parameter.
+\end{goldcard}
+\end{columns}
+\end{frame}
+
+% 7
+\begin{frame}[fragile]{Estimasi Parameter dan Evaluasi Model}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\begin{card}{Tujuan pemisahan data}
+Model dibangun agar pola yang dipelajari dapat digunakan pada data yang tidak ikut menentukan parameter.
+\begin{itemize}\itemsep0.28em
+  \item \textbf{Training set}: mengestimasi parameter model.
+  \item \textbf{Test set}: menilai kinerja model setelah parameter ditentukan.
+\end{itemize}
+Salah satu ukuran galat pada test set:
+\[
+\mathrm{MSE}=\frac{1}{m}\sum_{i=1}^{m}(y_i-\widehat y_i)^2.
+\]
+\end{card}
+\column{0.50\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+import numpy as np
+
+idx = np.arange(len(df))
+rng = np.random.default_rng(7)
+rng.shuffle(idx)
+
+cut = int(0.7 * len(df))
+train = df.iloc[idx[:cut]]
+test  = df.iloc[idx[cut:]]
+
+b0, b1 = fit_linear(
+    train["jam_belajar"].to_numpy(),
+    train["nilai"].to_numpy()
+)
+
+yhat = b0 + b1*test["jam_belajar"].to_numpy()
+mse = np.mean((test["nilai"].to_numpy()-yhat)**2)
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+% 8
+\begin{frame}{Regresi Linier Berganda}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\begin{card}{Dua prediktor}
+Misalkan nilai dipengaruhi oleh
+\[
+x_1=\text{jam belajar},
+\]
+\[
+x_2=\text{jumlah latihan}.
+\]
+Model liniernya
+\[
+\widehat y=\beta_0+\beta_1x_1+\beta_2x_2.
+\]
+Setiap koefisien menyatakan kontribusi satu prediktor ketika prediktor lain dipertahankan.
+\end{card}
+\column{0.50\textwidth}
+\begin{goldcard}{Dari skalar ke matriks}
+Untuk $n$ observasi, susun
+\[
+X=\begin{bmatrix}
+1 & x_{11} & x_{12}\\
+1 & x_{21} & x_{22}\\
+\vdots & \vdots & \vdots\\
+1 & x_{n1} & x_{n2}
+\end{bmatrix},\qquad
+\boldsymbol\beta=\begin{bmatrix}\beta_0\\\beta_1\\\beta_2\end{bmatrix}.
+\]
+Maka semua prediksi sekaligus ditulis
+\[
+\widehat{\mathbf y}=X\boldsymbol\beta.
+\]
+\end{goldcard}
+\end{columns}
+\end{frame}
+
+% 9
+\begin{frame}{Formulasi Least Squares dalam Bentuk Matriks}
+\scriptsize
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.51\textwidth}
+\begin{card}{Dimensi dan norma Euclid}
+Untuk dua prediktor:
+\[
+X\in\mathbb{R}^{n\times 3},\quad
+\boldsymbol\beta\in\mathbb{R}^{3\times 1},\quad
+\mathbf y\in\mathbb{R}^{n\times 1}.
+\]
+Residual:
+\[
+\mathbf e=\mathbf y-X\boldsymbol\beta\in\mathbb{R}^{n\times 1}.
+\]
+Norma-2 adalah panjang Euclid vektor:
+\[
+\|\mathbf e\|_2=\sqrt{e_1^2+\cdots+e_n^2}.
+\]
+Maka
+\[
+\|\mathbf y-X\boldsymbol\beta\|_2^2=\sum_{i=1}^{n}e_i^2.
+\]
+\end{card}
+\column{0.46\textwidth}
+\begin{goldcard}{Masalah least squares}
+\[
+\min_{\boldsymbol\beta}\;\|\mathbf y-X\boldsymbol\beta\|_2^2.
+\]
+Kondisi minimum menghasilkan
+\[
+X^TX\boldsymbol\beta=X^T\mathbf y.
+\]
+Jika $X^TX$ nonsingular,
+\[
+\widehat{\boldsymbol\beta}=(X^TX)^{-1}X^T\mathbf y.
+\]
+\end{goldcard}
+\begin{card}{Pertanyaan dimensi}
+Mengapa $\widehat{\mathbf y}=X\boldsymbol\beta$, bukan $\boldsymbol\beta X$?\\[0.05cm]
+\textit{Hint:} periksa ukuran pada aturan $(a\times b)(b\times c)$.
+\end{card}
+\end{columns}
+\end{frame}
+
+% 10
+\begin{frame}[fragile]{Implementasi Regresi Linier Berganda}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.53\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+X0 = df[["jam_belajar",
+         "jumlah_latihan"]].to_numpy(float)
+y = df["nilai"].to_numpy(float)
+
+n = len(df)
+X = np.column_stack([np.ones(n), X0])
+
+A = X.T @ X
+c = X.T @ y
+beta = np.linalg.solve(A, c)
+
+yhat = X @ beta
+res = y - yhat
+mse = np.mean(res**2)
+\end{lstlisting}
+\column{0.44\textwidth}
+\begin{card}{Urutan algoritma}
+\begin{enumerate}\itemsep0.34em
+  \item Bentuk matriks desain $X$.
+  \item Hitung $A=X^TX$.
+  \item Hitung $c=X^T\mathbf y$.
+  \item Selesaikan $A\boldsymbol\beta=c$.
+  \item Hitung $\widehat{\mathbf y}=X\boldsymbol\beta$.
+  \item Hitung residual dan galat.
+\end{enumerate}
+\end{card}
+\begin{goldcard}{Hasil pada data contoh}
+Dengan seluruh 10 observasi,
+\[
+\widehat y\approx45.18+3.99x_1+1.97x_2.
+\]
+\end{goldcard}
+\end{columns}
+\end{frame}
+
+% 11
+\begin{frame}{Model Machine Learning dan Prinsip Optimisasi}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{card}{Prinsip umum pembelajaran model}
+Banyak metode machine learning dapat dipandang sebagai proses:
+\[
+\text{pilih }f(x;\theta)
+\to \text{ukur kesalahan}
+\to \text{tentukan }\theta.
+\]
+Pada regresi linier,
+\[
+L(\beta)=\|y-X\beta\|_2^2.
+\]
+Pada model lain, bentuk model dan fungsi objektif dapat berbeda.
+\end{card}
+\column{0.49\textwidth}
+\begin{goldcard}{Beberapa keluarga model}
+\begin{itemize}\itemsep0.35em
+  \item \textbf{Regresi:} linear regression, polynomial regression, regression tree, neural network.
+  \item \textbf{Klasifikasi:} logistic regression, k-NN, decision tree, SVM, neural network.
+  \item \textbf{Pengelompokan:} k-means, hierarchical clustering.
+  \item \textbf{Reduksi dimensi:} PCA.
+\end{itemize}
+\end{goldcard}
+\end{columns}
+\smallnote{Fokus mata kuliah: memahami representasi matematis, prosedur komputasi, dan evaluasi model sebelum menggunakan library pemodelan.}
+\end{frame}
+
+% 12
+\begin{frame}{Pengayaan: Supervised Learning, Prediction, dan Forecasting}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\begin{card}{Supervised learning}
+Data tersedia sebagai pasangan
+\[
+(\mathbf x_i,y_i).
+\]
+Target $y$ diketahui pada data pelatihan dan dipakai untuk mempelajari hubungan dari prediktor $\mathbf x$.
+\begin{itemize}\itemsep0.22em
+  \item $y$ numerik $\to$ regresi;
+  \item $y$ kategori $\to$ klasifikasi.
+\end{itemize}
+\end{card}
+\column{0.50\textwidth}
+\begin{goldcard}{Prediction dan forecasting}
+\textbf{Prediction} adalah perkiraan target yang belum diketahui berdasarkan model.\\[0.15cm]
+\textbf{Forecasting} adalah prediction untuk nilai masa depan pada data yang mempunyai urutan waktu. Karena masa depan tidak boleh digunakan untuk melatih masa lalu, pembagian data dilakukan secara kronologis.
+\end{goldcard}
+\begin{card}{Hubungan dengan pertemuan ini}
+Regresi linier merupakan salah satu model supervised learning untuk target numerik.
+\end{card}
+\end{columns}
+\end{frame}
+
+% 13
+\begin{frame}{Latihan: Regresi Linier Berganda dengan Dua Prediktor}
+\scriptsize
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.46\textwidth}
+\begin{card}{Data}
+\centering
+\begin{tabular}{c|rrr}
+\toprule
+$i$ & $x_1$ jam & $x_2$ latihan & $y$ nilai\\\midrule
+1 & 1 & 2 & 54\\
+2 & 2 & 5 & 61\\
+3 & 3 & 1 & 61\\
+4 & 4 & 6 & 72\\
+5 & 5 & 3 & 71\\
+6 & 6 & 7 & 84\\
+7 & 7 & 4 & 79\\
+8 & 8 & 8 & 95\\
+9 & 9 & 5 & 90\\
+10&10 & 9 &103\\
+\bottomrule
+\end{tabular}
+\end{card}
+\column{0.51\textwidth}
+\begin{goldcard}{Tugas}
+Bangun model
+\[
+\widehat y=\beta_0+\beta_1x_1+\beta_2x_2
+\]
+\textbf{tanpa library pemodelan}. Tuliskan algoritma yang Anda gunakan, kemudian:
+\begin{enumerate}\itemsep0.24em
+  \item bentuk $X$ dan $y$, beserta dimensinya;
+  \item hitung $X^TX$ dan $X^Ty$;
+  \item selesaikan persamaan normal untuk memperoleh $\beta$;
+  \item hitung prediksi dan residual setiap data;
+  \item hitung MSE;
+  \item tuliskan $T(n)$ dari prosedur Anda dan tentukan Big-O, dengan $n$ = jumlah observasi dan jumlah prediktor tetap dua.
+\end{enumerate}
+\end{goldcard}
+\end{columns}
+\end{frame}
+
+\end{document}
+
