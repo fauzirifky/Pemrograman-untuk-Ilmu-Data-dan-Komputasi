@@ -497,9 +497,9 @@ Untuk runtun waktu, evaluasi harus menghormati urutan waktu agar informasi masa 
 \end{frame}
 
 % 13
-\begin{frame}{Latihan: Regresi Linier Berganda dengan 10 Data}
+\begin{frame}{Latihan (1/2): Estimasi Regresi Linier Berganda dari 10 Data}
 \footnotesize
-Gunakan model
+Gunakan \textbf{10 data} berikut dan model
 \[
 \hat y=\beta_0+\beta_1x_1+\beta_2x_2,
 \]
@@ -513,26 +513,27 @@ $x_2$ & 3&5&4&6&8&7&9&7&10&11 \\
 $y$   & 52&58&61&67&74&77&84&65&78&91
 \end{tabular}
 \end{center}
-\begin{block}{Kerjakan}
+\begin{block}{Langkah 1--5}
 \footnotesize
 \begin{enumerate}
-  \item Bentuk $X$ dan $y$ untuk 10 data tersebut.
+  \item Bentuk matriks desain $X$ dan vektor $y$ untuk 10 data tersebut.
   \item Hitung $X^TX$ dan $X^Ty$.
   \item Selesaikan $X^TX\beta=X^Ty$ hingga diperoleh $\beta_0,\beta_1,\beta_2$.
-  \item Hitung $\hat y$, residual, dan MSE.
-  \item Tuliskan algoritmanya dan implementasikan dengan \textbf{NumPy dan Pandas saja}.
+  \item Hitung $\hat y$, residual $r=y-\hat y$, dan MSE.
+  \item Tuliskan algoritma perhitungannya, kemudian implementasikan dengan \textbf{NumPy dan Pandas saja}.
 \end{enumerate}
 \end{block}
+{\footnotesize \textbf{Lanjutkan hasil dan algoritma ini pada Latihan (2/2).}}
 \end{frame}
 
 % 14
-\begin{frame}{Generalisasi Ukuran dan Kompleksitas Prosedur}
+\begin{frame}{Latihan (2/2): Generalisasi untuk $n$ Data dan Kompleksitas Algoritma}
 \small
-Pada latihan hanya ada 10 data. Sekarang anggap tersedia \textbf{$n$ data} dan tetap dua prediktor.
+\textbf{Lanjutkan algoritma pada Latihan (1/2).} Sekarang ganti 10 observasi dengan \textbf{$n$ observasi}, sedangkan jumlah prediktor tetap dua.
 \begin{columns}[T]
 \column{.47\textwidth}
-\begin{block}{Tentukan dimensi}
-Lengkapi ukuran berikut:
+\begin{block}{Langkah 6: Dimensi objek}
+Tentukan ukuran setiap objek berikut:
 \[
 X:\; ? ,\qquad y:\; ? ,\qquad \beta:\; ?
 \]
@@ -542,22 +543,20 @@ X^T:\; ? ,\qquad X^TX:\; ? ,\qquad X^Ty:\; ?
 \[
 \hat y:\; ? ,\qquad r:\; ?
 \]
+\textit{Hint:} $X$ memiliki satu kolom konstanta dan dua kolom prediktor.
 \end{block}
 \column{.49\textwidth}
-\begin{block}{Dari algoritma ke $T(n)$}
-\small
-Berdasarkan prosedur yang Anda tulis:
+\begin{block}{Langkah 7--8: $T(n)$ dan Big-O}
+Berdasarkan \textbf{algoritma yang sama}:
 \begin{enumerate}
-  \item hitung berapa kali data dibaca untuk membentuk $X^TX$;
-  \item hitung berapa kali data dibaca untuk membentuk $X^Ty$;
-  \item perhatikan bahwa sistem yang diselesaikan tetap berukuran $3\times3$;
-  \item susun $T(n)$ dari operasi dominan;
-  \item tentukan kelas pertumbuhan Big-O.
+  \setcounter{enumi}{6}
+  \item Turunkan $T(n)$ dengan menghitung operasi yang bergantung pada jumlah data saat membentuk $X^TX$, $X^Ty$, $\hat y$, residual, dan MSE. Sistem yang diselesaikan tetap berukuran $3\times3$.
+  \item Dari $T(n)$ tersebut, tentukan kelas pertumbuhan Big-O terhadap $n$.
 \end{enumerate}
 \end{block}
 \end{columns}
 \vspace{1mm}
-{\footnotesize \textbf{Pengayaan:} jika jumlah prediktor ikut bertambah menjadi $p$, identifikasi bagian prosedur yang tidak lagi berukuran tetap.}
+{\footnotesize \textbf{Pengayaan:} jika jumlah prediktor juga bertambah menjadi $p$, bagian mana dari prosedur yang tidak lagi berukuran tetap?}
 \end{frame}
 
 \end{document}
