@@ -1462,28 +1462,53 @@ Contoh:
 \]
 
 \begin{lstlisting}
-def merge(left, right, trace=False):
+def merge(left, right, depth=0, trace=False):
     hasil = []
     i = j = 0
+    indent = "  " * depth
+
+    if trace:
+        print(indent + "gabungkan:", left, "+", right)
 
     while i < len(left) and j < len(right):
         if trace:
-            print("bandingkan", left[i], "dan", right[j])
+            print(indent + "bandingkan", left[i], "dan", right[j])
 
         if left[i] <= right[j]:
             hasil.append(left[i])
+            if trace:
+                print(indent + "ambil kiri :", left[i])
             i += 1
         else:
             hasil.append(right[j])
+            if trace:
+                print(indent + "ambil kanan:", right[j])
             j += 1
 
         if trace:
-            print("hasil sementara:", hasil)
+            print(indent + "hasil sementara:", hasil)
 
-    hasil.extend(left[i:])
-    hasil.extend(right[j:])
+    # Salah satu list sudah habis.
+    # Sisa list lain ditambahkan SATU KALI setelah while selesai.
+    if i < len(left):
+        if trace:
+            print(indent + "sisa kiri  :", left[i:])
+        hasil.extend(left[i:])
+
+    if j < len(right):
+        if trace:
+            print(indent + "sisa kanan :", right[j:])
+        hasil.extend(right[j:])
+
+    if trace:
+        print(indent + "hasil merge :", hasil)
+
     return hasil
 \end{lstlisting}
+
+\begin{catatanbox}
+Perhatikan indentasi dua baris \kode{hasil.extend(...)}. Keduanya berada \textbf{di luar} loop \kode{while}. Selama kedua list masih memiliki elemen, algoritma hanya memilih satu elemen terkecil pada setiap pengulangan. Sisa list baru ditambahkan setelah salah satu sisi habis. Jika \kode{extend} diletakkan di dalam \kode{while}, sisa elemen akan ditambahkan terlalu cepat dan hasil \textit{merge} menjadi keliru.
+\end{catatanbox}
 
 \subsection{Algoritma rekursif merge sort}
 \begin{enumerate}
@@ -1497,27 +1522,33 @@ def merge(left, right, trace=False):
 \begin{lstlisting}
 def merge_sort(data, depth=0, trace=False):
     a = data.copy()
+    indent = "  " * depth
 
     if len(a) <= 1:
         if trace:
-            print("  " * depth, "base:", a)
+            print(indent + "base :", a)
         return a
 
     mid = len(a) // 2
 
     if trace:
-        print("  " * depth, "split:", a,
+        print(indent + "split:", a,
               "->", a[:mid], "|", a[mid:])
 
     left = merge_sort(a[:mid], depth + 1, trace)
     right = merge_sort(a[mid:], depth + 1, trace)
-    hasil = merge(left, right, trace=trace)
+
+    hasil = merge(left, right, depth=depth, trace=trace)
 
     if trace:
-        print("  " * depth, "merge:",
-              left, "+", right, "->", hasil)
+        print(indent + "selesai level ini:", hasil)
 
     return hasil
+
+
+data = [21, 1, 26, 45, 29, 28, 2, 9]
+urut = merge_sort(data, trace=True)
+print("hasil akhir:", urut)
 \end{lstlisting}
 
 \begin{idebox}{Mengapa $O(n\log n)$?}
