@@ -1277,13 +1277,11 @@ Jelaskan mengapa satu pengukuran tidak cukup dan mengapa benchmark bukan definis
 % ================= P6 =================
 \chapter{Praktikum 6: Searching, Sorting, dan Benchmark}
 \begin{tujuanbox}
-Mahasiswa mampu menelusuri sequential dan binary search, menjelaskan arti satu \textit{pass} pada selection sort dan bubble sort, mengikuti pembagian dan penggabungan pada merge sort, menuliskan invariant sederhana, serta merancang benchmark yang adil.
+Mahasiswa mampu menelusuri proses searching dan sorting langkah demi langkah, membedakan arti satu \textit{pass} pada beberapa algoritma sorting, mengimplementasikan selection sort, bubble sort, dan merge sort, menggunakan hasil sorting sebagai prasyarat binary search, serta menghubungkan pengukuran \kode{timeit} dengan analisis kompleksitas algoritma.
 \end{tujuanbox}
 
-\section{Searching: sequential dan binary search}
-Searching menjawab pertanyaan sederhana: apakah suatu target ada di dalam data, dan jika ada, di posisi mana? Dua algoritma dasar yang dibandingkan pada praktikum ini adalah sequential search dan binary search.
-
-Sequential search memeriksa data dari awal sampai target ditemukan atau seluruh data habis. Binary search hanya dapat digunakan pada data yang sudah terurut; pada setiap iterasi, interval kandidat diperkecil kira-kira menjadi setengah.
+\section{Searching pada data terurut dan tidak terurut}
+Sequential search memeriksa elemen satu per satu sehingga dapat digunakan pada data yang belum terurut. Binary search membutuhkan data terurut karena pada setiap iterasi algoritma membuang separuh daerah pencarian.
 
 \begin{lstlisting}
 def sequential_search(a, target):
@@ -1306,227 +1304,347 @@ def binary_search(a, target):
     return -1
 \end{lstlisting}
 
-\subsection{Apa yang dicatat saat tracing binary search?}
-Satu iterasi binary search terdiri atas empat langkah berikut.
-\begin{enumerate}
-  \item Tentukan interval aktif dari indeks \kode{kiri} sampai \kode{kanan}.
-  \item Hitung \kode{tengah = (kiri + kanan) // 2}.
-  \item Bandingkan \kode{a[tengah]} dengan target.
-  \item Perbarui salah satu batas sehingga interval berikutnya lebih kecil.
-\end{enumerate}
-
-Untuk list terurut
-\[
-[3,5,6,8,11,12,14,15,17,18]
-\]
-dan target $16$, tracing yang sesuai dengan implementasi di atas adalah:
-
-\begin{center}
-\small
-\begin{tabular}{ccccccl}
-\toprule
-Iterasi & kiri & tengah & kanan & $a[\text{tengah}]$ & Perbandingan & Keputusan \\
-\midrule
-1 & 0 & 4 & 9 & 11 & $11<16$ & kiri $\leftarrow 5$ \\
-2 & 5 & 7 & 9 & 15 & $15<16$ & kiri $\leftarrow 8$ \\
-3 & 8 & 8 & 9 & 17 & $17>16$ & kanan $\leftarrow 7$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Setelah iterasi ke-3 diperoleh \kode{kiri = 8} dan \kode{kanan = 7}. Karena \kode{kiri > kanan}, interval kandidat kosong dan fungsi mengembalikan $-1$.
-
-\begin{catatanbox}
-Urutan nilai tengah dapat berbeda jika implementasi menggunakan aturan indeks yang berbeda. Karena itu, saat tracing selalu ikuti kode yang benar-benar digunakan. Yang tetap sama adalah prinsipnya: interval kandidat terus diperkecil.
-\end{catatanbox}
-
-\section{Selection sort: arti satu pass}
-Selection sort membagi list menjadi dua bagian: bagian kiri yang sudah berada pada posisi final dan bagian kanan yang masih belum terurut. Pada setiap \textit{pass}, algoritma mencari nilai minimum pada bagian yang belum terurut, kemudian menukarnya ke posisi pertama bagian tersebut.
-
-\begin{idebox}{Definisi satu pass selection sort}
-Jika pass ke-$k$ dimulai pada indeks $i=k-1$, maka:
-\begin{enumerate}
-  \item anggap \kode{a[i]} sebagai minimum sementara;
-  \item periksa semua elemen di kanan indeks $i$;
-  \item simpan indeks nilai terkecil yang ditemukan;
-  \item setelah pencarian selesai, lakukan paling banyak satu pertukaran dengan \kode{a[i]}.
-\end{enumerate}
-Setelah pass ke-$k$, sebanyak $k$ elemen terkecil sudah berada pada posisi final di bagian kiri list.
-\end{idebox}
+\subsection{Tracing binary search}
+Untuk list terurut \kode{[3,5,6,8,11,12,14,15,17,18]}, catat pada setiap iterasi: indeks kiri, indeks kanan, indeks tengah, nilai tengah, dan keputusan algoritma. Jika target lebih kecil dari nilai tengah, interval kanan dibuang; jika target lebih besar, interval kiri dibuang.
 
 \begin{lstlisting}
-def selection_sort(a):
-    a = a.copy()
-    n = len(a)
+def binary_search_trace(a, target):
+    kiri, kanan = 0, len(a) - 1
+    langkah = 1
 
-    for i in range(n - 1):
-        indeks_min = i
+    while kiri <= kanan:
+        tengah = (kiri + kanan) // 2
+        print("langkah", langkah,
+              "kiri=", kiri,
+              "tengah=", tengah,
+              "kanan=", kanan,
+              "nilai=", a[tengah])
 
-        for j in range(i + 1, n):
-            if a[j] < a[indeks_min]:
-                indeks_min = j
+        if a[tengah] == target:
+            print("target ditemukan")
+            return tengah
+        elif a[tengah] < target:
+            kiri = tengah + 1
+        else:
+            kanan = tengah - 1
 
-        a[i], a[indeks_min] = a[indeks_min], a[i]
+        langkah += 1
 
-    return a
+    print("target tidak ditemukan")
+    return -1
 \end{lstlisting}
 
-\subsection{Tracing tiga pass pertama}
-Gunakan data
+\section{Selection sort: arti satu \textit{pass}}
+Pada selection sort menaik, satu \textit{pass} berarti:
+\begin{enumerate}
+  \item tentukan posisi pertama pada bagian yang belum terurut;
+  \item cari nilai minimum pada bagian tersebut;
+  \item tukar minimum dengan elemen pada posisi pertama bagian yang belum terurut;
+  \item setelah \textit{pass} ke-$k$, sebanyak $k$ elemen terkecil sudah berada pada posisi final di sebelah kiri.
+\end{enumerate}
+
+Contoh awal:
 \[
 [11,7,12,14,19,1,6,18,8,20].
 \]
-Perhatikan bahwa \textbf{pass bukan satu kali perbandingan}. Satu pass baru selesai setelah seluruh bagian yang belum terurut sudah diperiksa dan pertukaran dilakukan.
+Tiga \textit{pass} pertama adalah
+\[
+\begin{array}{c|l|l}
+\text{pass} & \text{minimum yang dipilih} & \text{keadaan list setelah pass}\\ \hline
+1 & 1 & [1,7,12,14,19,11,6,18,8,20]\\
+2 & 6 & [1,6,12,14,19,11,7,18,8,20]\\
+3 & 7 & [1,6,7,14,19,11,12,18,8,20]
+\end{array}
+\]
 
-\begin{align*}
-\text{Awal: }&[11,7,12,14,19,1,6,18,8,20]\\[0.4em]
-\text{Pass 1: }&\min[11,7,12,14,19,1,6,18,8,20]=1,\\
-&[\mathbf{1},7,12,14,19,11,6,18,8,20]\\[0.4em]
-\text{Pass 2: }&\min[7,12,14,19,11,6,18,8,20]=6,\\
-&[\mathbf{1,6},12,14,19,11,7,18,8,20]\\[0.4em]
-\text{Pass 3: }&\min[12,14,19,11,7,18,8,20]=7,\\
-&[\mathbf{1,6,7},14,19,11,12,18,8,20].
-\end{align*}
-
-Angka yang dicetak tebal adalah bagian yang sudah final. Pada pass berikutnya, bagian tersebut tidak diperiksa lagi.
+\subsection{Kode yang mencetak setiap proses pengulangan}
+Kode berikut sengaja verbose untuk praktikum. Setiap perbandingan pada loop dalam dicetak sehingga mahasiswa dapat melihat bagaimana kandidat minimum berubah, lalu melihat hasil akhir satu \textit{pass}.
 
 \begin{lstlisting}
-def selection_sort_trace(a):
-    a = a.copy()
+def selection_sort_trace(data):
+    a = data.copy()
     n = len(a)
 
     for i in range(n - 1):
-        indeks_min = i
-        for j in range(i + 1, n):
-            if a[j] < a[indeks_min]:
-                indeks_min = j
+        idx_min = i
+        print(f"\nPASS {i+1}")
+        print("awal :", a)
 
-        a[i], a[indeks_min] = a[indeks_min], a[i]
-        print(f"pass {i+1}: {a}")
+        for j in range(i + 1, n):
+            print(f"bandingkan a[{j}]={a[j]} "
+                  f"dengan minimum sementara "
+                  f"a[{idx_min}]={a[idx_min]}")
+
+            if a[j] < a[idx_min]:
+                idx_min = j
+                print("  -> minimum baru:", a[idx_min])
+
+        a[i], a[idx_min] = a[idx_min], a[i]
+        print("swap  :", a)
+        print("final :", a[:i+1],
+              "| belum terurut:", a[i+1:])
 
     return a
 \end{lstlisting}
 
-\subsection{Invariant dan banyak perbandingan}
-Sifat yang tetap benar setelah setiap pass adalah:
-\begin{quote}
-Setelah pass ke-$k$, $k$ elemen terkecil sudah berada pada $k$ posisi pertama dalam urutan yang benar.
-\end{quote}
-Sifat tetap seperti ini disebut \textit{invariant}. Untuk mencari minimum, pass pertama melakukan $n-1$ perbandingan, pass kedua $n-2$, dan seterusnya. Karena itu,
-\[
-T(n)=(n-1)+(n-2)+\cdots+1=\frac{n(n-1)}{2},
-\]
-sehingga selection sort memiliki orde $O(n^2)$.
+\begin{catatanbox}
+Untuk memahami algoritma, gunakan versi \kode{*_trace}. Untuk benchmark, gunakan versi tanpa \kode{print}, karena operasi pencetakan jauh lebih mahal daripada perbandingan dan pertukaran yang sedang dianalisis.
+\end{catatanbox}
 
-\section{Bubble sort: pass mempunyai arti yang berbeda}
-Bubble sort tidak mencari satu minimum. Algoritma membandingkan pasangan yang bersebelahan dari kiri ke kanan dan menukarnya jika urutannya salah. \textbf{Satu pass bubble sort adalah satu lintasan penuh} pada bagian list yang masih aktif.
+\section{Bubble sort: setiap perbandingan dapat terlihat}
+Pada bubble sort, satu \textit{pass} adalah satu lintasan dari kiri ke kanan yang membandingkan pasangan bersebelahan. Jika urutannya salah, kedua elemen ditukar. Setelah satu \textit{pass} penuh, elemen terbesar pada bagian aktif berada di posisi paling kanan bagian tersebut.
 
 \begin{lstlisting}
-def bubble_sort_trace(a):
-    a = a.copy()
+def bubble_sort_trace(data):
+    a = data.copy()
     n = len(a)
 
     for p in range(n - 1):
-        for j in range(0, n - 1 - p):
-            if a[j] > a[j + 1]:
-                a[j], a[j + 1] = a[j + 1], a[j]
+        print(f"\nPASS {p+1}")
 
-        print(f"pass {p+1}: {a}")
+        for j in range(0, n - 1 - p):
+            print(f"bandingkan {a[j]} dan {a[j+1]}")
+
+            if a[j] > a[j+1]:
+                a[j], a[j+1] = a[j+1], a[j]
+                print("  swap ->", a)
+            else:
+                print("  tetap ->", a)
+
+        print("hasil pass:", a)
 
     return a
 \end{lstlisting}
 
-Contoh untuk \kode{[11,7,12,14,19,1]}:
-\begin{align*}
-\text{Awal: }&[11,7,12,14,19,1]\\
-\text{Pass 1: }&[7,11,12,14,1,\mathbf{19}]\\
-\text{Pass 2: }&[7,11,12,1,\mathbf{14,19}].
-\end{align*}
-Pada bubble sort, satu pass dapat mengandung banyak pertukaran. Setelah pass ke-$k$, $k$ elemen terbesar sudah berada pada posisi final di sebelah kanan.
-
-\begin{center}
-\small
-\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}XX@{}}
+\begin{idebox}{Perbedaan arti \textit{pass}}
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
 \toprule
- & Selection sort & Bubble sort \\
+\textbf{Algoritma} & \textbf{Makna satu langkah utama} \\
 \midrule
-Arti satu pass & Cari satu minimum pada bagian belum terurut, lalu tempatkan di depan & Lintasi pasangan bersebelahan pada bagian aktif \\
-Pertukaran per pass & Paling banyak satu pertukaran utama & Dapat terjadi berkali-kali \\
-Yang menjadi final & Satu elemen terkecil di sisi kiri & Satu elemen terbesar di sisi kanan \\
-Setelah pass ke-$k$ & $k$ elemen terkecil final & $k$ elemen terbesar final \\
+Selection sort & satu \textit{pass}: mencari minimum pada bagian belum terurut, lalu satu pertukaran ke posisi final di kiri \\
+Bubble sort & satu \textit{pass}: satu lintasan pasangan bersebelahan; elemen terbesar bergerak ke kanan \\
+Merge sort & lebih tepat ditelusuri sebagai level pembagian dan tahap penggabungan, bukan \textit{pass} seperti selection/bubble \\
 \bottomrule
 \end{tabularx}
-\end{center}
+\end{idebox}
 
-\section{Merge sort: gunakan level pembagian dan tahap merge}
-Pada merge sort, istilah \textit{pass} tidak sejelas pada selection atau bubble sort. Untuk tracing, lebih baik gunakan dua istilah berikut:
-\begin{itemize}
-  \item \textbf{level pembagian}: list dibagi dua secara rekursif sampai berukuran satu;
-  \item \textbf{tahap merge}: dua sublist yang sudah terurut digabung menjadi satu list terurut.
-\end{itemize}
+\section{Merge sort: \textit{divide, conquer, merge}}
+Merge sort tidak mencari minimum atau menukar pasangan bersebelahan. Algoritma bekerja dengan dua tahap besar.
 
-Sebagai contoh,
+\subsection{Tahap 1: membagi masalah}
+Untuk list
 \[
-[21,1,26,45,29,28,2,9]
+[21,1,26,45,29,28,2,9],
 \]
-memiliki tiga level awal pembagian:
-\begin{align*}
+algoritma membelah list menjadi dua sampai setiap sublist berukuran satu:
+\[
+\begin{aligned}
 &[21,1,26,45,29,28,2,9]\\
-&\qquad\downarrow\\
-&[21,1,26,45]\qquad [29,28,2,9]\\
-&\qquad\downarrow\hspace{4.8cm}\downarrow\\
-&[21,1]\ [26,45]\qquad [29,28]\ [2,9].
-\end{align*}
-Setelah pembagian mencapai list berukuran satu, proses berjalan balik melalui tahap merge. Karena kedalaman pembagian sekitar $\log_2 n$ dan pada setiap level total sekitar $n$ elemen diproses, merge sort memiliki orde $O(n\log n)$.
+&\quad\to [21,1,26,45]\;|\;[29,28,2,9]\\
+&\quad\to [21,1]\;|\;[26,45]\;|\;[29,28]\;|\;[2,9]\\
+&\quad\to [21]|[1]|[26]|[45]|[29]|[28]|[2]|[9].
+\end{aligned}
+\]
+Sublist satu elemen sudah terurut secara trivial. Ini adalah \textit{base case} rekursi.
 
-\section{Ringkasan cara menelusuri algoritma}
-\begin{center}
-\small
-\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}p{0.27\textwidth}XX@{}}
-\toprule
-Algoritma & Satu langkah yang dicatat & Perubahan utama & Sifat yang digunakan \\
-\midrule
-Sequential search & satu perbandingan & maju satu posisi & target belum ditemukan pada posisi sebelumnya \\
-Binary search & satu iterasi & interval kandidat diperkecil & data harus terurut \\
-Selection sort & satu pass & satu minimum menjadi final di kiri & prefix kiri sudah final \\
-Bubble sort & satu pass/lintasan & satu maksimum menjadi final di kanan & suffix kanan sudah final \\
-Merge sort & satu level / satu merge & pecah dua atau gabung dua sublist & sublist yang di-merge sudah terurut \\
-\bottomrule
-\end{tabularx}
-\end{center}
+\subsection{Tahap 2: menggabungkan dua list terurut}
+Fungsi \kode{merge(left,right)} selalu menerima dua list yang \textbf{sudah terurut}. Bandingkan elemen paling depan; pindahkan yang lebih kecil ke hasil; ulangi sampai salah satu list habis; lalu tambahkan sisa list lainnya.
 
-\section{Benchmark}
-Benchmark mengukur implementasi, bukan menggantikan analisis kompleksitas. Gunakan input yang sama, beberapa ukuran data, pengulangan pengukuran, dan hindari pekerjaan tambahan yang hanya dilakukan oleh salah satu algoritma.
+Contoh:
+\[
+[1,21] + [26,45] \longrightarrow [1,21,26,45].
+\]
 
-Saat membandingkan algoritma sorting, lakukan dua tahap:
+\begin{lstlisting}
+def merge(left, right, trace=False):
+    hasil = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if trace:
+            print("bandingkan", left[i], "dan", right[j])
+
+        if left[i] <= right[j]:
+            hasil.append(left[i])
+            i += 1
+        else:
+            hasil.append(right[j])
+            j += 1
+
+        if trace:
+            print("hasil sementara:", hasil)
+
+    hasil.extend(left[i:])
+    hasil.extend(right[j:])
+    return hasil
+\end{lstlisting}
+
+\subsection{Algoritma rekursif merge sort}
 \begin{enumerate}
-  \item pastikan hasil pengurutan sama dan benar;
-  \item baru ukur waktu untuk ukuran input yang meningkat.
+  \item Jika panjang list $\le 1$, kembalikan list tersebut.
+  \item Tentukan indeks tengah.
+  \item Urutkan bagian kiri secara rekursif.
+  \item Urutkan bagian kanan secara rekursif.
+  \item Gabungkan dua hasil terurut dengan \kode{merge}.
 \end{enumerate}
-Waktu aktual dipengaruhi komputer dan implementasi, sedangkan Big-O menjelaskan pola pertumbuhan kerja ketika ukuran input membesar.
+
+\begin{lstlisting}
+def merge_sort(data, depth=0, trace=False):
+    a = data.copy()
+
+    if len(a) <= 1:
+        if trace:
+            print("  " * depth, "base:", a)
+        return a
+
+    mid = len(a) // 2
+
+    if trace:
+        print("  " * depth, "split:", a,
+              "->", a[:mid], "|", a[mid:])
+
+    left = merge_sort(a[:mid], depth + 1, trace)
+    right = merge_sort(a[mid:], depth + 1, trace)
+    hasil = merge(left, right, trace=trace)
+
+    if trace:
+        print("  " * depth, "merge:",
+              left, "+", right, "->", hasil)
+
+    return hasil
+\end{lstlisting}
+
+\begin{idebox}{Mengapa $O(n\log n)$?}
+Pembagian menghasilkan sekitar $\log_2 n$ level karena ukuran list terus dibagi dua. Pada setiap level, total elemen yang diproses saat proses \textit{merge} tetap sekitar $n$. Maka
+\[
+T(n)\approx n\log_2 n,
+\qquad
+O(n\log n).
+\]
+\end{idebox}
+
+\section{Sorting sebagai tahap sebelum binary search}
+Binary search hanya aman digunakan jika data sudah terurut. Karena itu, sebuah prosedur dapat memiliki dua tahap: \textbf{sorting terlebih dahulu}, kemudian \textbf{searching}. Untuk satu kali pencarian, biaya sorting dapat lebih besar daripada sequential search; tetapi jika data yang sama akan dicari berkali-kali, biaya sorting dapat menjadi investasi awal yang berguna.
+
+Gunakan data berikut:
+\[
+D=[11,7,12,14,19,1,6,18,8,20].
+\]
+Urutkan $D$ dengan salah satu algoritma yang telah dibuat, kemudian gunakan binary search untuk mencari 14 dan 9. Catat proses sorting dan proses searching secara terpisah.
+
+\section{Benchmark sorting dengan \texttt{timeit}}
+Versi trace tidak digunakan untuk benchmark. Buat versi \kode{selection_sort}, \kode{bubble_sort}, dan \kode{merge_sort} tanpa \kode{print}. Gunakan data awal yang sama pada setiap algoritma.
+
+\begin{lstlisting}
+import random
+import timeit
+from math import log2
+
+
+def buat_data(n, seed=42):
+    rng = random.Random(seed)
+    return [rng.randint(0, 10**6) for _ in range(n)]
+
+
+def ukur(sort_func, data):
+    # copy agar setiap algoritma menerima kondisi awal yang sama
+    hasil = timeit.repeat(
+        lambda: sort_func(data.copy()),
+        repeat=3,
+        number=1
+    )
+    return min(hasil)
+\end{lstlisting}
+
+\begin{catatanbox}
+Jangan mencoba membuat list Python berukuran $10^{12}$ atau $10^{18}$. Bahkan $10^8$ integer dapat membutuhkan memori yang sangat besar. Ukuran ekstrem pada latihan digunakan untuk menilai apakah mahasiswa dapat membedakan \textbf{benchmark aktual} dan \textbf{prediksi berdasarkan model kompleksitas}.
+\end{catatanbox}
+
+Jika waktu aktual untuk $n_0=1000$ adalah $t_0$, gunakan model pertumbuhan untuk memperoleh estimasi kasar:
+\[
+\hat t(n)=t_0\left(\frac{n}{n_0}\right)^2
+\]
+untuk selection/bubble sort, dan
+\[
+\hat t(n)=t_0\frac{n\log_2 n}{n_0\log_2 n_0}
+\]
+untuk merge sort.
+
+\begin{lstlisting}
+def estimasi_n2(t0, n0, n):
+    return t0 * (n / n0)**2
+
+
+def estimasi_nlogn(t0, n0, n):
+    return t0 * ((n * log2(n)) /
+                 (n0 * log2(n0)))
+\end{lstlisting}
 
 \begin{latihanbox}{Latihan Praktikum 6}
 \begin{enumerate}
-  \item Implementasikan \kode{sequential_search} dan kembalikan indeks serta banyak perbandingan.
-  \item Trace binary search untuk mencari 8 pada \kode{[3,5,6,8,11,12,14,15,17,18]}. Catat \kode{kiri}, \kode{tengah}, \kode{kanan}, nilai tengah, dan keputusan pada setiap iterasi.
-  \item Trace binary search untuk mencari 16 pada list yang sama sampai algoritma menyatakan tidak ditemukan.
-  \item Modifikasi binary search agar juga mengembalikan banyak perbandingan. Bandingkan dengan sequential search untuk target di awal, tengah, akhir, dan tidak ditemukan.
-  \item Uji binary search pada data yang belum terurut. Jelaskan mengapa hasilnya tidak dapat dipercaya.
-  \item Untuk \kode{[11,7,12,14,19,1,6,18,8,20]}, lakukan tiga pass pertama selection sort secara manual. Untuk setiap pass, tulis: indeks awal bagian belum terurut, minimum yang ditemukan, indeks minimum, pertukaran yang dilakukan, dan keadaan list setelah pass selesai.
-  \item Jalankan \kode{selection_sort_trace} pada data yang sama dan cocokkan hasilnya dengan perhitungan manual.
-  \item Jelaskan invariant selection sort dengan kalimat Anda sendiri. Gunakan invariant tersebut untuk menjelaskan mengapa tiga elemen pertama setelah pass ke-3 sudah final.
-  \item Untuk \kode{[11,7,12,14,19,1]}, lakukan dua pass pertama bubble sort. Catat setiap pertukaran yang terjadi dalam satu pass, lalu tulis keadaan list setelah pass selesai.
-  \item Jelaskan perbedaan arti satu pass pada selection sort dan bubble sort.
-  \item Turunkan jumlah perbandingan selection sort dari $(n-1)+(n-2)+\cdots+1$ sampai memperoleh $T(n)$ dan Big-O.
-  \item Gambar tiga level awal pohon rekursi merge sort untuk \kode{[21,1,26,45,29,28,2,9,16,49,39,27,43,34,46,40]}.
-  \item Tentukan pasangan sublist pertama yang digabung kembali, lalu tunjukkan hasil dua tahap merge pertama.
-  \item Implementasikan fungsi \kode{merge(left,right)} dan kemudian implementasikan merge sort rekursif.
-  \item Bandingkan worst-case selection, bubble, insertion, merge, dan quicksort standar berdasarkan orde kompleksitasnya.
-  \item Rancang benchmark insertion sort vs merge sort untuk ukuran input yang meningkat. Gunakan data acak yang sama untuk kedua algoritma pada setiap ulangan dan lakukan pengukuran lebih dari sekali.
-  \item Bandingkan hasil benchmark untuk data acak, terurut, dan hampir terurut. Hubungkan pola waktu yang diamati dengan teori kompleksitas.
-  \item Buat laporan ringkas yang memisahkan dengan jelas: hasil tracing, $T(n)$, Big-O, waktu benchmark, dan interpretasi hasil.
+  \item Jalankan \kode{selection_sort_trace} pada \kode{[11,7,12,14,19,1,6,18,8,20]}. Untuk tiga \textit{pass} pertama, catat setiap kandidat minimum, posisi pertukaran, dan keadaan list setelah pertukaran.
+
+  \item Jalankan \kode{bubble_sort_trace} pada \kode{[11,7,12,14,19,1]}. Jelaskan perbedaan antara satu perbandingan, satu pertukaran, dan satu \textit{pass} penuh.
+
+  \item Untuk \kode{[21,1,26,45,29,28,2,9]}, tulis secara manual seluruh pembagian sampai \textit{base case}, lalu lakukan penggabungan kembali sampai list terurut. Setelah itu cocokkan dengan keluaran \kode{merge_sort(..., trace=True)}.
+
+  \item Gunakan data
+  \[
+  D=[11,7,12,14,19,1,6,18,8,20].
+  \]
+  Urutkan $D$ dengan selection sort dan merge sort. Pastikan kedua hasil sama. Gunakan hasil yang sudah terurut untuk binary search terhadap target 14 dan 9. Jelaskan mengapa binary search tidak boleh langsung diterapkan pada $D$ sebelum sorting.
+
+  \item Diberikan dictionary berikut.
+\begin{lstlisting}
+mahasiswa = {
+    "Nadia Prameswari": "125160047",
+    "Raka Mahendra":    "125160012",
+    "Salsa Nirmala":    "125160083",
+    "Dimas Ardiansyah": "125160025",
+    "Keisha Ramadhani": "125160061",
+    "Farel Wicaksana":  "125160008",
+    "Tania Maharani":   "125160074",
+    "Bagas Pratama":    "125160039"
+}
+\end{lstlisting}
+  Rancang fungsi \kode{urutkan_berdasarkan_nim(data)} yang mengembalikan \textbf{dictionary baru} dengan urutan entri berdasarkan NIM dari kecil ke besar. Untuk versi utama, jangan gunakan \kode{sorted}; gunakan salah satu algoritma sorting yang dipelajari terhadap pasangan \kode{(nama, nim)}. Jelaskan mengapa dictionary hasil tetap dapat mempertahankan urutan penyisipan pada Python modern.
+
+  \item Dengan dictionary yang sama, rancang \kode{urutkan_berdasarkan_nama(data)} yang mengembalikan dictionary baru dengan nama terurut alfabetis. Bandingkan bagian algoritma yang berubah dengan pengurutan berdasarkan NIM.
+
+  \item Setelah dictionary diurutkan berdasarkan NIM, buat fungsi pencarian NIM tertentu yang mengembalikan nama mahasiswa. Pilih apakah sequential search atau binary search lebih tepat terhadap representasi data yang Anda buat, lalu jelaskan prasyaratnya.
+
+  \item Buat bilangan bulat acak dan ukur waktu sorting dengan \kode{timeit}. Gunakan \kode{n=1000} untuk benchmark aktual selection sort, bubble sort, dan merge sort. Gunakan pola berikut sebagai petunjuk:
+\begin{lstlisting}
+data = buat_data(1000, seed=42)
+t = ukur(selection_sort, data)
+print(t)
+\end{lstlisting}
+  Ulangi untuk fungsi sorting lainnya dengan \textbf{data awal yang sama}.
+
+  \item Pertimbangkan ukuran
+  \[
+  n=10^3,\quad 10^8,\quad 10^{12},\quad 10^{18}.
+  \]
+  Untuk $10^3$, isi waktu aktual dari \kode{timeit}. Untuk ukuran yang tidak feasible dibuat di memori atau dijalankan sampai selesai, tulis \textit{tidak feasible} pada kolom waktu aktual dan hitung \textbf{estimasi waktu} dari model $O(n^2)$ atau $O(n\log n)$ menggunakan fungsi \kode{estimasi_n2} dan \kode{estimasi_nlogn}.
+
+  \item Sajikan hasil nomor 8--9 dalam tabel berikut dan interpretasikan perbedaannya.
+  \[
+  \begin{array}{c|c|c|c|c}
+  n & \text{selection} & \text{bubble} & \text{merge} & \text{keterangan}\\ \hline
+  10^3&&&&\\
+  10^8&&&&\\
+  10^{12}&&&&\\
+  10^{18}&&&&
+  \end{array}
+  \]
+  Bedakan dengan jelas nilai hasil \kode{timeit} dan nilai hasil estimasi matematis.
+
+  \item Untuk masing-masing algoritma sorting, tentukan operasi utama, bentuk $T(n)$, dan Big-O. Hubungkan hasil teori tersebut dengan kecenderungan estimasi waktu pada nomor 9.
+
+  \item Jelaskan mengapa \kode{print} tidak boleh berada di dalam fungsi yang sedang diukur dengan \kode{timeit}, walaupun \kode{print} justru sangat berguna pada versi trace untuk memahami proses algoritma.
 \end{enumerate}
 \end{latihanbox}
+
 
 % ================= P7 =================
 \chapter{Praktikum 7: Aljabar Linier Komputasional}
