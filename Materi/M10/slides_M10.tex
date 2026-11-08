@@ -86,7 +86,7 @@
 }
 
 \title[\mkfooter]{Pertemuan 10: Klasifikasi dengan K-Nearest Neighbors}
-\subtitle{Jarak, tetangga terdekat, dan keputusan kelas}
+\subtitle{Ruang fitur, fungsi jarak, voting kelas, dan evaluasi}
 \author{\textbf{Triyana Muliawati, S.Si., M.Si.} dan Rifky Fauzi}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
@@ -112,19 +112,19 @@
 \node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.0mm,text width=6.95cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
 {\fontsize{13}{15}\selectfont\bfseries Pokok bahasan}\\[2mm]
 \begin{itemize}\small
-  \item Klasifikasi sebagai masalah prediksi kategori.
-  \item Representasi fitur dan label kelas.
-  \item Jarak Euclidean dan konsep tetangga terdekat.
-  \item Algoritma K-Nearest Neighbors (KNN).
-  \item Implementasi KNN dari prinsip matematika dengan NumPy.
-  \item Kompleksitas algoritma, skala fitur, dan evaluasi.
+  \item Masalah klasifikasi dan representasi ruang fitur.
+  \item KNN sebagai metode berbasis jarak dan tetangga lokal.
+  \item Beberapa fungsi jarak dan pemilihan kelas dengan voting.
+  \item Implementasi algoritma menggunakan NumPy.
+  \item Normalisasi fitur dan evaluasi klasifikasi.
+  \item Posisi KNN di antara model klasifikasi lain.
 \end{itemize}
 };
 \end{tikzpicture}
 \end{frame}
 
 % 2
-\begin{frame}{Dari Data ke Keputusan}
+\begin{frame}{Data, Informasi, dan Keputusan}
 \begin{columns}[T]
 \column{.50\textwidth}
 \IfFileExists{assets/data_information_knowledge_insight_wisdom_impact.jpg}{%
@@ -134,231 +134,347 @@
 {\tiny Ilustrasi: Gapingvoid Culture Design Group (gambar terlampir).}
 }{%
 \begin{block}{Ilustrasi}
-Data menjadi berguna ketika kita mengenali struktur, hubungan, dan keputusan yang dapat diambil darinya.
+Data menjadi berguna ketika struktur dan hubungan antarobjek dapat dikenali.
 \end{block}
 }
 \column{.46\textwidth}
-\begin{block}{Dari titik menjadi kelas}
+\small
+\textbf{Data} dapat dipandang sebagai kumpulan observasi. Setelah setiap observasi memiliki atribut dan label, kita dapat mengenali pola yang lebih terstruktur.
+
+\vspace{2mm}
+\begin{block}{Masalah komputasi}
 \footnotesize
-Pada gambar, titik yang semula belum dibedakan mulai memperoleh \textbf{label} dan \textbf{hubungan}. Dalam klasifikasi, label dapat berupa warna, kategori, atau nama kelas.
+Diberikan data berlabel dan sebuah objek baru, tentukan \textbf{kelas} objek baru tersebut berdasarkan informasi pada data yang tersedia.
 \end{block}
-\begin{alertblock}{Pertanyaan komputasi}
-\footnotesize
-Jika beberapa objek sudah diketahui kelasnya, dapatkah kita menentukan \textbf{kelas objek baru} berdasarkan objek yang sudah ada?
-\end{alertblock}
-\begin{block}{Hubungan dengan pertemuan sebelumnya}
-\footnotesize
-Regresi memprediksi \textbf{nilai numerik}; klasifikasi memprediksi \textbf{kelas/kategori}.
-\end{block}
+
+Contoh: berdasarkan beberapa ukuran numerik, apakah suatu objek termasuk kelas A atau kelas B?
+
+\vspace{2mm}
+{\footnotesize Pendekatan ini mengikuti pola pembelajaran komputasi yang konkret lebih dulu, lalu digeneralisasi ke bentuk matematis dan algoritmik.}
 \end{columns}
 \end{frame}
 
 % 3
-\begin{frame}{Klasifikasi: Apa yang Diprediksi?}
+\begin{frame}{Masalah Klasifikasi dan Variabel Masukan}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Regresi pada pertemuan sebelumnya}
+\column{.52\textwidth}
+\begin{block}{Satu objek sebagai vektor}
 \small
-Output model berupa nilai numerik:
+Jika satu objek mempunyai $d$ atribut numerik, kita tulis
 \[
-\hat y \in \mathbb{R}.
+x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d.
 \]
-Contoh:
-\begin{itemize}
-  \item prediksi nilai ujian;
-  \item estimasi harga rumah;
-  \item perkiraan konsumsi listrik.
-\end{itemize}
+Setiap $x_j$ disebut \textbf{fitur}. Untuk dua fitur,
+\[
+x=(x_1,x_2)
+\]
+dapat digambar sebagai satu titik pada bidang Kartesius.
 \end{block}
-\column{.47\textwidth}
-\begin{block}{Klasifikasi}
+\column{.44\textwidth}
+\begin{block}{Keluaran klasifikasi}
 \small
-Output model berupa kategori:
+Label kelas bersifat diskret, misalnya
 \[
-\hat y \in \{C_1,C_2,\ldots,C_m\}.
+y\in\{A,B\}
 \]
-Contoh:
-\begin{itemize}
-  \item email: spam / bukan spam;
-  \item transaksi: fraud / normal;
-  \item objek: kelas A / B / C.
-\end{itemize}
+atau, secara umum,
+\[
+y\in\{C_1,C_2,\ldots,C_m\}.
+\]
+Untuk objek baru $x^*$, kita ingin menentukan prediksi kelas $\hat y(x^*)$.
 \end{block}
 \end{columns}
-\begin{alertblock}{Gagasan utama}
-Klasifikasi menggunakan pola pada data berlabel untuk menentukan label data baru. Ini merupakan bentuk \textbf{supervised learning}.
+\begin{alertblock}{Hubungan dengan matematika dasar}
+\small
+Geometri analitik memberi cara memandang data sebagai titik. Aljabar linear memberi cara menulis satu observasi sebagai vektor dan seluruh data sebagai matriks.
 \end{alertblock}
 \end{frame}
 
 % 4
-\begin{frame}{Masalah Klasifikasi Dua Fitur}
+\begin{frame}{Klasifikasi dan Regresi}
+\small
+\begin{center}
+\begin{tabular}{p{3.1cm} p{5.1cm} p{5.1cm}}
+\toprule
+ & Regresi & Klasifikasi \\
+\midrule
+Masukan & $x\in\mathbb{R}^d$ & $x\in\mathbb{R}^d$ \\
+Keluaran & nilai numerik $\hat y\in\mathbb{R}$ & kelas $\hat y\in\{C_1,\ldots,C_m\}$ \\
+Contoh & harga, suhu, nilai ujian & lulus/tidak, spam/bukan spam \\
+Pertanyaan & ``berapa nilainya?'' & ``termasuk kelas mana?'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{2mm}
+\begin{block}{Catatan istilah}
+\small
+Nama suatu metode tidak selalu menunjukkan jenis keluarannya. \textbf{Logistic regression}, misalnya, justru lazim digunakan untuk klasifikasi biner karena keluarannya dapat diubah menjadi probabilitas kelas.
+\end{block}
+\end{frame}
+
+% 5
+\begin{frame}{Representasi Data dalam Ruang Fitur}
 \begin{columns}[T]
 \column{.47\textwidth}
-\begin{block}{Contoh sederhana}
+\begin{block}{Data berlabel}
 \small
 Misalkan setiap mahasiswa direpresentasikan oleh
 \[
 x=(x_1,x_2),
 \]
-dengan $x_1$ = persentase kehadiran dan $x_2$ = nilai tugas. Labelnya
+dengan $x_1$ = kehadiran dan $x_2$ = nilai tugas. Label $y$ menunjukkan dua kelas.
+
+Untuk $n$ observasi dan $d$ fitur,
 \[
-y\in\{\text{Lulus},\text{Belum}\}.
+X=\begin{pmatrix}
+---x_1^T---\\
+---x_2^T---\\
+\vdots\\
+---x_n^T---
+\end{pmatrix}\in\mathbb{R}^{n\times d}.
 \]
-Data yang sudah ada mempunyai fitur dan label. Untuk mahasiswa baru, fitur diketahui tetapi label belum diketahui.
 \end{block}
 \column{.49\textwidth}
 \centering
-\begin{tikzpicture}[x=.60cm,y=.49cm]
-  \draw[->,thick] (0,0) -- (8.2,0) node[right]{\scriptsize $x_1$};
-  \draw[->,thick] (0,0) -- (0,7.2) node[above]{\scriptsize $x_2$};
+\begin{tikzpicture}[x=.62cm,y=.50cm]
+  \draw[->,thick] (0,0) -- (8.1,0) node[right]{\scriptsize $x_1$};
+  \draw[->,thick] (0,0) -- (0,7.1) node[above]{\scriptsize $x_2$};
   \foreach \p in {(1.4,1.5),(2.0,2.0),(2.5,1.6),(2.8,2.7),(3.2,2.1)}
     \fill[Blue] \p circle (2.2pt);
   \foreach \p in {(5.0,4.8),(5.7,5.3),(6.2,4.4),(6.5,5.8),(5.4,6.1)}
     \fill[Teal!80!black] \p circle (2.2pt);
   \draw[very thick,Gold!85!black] (4.1,3.8) circle (3.2pt);
-  \node[anchor=west] at (4.25,3.8){\scriptsize objek baru};
-  \node[Blue] at (2.0,6.6){\scriptsize Kelas A};
-  \node[Teal!80!black] at (6.1,6.6){\scriptsize Kelas B};
+  \node[anchor=west] at (4.25,3.8){\scriptsize $x^*$};
+  \node[Blue] at (2.0,6.5){\scriptsize Kelas A};
+  \node[Teal!80!black] at (6.1,6.5){\scriptsize Kelas B};
 \end{tikzpicture}
 \vspace{1mm}
-\begin{alertblock}{Coba tebak sebelum menghitung}
+\begin{alertblock}{Masalah komputasi}
 \footnotesize
-Kelas mana yang Anda pilih untuk titik kuning? Alasan paling sederhana biasanya: \textbf{lihat objek-objek yang paling dekat}.
-\end{alertblock}
-\end{columns}
-\end{frame}
-
-% 5
-\begin{frame}{Intuisi Tetangga Terdekat}
-\begin{columns}[T]
-\column{.49\textwidth}
-\centering
-\begin{tikzpicture}[x=.68cm,y=.55cm]
-  \draw[->,thick] (0,0) -- (8.0,0);
-  \draw[->,thick] (0,0) -- (0,7.0);
-  \foreach \p in {(1.5,1.5),(2.2,2.0),(2.8,2.8),(3.0,1.6),(3.6,2.4)}
-    \fill[Blue] \p circle (2.4pt);
-  \foreach \p in {(5.0,4.8),(5.5,5.5),(6.0,4.1),(6.6,5.2),(5.9,6.1)}
-    \fill[Teal!80!black] \p circle (2.4pt);
-  \coordinate (Q) at (4.35,3.55);
-  \draw[Gold!90!black,line width=1.3pt] (Q) circle (3.4pt);
-  \draw[Gold!70!black,dashed,thick] (Q) circle (1.75cm);
-  \node[anchor=west] at (4.55,3.55){\scriptsize $x^*$};
-\end{tikzpicture}
-\column{.47\textwidth}
-\begin{block}{Cara manusia menebak}
-\small
-Untuk titik baru $x^*$, kita melihat titik-titik yang paling dekat. Jika sebagian besar tetangga terdekat berasal dari Kelas A, kita cenderung menempatkan $x^*$ ke Kelas A.
-\end{block}
-\begin{alertblock}{Dari intuisi menjadi algoritma}
-\small
-Kita perlu menentukan:
-\begin{enumerate}
-  \item apa arti ``dekat'';
-  \item berapa banyak tetangga yang dipakai;
-  \item bagaimana memilih kelas dari tetangga tersebut.
-\end{enumerate}
+Dari posisi $x^*$ terhadap titik-titik berlabel, bagaimana aturan yang eksplisit untuk menentukan kelasnya?
 \end{alertblock}
 \end{columns}
 \end{frame}
 
 % 6
-\begin{frame}{K-Nearest Neighbors untuk Klasifikasi}
-\small
-Diberikan data latih
-\[
-D=\{(x_i,y_i)\}_{i=1}^{n},\qquad x_i\in\mathbb{R}^{d},\quad y_i\in\{C_1,\ldots,C_m\}.
-\]
-Untuk objek baru $x^*$, KNN menentukan kelas menggunakan $k$ objek data latih yang jaraknya paling dekat dengan $x^*$.
+\begin{frame}{Landasan Komputasi dari Dua Buku Rujukan}
 \begin{columns}[T]
 \column{.49\textwidth}
-\begin{block}{Masukan}
-\begin{itemize}\small
-  \item matriks fitur $X\in\mathbb{R}^{n\times d}$;
-  \item label $y$ sebanyak $n$ buah;
-  \item objek baru $x^*\in\mathbb{R}^{d}$;
-  \item bilangan bulat $k$.
-\end{itemize}
+\begin{block}{David J. Pine}
+\footnotesize
+Pada contoh jarak dua koordinat Kartesius, Pine menuliskan jarak dengan Teorema Pythagoras dan menghitungnya langsung menggunakan NumPy:
+\[
+\Delta r=\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}.
+\]
+Ini menjadi landasan komputasi jarak pada KNN.
 \end{block}
 \column{.47\textwidth}
-\begin{block}{Keluaran}
-\small
-Kelas dengan jumlah suara terbesar di antara $k$ tetangga terdekat:
-\[
-\hat y(x^*)=
-\operatorname*{arg\,max}_{c}
-\sum_{i\in N_k(x^*)}\mathbf{1}(y_i=c).
-\]
+\begin{block}{Wes McKinney}
+\footnotesize
+McKinney menempatkan \textit{nearest neighbors}, logistic regression, SVM, dan random forest sebagai metode klasifikasi; ia juga menempatkan normalisasi sebagai bagian preprocessing. Pada contoh pemodelan, fitur disusun menjadi $X_{\rm train}$ dan label menjadi $y_{\rm train}$.
 \end{block}
 \end{columns}
-\begin{alertblock}{Ciri penting}
-KNN tidak mencari parameter seperti $\beta_0,\beta_1$ pada regresi. Data latih disimpan dan digunakan ketika prediksi dilakukan.
-\end{alertblock}
+\vspace{1mm}
+{\tiny Rujukan: Pine, \textit{Introduction to Python for Science and Engineering}, \S2.8.3; McKinney, \textit{Python for Data Analysis}, 3rd ed., \S1.3 dan \S12.4.}
 \end{frame}
 
 % 7
-\begin{frame}{Jarak Euclidean}
+\begin{frame}{Prinsip K-Nearest Neighbors}
+\small
+Diberikan data latih
+\[
+D=\{(x_i,y_i)\}_{i=1}^{n},\qquad x_i\in\mathbb{R}^{d}.
+\]
+Untuk objek baru $x^*$, KNN menggunakan informasi kelas dari $k$ observasi yang \textbf{paling dekat} dengan $x^*$.
 \begin{columns}[T]
-\column{.52\textwidth}
-\begin{block}{Dari Teorema Pythagoras}
-Untuk dua titik dua dimensi
-\[
-x=(x_1,x_2),\qquad z=(z_1,z_2),
-\]
-jaraknya adalah
-\[
-d(x,z)=\sqrt{(x_1-z_1)^2+(x_2-z_2)^2}.
-\]
-Untuk $d$ fitur:
-\[
-\boxed{d(x,z)=\sqrt{\sum_{j=1}^{d}(x_j-z_j)^2}}
-\]
+\column{.49\textwidth}
+\begin{block}{Tiga komponen utama}
+\begin{enumerate}\small
+  \item fungsi jarak $d(x_i,x^*)$;
+  \item jumlah tetangga $k$;
+  \item aturan voting kelas.
+\end{enumerate}
 \end{block}
-\column{.44\textwidth}
+\column{.47\textwidth}
+\begin{block}{Interpretasi geometri}
+\small
+Di sekitar $x^*$ dibentuk lingkungan lokal. Kelas diputuskan dari komposisi label di lingkungan tersebut, bukan dari satu persamaan garis global.
+\end{block}
+\end{columns}
+\begin{alertblock}{KNN adalah metode lokal}
+\small
+Dua objek yang berdekatan di ruang fitur dianggap lebih serupa daripada dua objek yang berjauhan, sejauh definisi jarak yang dipakai memang sesuai dengan masalah.
+\end{alertblock}
+\end{frame}
+
+% 8
+\begin{frame}{Beberapa Fungsi Jarak pada Ruang Fitur}
+\scriptsize
+\begin{columns}[T]
+\column{.55\textwidth}
+{\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{2.15cm} p{4.95cm}}
+\toprule
+Jarak & Rumus \\
+\midrule
+Euclidean ($L_2$) & $\displaystyle d_2(x,z)=\sqrt{\sum_j(x_j-z_j)^2}$ \\[1mm]
+Manhattan ($L_1$) & $\displaystyle d_1(x,z)=\sum_j|x_j-z_j|$ \\[1mm]
+Chebyshev ($L_\infty$) & $\displaystyle d_\infty(x,z)=\max_j|x_j-z_j|$ \\[1mm]
+Minkowski ($L_p$) & $\displaystyle d_p(x,z)=\left(\sum_j|x_j-z_j|^p\right)^{1/p}$ \\
+\bottomrule
+\end{tabular}}
+\vspace{2mm}
+\begin{block}{Pemilihan jarak adalah bagian dari model}
+\footnotesize
+Jarak Euclidean cocok untuk geometri Kartesius biasa. Masalah lain dapat membutuhkan ukuran jarak yang berbeda.
+\end{block}
+\column{.41\textwidth}
 \centering
-\begin{tikzpicture}[x=1.05cm,y=.86cm]
-  \draw[->,thick] (0,0) -- (4.7,0) node[right]{\scriptsize $x_1$};
-  \draw[->,thick] (0,0) -- (0,4.5) node[above]{\scriptsize $x_2$};
-  \coordinate (A) at (1.0,1.1);
-  \coordinate (B) at (4.0,3.6);
-  \fill[Blue] (A) circle (2.5pt) node[below left]{\scriptsize $x$};
-  \fill[Teal!80!black] (B) circle (2.5pt) node[above right]{\scriptsize $z$};
-  \draw[dashed] (A) -- (4.0,1.1) -- (B);
-  \draw[thick,Navy] (A) -- (B);
-  \node at (2.65,2.55){\scriptsize $d(x,z)$};
-  \node[below] at (2.5,1.1){\scriptsize $|z_1-x_1|$};
-  \node[right] at (4.0,2.35){\scriptsize $|z_2-x_2|$};
+{\footnotesize Bentuk titik berjarak 1 dari pusat}\\[1mm]
+\begin{tikzpicture}[scale=.86]
+  \draw[->,gray] (-2.2,0)--(2.2,0);
+  \draw[->,gray] (0,-2.2)--(0,2.2);
+  \draw[Blue,thick] (0,0) circle (1.25);
+  \draw[Teal!80!black,thick] (0,1.55)--(1.55,0)--(0,-1.55)--(-1.55,0)--cycle;
+  \draw[Gold!80!black,thick] (-1.85,-1.85) rectangle (1.85,1.85);
+  \node[Blue] at (1.05,1.05){\tiny $L_2$};
+  \node[Teal!80!black] at (.25,1.63){\tiny $L_1$};
+  \node[Gold!60!black] at (1.65,1.65){\tiny $L_\infty$};
 \end{tikzpicture}
-\begin{alertblock}{Makna}
-Semakin kecil jarak, semakin mirip posisi dua objek dalam ruang fitur.
+\vspace{1mm}
+\begin{alertblock}{Makna geometri}
+\footnotesize
+Fungsi jarak yang berbeda menghasilkan bentuk ``lingkungan terdekat'' yang berbeda.
 \end{alertblock}
 \end{columns}
 \end{frame}
 
-% 8
-\begin{frame}{Algoritma KNN untuk Klasifikasi}
-\begin{block}{Input}
-\small Data latih $(X,y)$, objek baru $x^*$, dan jumlah tetangga $k$.
+% 9
+\begin{frame}{Jarak pada Koordinat Geografis}
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Lintang dan bujur bukan bidang Kartesius biasa}
+\small
+Untuk dua lokasi di permukaan bumi, selisih lintang-bujur tidak sebaiknya langsung diperlakukan sebagai jarak Euclidean datar, terutama untuk wilayah luas.
 \end{block}
-\begin{enumerate}\small
-  \item Hitung jarak $d_i=d(x_i,x^*)$ untuk setiap data latih $i=1,\ldots,n$.
-  \item Urutkan data berdasarkan $d_i$ dari yang terkecil.
-  \item Ambil indeks $k$ data pertama: $N_k(x^*)$.
-  \item Ambil label dari $k$ tetangga tersebut.
-  \item Hitung banyak kemunculan setiap label.
-  \item Pilih label dengan frekuensi terbesar sebagai $\hat y(x^*)$.
-\end{enumerate}
-\begin{alertblock}{Yang perlu dapat ditelusuri}
-Mahasiswa harus dapat menjelaskan: jarak mana yang dihitung, urutan tetangga, $k$ indeks terpilih, jumlah suara tiap kelas, dan keputusan akhir.
+\begin{block}{Jarak lintasan terpendek di permukaan bola}
+\footnotesize
+Jika $R$ adalah jari-jari bumi dan $\Delta\sigma$ sudut pusat, maka
+\[
+d=R\,\Delta\sigma.
+\]
+Salah satu cara menghitung $\Delta\sigma$ adalah rumus Haversine.
+\end{block}
+\column{.47\textwidth}
+\centering
+\begin{tikzpicture}[scale=.95]
+  \shade[ball color=Blue!18] (0,0) circle (2.15);
+  \draw[Navy,thick] (0,0) circle (2.15);
+  \draw[gray!70] (-2.1,0) arc (180:360:2.1 and .58);
+  \draw[gray!70,dashed] (2.1,0) arc (0:180:2.1 and .58);
+  \draw[gray!70] (0,-2.12) arc (-90:90:.75 and 2.12);
+  \fill[Gold!90!black] (-1.15,.75) circle (2.8pt) node[above left]{\scriptsize A};
+  \fill[Teal!80!black] (1.35,.35) circle (2.8pt) node[above right]{\scriptsize B};
+  \draw[red!70!black,very thick] (-1.15,.75) .. controls (-.35,1.6) and (.7,1.45) .. (1.35,.35);
+  \node[red!70!black] at (.05,1.55){\scriptsize lintasan pada permukaan};
+\end{tikzpicture}
+\begin{alertblock}{Contoh aplikasi}
+\footnotesize
+Jika fitur KNN adalah posisi geografis, pilihan fungsi jarak harus mengikuti geometri permukaan bumi.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 10
+\begin{frame}{Aturan Keputusan Berdasarkan Voting}
+\small
+Setelah $k$ tetangga terdekat ditemukan, kelas ditentukan dari jumlah suara.
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Contoh tiga kelas}
+Misalkan $k=7$ dan label tetangga adalah
+\[
+A,\ B,\ A,\ C,\ A,\ B,\ A.
+\]
+Maka
+\[
+v_A=4,\qquad v_B=2,\qquad v_C=1.
+\]
+Karena $v_A$ paling besar, prediksi kelas adalah A.
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Secara umum}
+Untuk setiap kelas $C_j$, hitung
+\[
+v_j=\text{jumlah tetangga yang berlabel }C_j.
+\]
+Kemudian pilih kelas dengan nilai $v_j$ terbesar.
+\end{block}
+\begin{alertblock}{Tidak perlu fungsi indikator dulu}
+\footnotesize
+Pada tahap ini cukup pahami operasi elementer: menghitung frekuensi setiap kelas, lalu mencari nilai maksimum.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 11
+\begin{frame}{Fungsi \texttt{max} dan Notasi \texorpdfstring{$\operatorname{argmax}$}{argmax}}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Perbedaan sederhana}
+\small
+Misalkan suara tiga kelas adalah
+\[
+(v_A,v_B,v_C)=(2,5,3).
+\]
+\begin{itemize}
+  \item $\max(2,5,3)=5$ memberi \textbf{nilai terbesar}.
+  \item $\operatorname{argmax}(2,5,3)=B$ memberi \textbf{kelas tempat nilai terbesar berada}.
+\end{itemize}
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Notasi KNN}
+\small
+Jika $v_j$ adalah jumlah suara untuk kelas $C_j$, tulis
+\[
+r=\operatorname*{arg\,max}_{j=1,\ldots,m} v_j,
+\qquad
+\hat y=C_r.
+\]
+Artinya: cari indeks kelas dengan suara terbesar, kemudian ambil nama kelas tersebut.
+\end{block}
+\end{columns}
+\begin{alertblock}{Hubungan dengan Python}
+\small
+Jika \texttt{jumlah = [2, 5, 3]}, maka \texttt{np.argmax(jumlah)} menghasilkan indeks posisi nilai terbesar.
 \end{alertblock}
 \end{frame}
 
-% 9
-\begin{frame}{Contoh Perhitungan Manual}
+% 12
+\begin{frame}{Algoritma KNN untuk Klasifikasi}
+\begin{block}{Masukan}
+\small Data latih $(X,y)$, objek baru $x^*$, fungsi jarak, dan jumlah tetangga $k$.
+\end{block}
+\begin{enumerate}\small
+  \item Hitung jarak $d_i=d(x_i,x^*)$ untuk setiap observasi $i=1,\ldots,n$.
+  \item Urutkan jarak dari yang terkecil ke terbesar.
+  \item Ambil $k$ indeks dengan jarak terkecil.
+  \item Ambil label dari $k$ observasi tersebut.
+  \item Hitung jumlah suara setiap kelas.
+  \item Pilih kelas dengan suara terbanyak.
+\end{enumerate}
+\begin{alertblock}{Jejak algoritma yang harus dapat dijelaskan}
 \small
-Gunakan dua kelas, A dan B, dengan objek baru $x^*=(3.1,2.7)$ dan $k=3$.
+Nilai jarak $\rightarrow$ urutan indeks $\rightarrow$ $k$ tetangga terpilih $\rightarrow$ jumlah suara $\rightarrow$ kelas akhir.
+\end{alertblock}
+\end{frame}
+
+% 13
+\begin{frame}{Contoh Perhitungan KNN}
+\small
+Gunakan objek baru $x^*=(3.1,2.7)$, jarak Euclidean, dan $k=3$.
 \begin{columns}[T]
-\column{.56\textwidth}
+\column{.57\textwidth}
 \centering
 \begin{tabular}{c c c c}
 \toprule
@@ -373,150 +489,126 @@ Objek & Titik & Kelas & $d(x_i,x^*)$ \\
 \bottomrule
 \end{tabular}
 \vspace{2mm}
-\begin{block}{Tiga jarak terkecil}
-\small
-Objek 3 (A), objek 4 (B), objek 2 (A).
-\end{block}
-\column{.40\textwidth}
+Tiga jarak terkecil: objek 3 (A), 4 (B), dan 2 (A).
+\column{.39\textwidth}
 \begin{block}{Voting}
 \[
-\text{A}:2\text{ suara},\qquad
-\text{B}:1\text{ suara}.
+v_A=2,\qquad v_B=1.
 \]
-Maka
+Karena $v_A>v_B$,
 \[
-\boxed{\hat y(x^*)=\text{A}}
+\boxed{\hat y(x^*)=A}.
 \]
 \end{block}
-\begin{alertblock}{Perhatikan}
-KNN tidak ``membuat garis'' terlebih dahulu. Keputusan ditentukan dari posisi $x^*$ terhadap data yang sudah berlabel.
+\begin{alertblock}{Yang berubah jika $k$ berubah}
+\footnotesize
+Jarak seluruh data tetap sama. Yang berubah adalah banyak tetangga yang ikut memberikan suara.
 \end{alertblock}
 \end{columns}
 \end{frame}
 
-% 10
-\begin{frame}{Pengaruh Nilai $k$}
+% 14
+\begin{frame}{Pemilihan Nilai \texorpdfstring{$k$}{k}}
 \begin{columns}[T]
 \column{.31\textwidth}
 \begin{block}{$k=1$}
 \small
-Keputusan hanya mengikuti satu tetangga terdekat.
-\begin{itemize}
-  \item sangat lokal;
-  \item sensitif terhadap noise atau data pencilan.
-\end{itemize}
+Keputusan sangat lokal. Satu observasi yang salah label atau pencilan dapat langsung mengubah prediksi.
 \end{block}
 \column{.31\textwidth}
 \begin{block}{$k$ sedang}
 \small
-Beberapa tetangga ikut memberikan suara.
-\begin{itemize}
-  \item keputusan lebih stabil;
-  \item pola lokal masih dipertahankan.
-\end{itemize}
+Beberapa tetangga ikut memberikan suara sehingga keputusan biasanya lebih stabil.
 \end{block}
 \column{.31\textwidth}
 \begin{block}{$k$ terlalu besar}
 \small
-Banyak data yang jauh ikut memengaruhi keputusan.
-\begin{itemize}
-  \item pola lokal dapat hilang;
-  \item kelas mayoritas global dapat mendominasi.
-\end{itemize}
+Observasi yang jauh ikut memengaruhi keputusan dan pola lokal dapat hilang.
 \end{block}
 \end{columns}
 \vspace{2mm}
-\begin{alertblock}{Catatan praktis}
-Untuk dua kelas, $k$ ganjil sering dipilih untuk mengurangi peluang hasil voting seri. Nilai $k$ tetap perlu dievaluasi pada data yang tidak digunakan sebagai tetangga ``jawaban'' saat pemilihan model.
+\begin{alertblock}{Istilah penting}
+\small
+$k$ bukan koefisien yang diestimasi dari persamaan model. $k$ adalah \textbf{hyperparameter}: nilai yang kita pilih dan kemudian evaluasi menggunakan data validasi atau prosedur cross-validation.
 \end{alertblock}
 \end{frame}
 
-% 11
-\begin{frame}[fragile]{Implementasi KNN dari Prinsip Matematika}
+% 15
+\begin{frame}{KNN sebagai Metode Nonparametrik}
 \begin{columns}[T]
-\column{.56\textwidth}
+\column{.49\textwidth}
+\begin{block}{Regresi linier}
+\small
+Kita mengestimasi koefisien global
+\[
+\beta_0,\beta_1,\ldots,\beta_d
+\]
+agar satu persamaan berlaku untuk seluruh ruang fitur.
+\end{block}
+\begin{block}{Logistic regression}
+\small
+Kita juga mengestimasi koefisien $\beta$, lalu membentuk probabilitas kelas melalui fungsi sigmoid.
+\end{block}
+\column{.47\textwidth}
+\begin{block}{KNN}
+\small
+Tidak ada koefisien global seperti $\beta_0,\beta_1,\ldots$ yang harus dicari terlebih dahulu. Data latih disimpan, kemudian dipakai langsung saat objek baru datang.
+\end{block}
+\begin{alertblock}{Bahasa sederhana}
+\small
+KNN tidak ``meringkas'' seluruh data menjadi satu persamaan dengan beberapa koefisien. Karena itu KNN disebut \textbf{nonparametrik}. Namun $k$, fungsi jarak, dan cara penskalaan fitur tetap harus dipilih.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 16
+\begin{frame}[fragile]{Implementasi Algoritma KNN dengan NumPy}
+\begin{columns}[T]
+\column{.58\textwidth}
 \begin{lstlisting}
 import numpy as np
 
 def knn_predict(X, y, x_new, k=3):
-    # 1. jarak Euclidean ke semua data
+    # 1. hitung jarak Euclidean
     diff = X - x_new
     jarak = np.sqrt(np.sum(diff**2, axis=1))
 
-    # 2. urutkan jarak, ambil k terdekat
+    # 2. ambil k jarak terkecil
     idx = np.argsort(jarak)[:k]
-    label_tetangga = y[idx]
+    tetangga = y[idx]
 
-    # 3. voting mayoritas
-    label, jumlah = np.unique(
-        label_tetangga,
-        return_counts=True
-    )
-    prediksi = label[np.argmax(jumlah)]
+    # 3. hitung suara setiap kelas
+    kelas = np.unique(tetangga)
+    suara = []
+    for c in kelas:
+        suara.append(np.sum(tetangga == c))
 
-    return prediksi, jarak, idx
+    # 4. pilih kelas dengan suara maksimum
+    prediksi = kelas[np.argmax(suara)]
+    return prediksi, jarak, idx, tetangga
 \end{lstlisting}
-\column{.40\textwidth}
-\begin{block}{Yang terjadi di dalam kode}
-\small
-\begin{enumerate}
-  \item pengurangan vektor fitur;
-  \item kuadrat dan penjumlahan;
-  \item akar kuadrat;
-  \item sorting indeks;
-  \item penghitungan frekuensi label.
-\end{enumerate}
-\end{block}
-\begin{alertblock}{Bukan black box}
-Kita belum memakai pustaka pemodelan. NumPy hanya membantu menjalankan operasi matematis dan algoritmik yang sudah dipahami.
-\end{alertblock}
-\end{columns}
-\end{frame}
-
-% 12
-\begin{frame}[fragile]{Tracing Implementasi KNN}
-\begin{columns}[T]
-\column{.52\textwidth}
-\begin{lstlisting}
-X = np.array([
-    [1, 1], [2, 1], [2, 2],
-    [4, 4], [5, 4], [4, 5]
-], dtype=float)
-
-y = np.array(["A", "A", "A",
-              "B", "B", "B"])
-
-x_new = np.array([3.1, 2.7])
-
-pred, jarak, idx = knn_predict(
-    X, y, x_new, k=3
-)
-
-print(jarak)
-print(idx)
-print(y[idx])
-print(pred)
-\end{lstlisting}
-\column{.44\textwidth}
-\begin{block}{Hasil yang harus dapat dijelaskan}
+\column{.38\textwidth}
+\begin{block}{Operasi yang digunakan}
 \small
 \begin{itemize}
-  \item `jarak`: satu nilai untuk setiap baris $X$;
-  \item `idx`: indeks tiga jarak terkecil;
-  \item `y[idx]`: label para tetangga;
-  \item `pred`: hasil voting mayoritas.
+  \item pengurangan vektor;
+  \item kuadrat, jumlah, akar;
+  \item sorting indeks;
+  \item perulangan dan counting;
+  \item indeks maksimum.
 \end{itemize}
 \end{block}
-\begin{alertblock}{Pertanyaan code defense}
-Jika $k$ diubah dari 3 menjadi 5, bagian mana dari algoritma yang berubah dan bagian mana yang tetap sama?
+\begin{alertblock}{Fokus perkuliahan}
+\footnotesize
+NumPy membantu menjalankan operasi array; algoritma klasifikasinya tetap terlihat dan dapat ditelusuri.
 \end{alertblock}
 \end{columns}
 \end{frame}
 
-% 13
+% 17
 \begin{frame}{Kompleksitas Algoritma KNN}
 \small
-Misalkan terdapat $n$ data latih dan $d$ fitur. Untuk implementasi sederhana yang memakai \texttt{argsort}:
+Misalkan terdapat $n$ observasi latih dan $d$ fitur. Untuk implementasi yang memakai \texttt{argsort}:
 \begin{columns}[T]
 \column{.54\textwidth}
 \centering
@@ -531,85 +623,228 @@ Voting & $k$ label & $O(k)$ \\
 \bottomrule
 \end{tabular}
 \column{.42\textwidth}
-\begin{block}{Total prediksi sederhana}
+\begin{block}{Total satu prediksi}
 \[
 T(n,d,k)=O(nd+n\log n+k).
 \]
-Jika $d$ dianggap tetap:
+Jika $d$ dan $k$ dianggap jauh lebih kecil daripada $n$,
 \[
 T(n)=O(n\log n).
 \]
 \end{block}
 \begin{alertblock}{Konsekuensi}
-KNN sederhana pada tahap ``belajar'', tetapi prediksi tetap perlu menghitung jarak terhadap data latih.
+\footnotesize
+Tahap ``belajar'' KNN ringan, tetapi prediksi membutuhkan akses ke data latih dan perhitungan jarak.
 \end{alertblock}
 \end{columns}
 \end{frame}
 
-% 14
-\begin{frame}{Skala Fitur Memengaruhi Jarak}
+% 18
+\begin{frame}{Normalisasi Min-Max pada Fitur}
 \begin{columns}[T]
-\column{.49\textwidth}
-\begin{block}{Masalah}
-\small
-Misalkan dua fitur adalah:
-\begin{itemize}
-  \item usia: sekitar $18$--$60$;
-  \item pendapatan: sekitar $2{,}000{,}000$--$20{,}000{,}000$.
-\end{itemize}
-Pada jarak Euclidean, fitur dengan skala sangat besar dapat mendominasi hasil jarak.
-\end{block}
 \column{.47\textwidth}
-\begin{block}{Standardisasi}
+\begin{block}{Masalah skala}
 \small
-Salah satu pendekatan adalah mengubah fitur menjadi
+Misalkan fitur pertama berada pada rentang $0$--$10$, sedangkan fitur kedua berada pada rentang $0$--$1000$. Pada jarak Euclidean, perubahan pada fitur kedua dapat mendominasi hanya karena satuannya lebih besar.
+\end{block}
+\begin{block}{Min-max normalization}
+\small
+Untuk fitur ke-$j$:
+\[
+x'_{ij}=\frac{x_{ij}-\min(x_j)}{\max(x_j)-\min(x_j)}.
+\]
+Hasilnya berada pada rentang $[0,1]$.
+\end{block}
+\column{.49\textwidth}
+\centering
+\begin{tikzpicture}[x=.82cm,y=.62cm]
+  \node at (1.7,4.75){\scriptsize sebelum};
+  \draw[->,thick] (0,0)--(3.15,0);
+  \draw[->,thick] (0,0)--(0,4.10);
+  \node[gray] at (2.55,-.38){\tiny fitur 1};
+  \node[gray] at (.42,3.88){\tiny fitur 2};
+  \foreach \p in {(.45,.45),(.9,.95),(1.6,1.9),(2.9,3.8)} \fill[Blue] \p circle (2.4pt);
+  \node[rotate=90,gray] at (-.40,2.05){\tiny skala besar};
+
+  \begin{scope}[xshift=3.95cm]
+  \node at (1.55,4.75){\scriptsize sesudah min--max};
+  \draw[->,thick] (0,0)--(3.15,0);
+  \draw[->,thick] (0,0)--(0,4.10);
+  \node[gray] at (2.60,-.38){\tiny $x'_1$};
+  \node[gray] at (.42,3.88){\tiny $x'_2$};
+  \foreach \p in {(.45,.45),(.95,1.05),(1.75,2.15),(3.0,3.75)} \fill[Teal!80!black] \p circle (2.4pt);
+  \node[gray] at (1.55,-.65){\tiny kedua fitur pada $[0,1]$};
+  \end{scope}
+\end{tikzpicture}
+\vspace{1mm}
+\begin{alertblock}{Tujuan}
+\footnotesize
+Bukan membuat data ``lebih bagus'', tetapi membuat kontribusi jarak antarfitur menjadi lebih sebanding.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 19
+\begin{frame}{Standardisasi sebagai Alternatif Penskalaan}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Z-score standardization}
+\small
+Alternatif lain adalah
 \[
 z_{ij}=\frac{x_{ij}-\mu_j}{s_j},
 \]
-dengan $\mu_j$ rata-rata dan $s_j$ simpangan baku fitur ke-$j$ pada data latih.
+dengan $\mu_j$ rata-rata dan $s_j$ simpangan baku fitur ke-$j$.
 \end{block}
-\begin{alertblock}{Prinsip penting}
-Parameter skala dihitung dari \textbf{data latih}, lalu digunakan kembali untuk mentransformasi data uji atau objek baru.
+\begin{block}{Perbedaan intuitif}
+\small
+\begin{itemize}
+  \item Min-max: memetakan rentang menjadi $[0,1]$.
+  \item Z-score: memusatkan data di sekitar 0 dan mengukur posisi dalam satuan simpangan baku.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{alertblock}{Aturan penting pada train/test}
+\small
+Nilai minimum, maksimum, rata-rata, atau simpangan baku harus dihitung dari \textbf{data latih}. Transformasi yang sama kemudian diterapkan pada data uji dan objek baru.
 \end{alertblock}
+\begin{block}{Mengapa?}
+\small
+Agar informasi dari data uji tidak ``bocor'' ke tahap pembentukan model atau preprocessing.
+\end{block}
 \end{columns}
 \end{frame}
 
-% 15
-\begin{frame}{Evaluasi Hasil Klasifikasi}
+% 20
+\begin{frame}{Data Latih dan Data Uji}
+\begin{columns}[T]
+\column{.50\textwidth}
+\begin{block}{Data latih}
+\small
+Dipakai sebagai observasi berlabel yang menjadi referensi tetangga KNN.
+\end{block}
+\begin{block}{Data uji}
+\small
+Dipakai untuk menilai apakah aturan klasifikasi bekerja pada data yang tidak digunakan sebagai referensi saat prediksi dibentuk.
+\end{block}
+\column{.46\textwidth}
+\begin{alertblock}{Urutan yang aman}
+\small
+\begin{enumerate}
+  \item pisahkan train dan test;
+  \item hitung parameter penskalaan dari train;
+  \item transformasikan train dan test;
+  \item lakukan prediksi pada test;
+  \item bandingkan prediksi dengan label sebenarnya.
+\end{enumerate}
+\end{alertblock}
+\end{columns}
+\vspace{1mm}
+{\tiny McKinney mencontohkan pola umum: model dibentuk pada training data dan dievaluasi pada out-of-sample testing data.}
+\end{frame}
+
+% 21
+\begin{frame}{Confusion Matrix untuk Klasifikasi Biner}
+\small
+Untuk satu kelas yang ditetapkan sebagai \textbf{positif}, hasil prediksi dapat diringkas sebagai berikut.
+\begin{center}
+\begin{tabular}{c|cc}
+ & Prediksi positif & Prediksi negatif \\
+\hline
+Aktual positif & TP (true positive) & FN (false negative) \\
+Aktual negatif & FP (false positive) & TN (true negative)
+\end{tabular}
+\end{center}
+\vspace{2mm}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Kesalahan tipe pertama dalam tabel}
+\small
+FP: model menyatakan positif padahal aktual negatif.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Kesalahan tipe kedua dalam tabel}
+\small
+FN: model menyatakan negatif padahal aktual positif.
+\end{block}
+\end{columns}
+\begin{alertblock}{Mengapa tidak cukup akurasi?}
+\small
+Dua model dengan akurasi sama dapat mempunyai komposisi FP dan FN yang sangat berbeda.
+\end{alertblock}
+\end{frame}
+
+% 22
+\begin{frame}{Ukuran Kinerja Klasifikasi}
+\small
+Dengan notasi pada confusion matrix:
 \begin{columns}[T]
 \column{.49\textwidth}
-\begin{block}{Data latih dan data uji}
-\small
-Data latih dipakai sebagai tetangga berlabel. Data uji digunakan untuk memeriksa apakah aturan KNN juga bekerja pada objek yang tidak dipakai sebagai acuan keputusan.
-\end{block}
-\begin{block}{Akurasi}
+\begin{block}{Accuracy dan Precision}
 \[
-\text{akurasi}
-=\frac{\text{jumlah prediksi benar}}
-{\text{jumlah data uji}}.
+\text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN},
+\]
+\[
+\text{Precision}=\frac{TP}{TP+FP}.
+\]
+\end{block}
+\begin{block}{Recall (Sensitivity)}
+\[
+\text{Recall}=\frac{TP}{TP+FN}.
 \]
 \end{block}
 \column{.47\textwidth}
-\begin{block}{Matriks kebingungan dua kelas}
-\centering
-\begin{tabular}{c|cc}
- & Pred. A & Pred. B \\
-\hline
-Aktual A & benar A & salah ke B \\
-Aktual B & salah ke A & benar B
-\end{tabular}
+\begin{block}{Specificity}
+\[
+\text{Specificity}=\frac{TN}{TN+FP}.
+\]
 \end{block}
-\begin{alertblock}{Bukan hanya nilai akurasi}
-Periksa juga jenis kesalahan: kelas mana yang sering tertukar dan apakah jumlah anggota tiap kelas seimbang.
-\end{alertblock}
+\begin{block}{F1-score}
+\[
+F_1=2\frac{\text{Precision}\cdot\text{Recall}}
+{\text{Precision}+\text{Recall}}.
+\]
+\end{block}
 \end{columns}
+\begin{alertblock}{Pemilihan ukuran bergantung pada masalah}
+\footnotesize
+Jika false negative sangat berbahaya, recall menjadi penting. Jika false positive mahal, precision perlu diperhatikan.
+\end{alertblock}
 \end{frame}
 
-% 16
-\begin{frame}{Latihan: KNN dari Perhitungan hingga Algoritma}
+% 23
+\begin{frame}{Beberapa Model untuk Klasifikasi}
+\scriptsize
+\begin{center}
+\begin{tabular}{p{3.0cm} p{4.3cm} p{5.8cm}}
+\toprule
+Metode & Gagasan utama & Apa yang dipelajari dari data? \\
+\midrule
+KNN & tetangga lokal menurut jarak & tidak mengestimasi koefisien global; menyimpan data latih \\
+Logistic regression & skor linier diubah menjadi probabilitas & koefisien $\beta$ pada fungsi linier \\
+Decision tree & aturan pemisahan bertahap & titik/aturan pemisahan fitur \\
+Random forest & banyak decision tree & kumpulan pohon dari sampel/fitur berbeda \\
+SVM & batas kelas dengan margin & batas keputusan yang memaksimalkan margin \\
+Naive Bayes & probabilitas bersyarat & parameter distribusi/probabilitas tiap kelas \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\begin{block}{Contoh logistic regression untuk dua kelas}
+\footnotesize
+Bentuk skor liniernya $s(x)=\beta_0+\beta^T x$. Probabilitas kelas 1 dapat ditulis
+\[
+p(y=1\mid x)=\frac{1}{1+e^{-s(x)}}.
+\]
+Koefisien $\beta$ diestimasi dari data; ini berbeda dari KNN yang memakai tetangga lokal saat prediksi.
+\end{block}
+\end{frame}
+
+% 24
+\begin{frame}{Latihan: KNN dari Geometri hingga Evaluasi}
 \scriptsize
 \begin{columns}[T]
-\column{.48\textwidth}
+\column{.47\textwidth}
 Gunakan data berikut.
 \vspace{1mm}
 \centering
@@ -629,51 +864,66 @@ No & $x_1$ & $x_2$ & Kelas \\
 10 & 7 & 5 & B \\
 \bottomrule
 \end{tabular}
-\column{.48\textwidth}
+\column{.49\textwidth}
 \begin{block}{Tugas}
 \begin{enumerate}
-  \item Untuk $x^*=(4.2,3.2)$, hitung seluruh jarak Euclidean.
-  \item Urutkan jarak dan tentukan prediksi untuk $k=3$.
-  \item Ulangi untuk $k=5$. Apakah hasilnya berubah?
+  \item Untuk $x^*=(4.2,3.2)$, hitung jarak Euclidean ke seluruh data.
+  \item Tentukan prediksi untuk $k=3$ dan $k=5$.
   \item Implementasikan fungsi KNN menggunakan NumPy tanpa pustaka pemodelan.
-  \item Tampilkan indeks tetangga dan labelnya sebagai bagian tracing.
-  \item Tuliskan $T(n,d,k)$ dan Big-O algoritma yang digunakan.
+  \item Tampilkan indeks tetangga, label, dan jumlah suara setiap kelas.
+  \item Tuliskan $T(n,d,k)$ dan Big-O implementasi.
+  \item Buat satu contoh fitur dengan skala berbeda, lalu lakukan min-max normalization sebelum KNN.
 \end{enumerate}
 \end{block}
-\begin{alertblock}{Tujuan}
-Bukan sekadar memperoleh kelas akhir, tetapi dapat menjelaskan hubungan antara rumus jarak, sorting, voting, kode, dan kompleksitas algoritma.
-\end{alertblock}
 \end{columns}
 \end{frame}
 
-% 17
+% 25
 \begin{frame}{Ringkasan}
 \begin{columns}[T]
 \column{.49\textwidth}
-\begin{block}{Klasifikasi}
+\begin{block}{Konsep matematis}
 \small
-Memetakan objek dengan fitur $x$ ke salah satu kelas yang tersedia.
-\end{block}
-\begin{block}{KNN}
-\small
-Keputusan didasarkan pada $k$ data berlabel yang paling dekat menurut suatu ukuran jarak.
+\begin{itemize}
+  \item observasi sebagai vektor $x\in\mathbb{R}^d$;
+  \item fungsi jarak menentukan arti ``dekat'';
+  \item voting menentukan kelas dari tetangga lokal;
+  \item penskalaan fitur memengaruhi hasil jarak.
+\end{itemize}
 \end{block}
 \column{.47\textwidth}
-\begin{block}{Komponen matematis}
+\begin{block}{Konsep komputasi}
 \small
-Ruang fitur, jarak Euclidean, urutan jarak, dan voting mayoritas.
-\end{block}
-\begin{block}{Komponen algoritmik}
-\small
-Perulangan/operasi vektor untuk jarak, sorting, pemilihan $k$ indeks, counting label, serta analisis kompleksitas.
+\begin{itemize}
+  \item operasi array dan jarak;
+  \item sorting indeks dan counting label;
+  \item kompleksitas satu prediksi;
+  \item train/test, confusion matrix, dan metrik evaluasi.
+\end{itemize}
 \end{block}
 \end{columns}
-\begin{alertblock}{Inti pembelajaran}
-KNN menunjukkan bahwa sebuah metode machine learning dapat dipahami sebagai rangkaian operasi matematika dan algoritma yang sederhana, transparan, dan dapat ditelusuri.
+\begin{alertblock}{Posisi KNN}
+\small
+KNN adalah metode klasifikasi nonparametrik yang sederhana secara konsep, tetapi tetap memerlukan keputusan matematis penting: representasi fitur, fungsi jarak, nilai $k$, dan penskalaan.
 \end{alertblock}
-\vspace{1mm}
-{\tiny Bacaan: James et al., \textit{An Introduction to Statistical Learning}, 2nd ed.; Hastie, Tibshirani, Friedman, \textit{The Elements of Statistical Learning}, 2nd ed.}
+\end{frame}
+
+% 26
+\begin{frame}{Rujukan}
+\footnotesize
+\begin{thebibliography}{9}
+\bibitem{pine}
+David J. Pine. \textit{Introduction to Python for Science and Engineering}. CRC Press, 2019. Lihat terutama \S2.8.3 untuk jarak Kartesius dengan NumPy dan bab tentang array/linear algebra.
+
+\bibitem{mckinney}
+Wes McKinney. \textit{Python for Data Analysis: Data Wrangling with pandas, NumPy, and Jupyter}, 3rd ed. O'Reilly, 2022. Lihat \S1.3 dan \S12.4 untuk ekosistem model klasifikasi, preprocessing, serta train/test.
+
+\bibitem{islr}
+Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani. \textit{An Introduction to Statistical Learning}, 2nd ed. Springer, 2021.
+
+\bibitem{esl}
+Trevor Hastie, Robert Tibshirani, Jerome Friedman. \textit{The Elements of Statistical Learning}, 2nd ed. Springer, 2009.
+\end{thebibliography}
 \end{frame}
 
 \end{document}
-
