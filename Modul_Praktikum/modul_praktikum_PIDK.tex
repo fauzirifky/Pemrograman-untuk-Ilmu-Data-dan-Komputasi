@@ -201,12 +201,12 @@ Untuk setiap praktikum, mahasiswa disarankan bekerja dengan urutan berikut.
 2 & Fungsi, subprogram, dan rekursi & parameter, argumen, \kode{return}, tuple/unpacking, scope, komposisi, fungsi sebagai objek, lambda, rekursi dasar \\
 3 & Representasi algoritma dan struktur data & pseudocode, list, tuple, dictionary, list comprehension, array NumPy, slicing, loop dua dimensi \\
 4 & Debugging, testing, dan terminasi & error logika, exception, \kode{assert}, \kode{print}/\kode{return}/\kode{None}, halt, rekursi, iterasi Newton \\
-5 & Kompleksitas algoritma dan pengukuran kinerja & fungsi kerja $T(n)$, Big-O, struktur loop, \\kode{timeit}, anagram, hubungan teori dan waktu aktual \\
+5 & Kompleksitas algoritma dan pengukuran kinerja & fungsi kerja $T(n)$, Big-O, struktur loop, \kode{timeit}, anagram, hubungan teori dan waktu aktual \\
 6 & Searching, merge sort, dan benchmark & sequential/binary search, merge sort, tracing, invariant, \kode{timeit}, benchmark yang adil \\
-7 & Aljabar linier komputasional & vektor, matriks, element-wise, matmul, transpose, invers, SPL, residual, norma, nilai eigen, data sebagai matriks \\
+7 & Aljabar linier komputasional & implementasi manual vs NumPy, fungsi kerja, transpose, invers, SPL, residual, eigenvalue, PCA \\
 \midrule
-8 & Regresi linear & matriks desain, least squares, residual, visualisasi \\
-9 & k-Nearest Neighbor & jarak, tetangga terdekat, klasifikasi sederhana, evaluasi \\
+8 & Regresi linier dan least squares & regresi sederhana, Pandas, train/test, matriks desain, persamaan normal, residual, MSE \\
+9 & K-Nearest Neighbors & ruang fitur, jarak Euclidean, voting, kompleksitas, min-max normalization, confusion matrix, F1-score \\
 10 & k-Means dan proyek data & centroid, iterasi, stopping rule, reproducibility, rancangan mini proyek \\
 \bottomrule
 \end{longtable}
@@ -1686,20 +1686,18 @@ print(t)
 % ================= P7 =================
 \chapter{Praktikum 7: Aljabar Linier Komputasional}
 \begin{tujuanbox}
-Setelah praktikum ini, mahasiswa mampu menerjemahkan operasi aljabar linier menjadi struktur data dan algoritma, menelusuri indeks yang digunakan, menganalisis fungsi kerja sederhana, serta memverifikasi hasil komputasi menggunakan residual dan norma. Topik meliputi vektor, perkalian matriks, transpose, invers, sistem persamaan linier, nilai eigen, dan PCA.
+Setelah praktikum ini, mahasiswa mampu menerjemahkan operasi aljabar linier menjadi struktur data dan algoritma, menelusuri indeks yang digunakan, menganalisis fungsi kerja sederhana, serta memverifikasi hasil komputasi dengan membandingkan implementasi yang dibuat sendiri terhadap NumPy dan dengan memeriksa residual atau norma.
 \end{tujuanbox}
 
 \section{Aljabar linier dari sisi komputasi}
-Pada mata kuliah aljabar linier, objek yang dipelajari antara lain vektor, matriks, transformasi linier, sistem persamaan linier, dan pasangan eigen. Dalam pemrograman, pertanyaan yang muncul sedikit berbeda:
+Pada aljabar linier kita mengenal vektor, matriks, transformasi linier, sistem persamaan linier, dan pasangan eigen. Pada praktikum ini setiap objek tersebut dibaca dari dua sisi sekaligus:
 \begin{itemize}
-  \item bagaimana objek matematika tersebut disimpan sebagai list atau array;
-  \item indeks mana yang dibaca pada setiap operasi;
-  \item berapa loop yang diperlukan dan bagaimana banyak kerjanya bertambah;
-  \item bagaimana memastikan hasil numerik konsisten dengan persamaan matematisnya.
+  \item \textbf{matematis}: rumus dan sifat apa yang harus dipenuhi;
+  \item \textbf{algoritmik}: indeks apa yang dibaca, loop apa yang diperlukan, berapa banyak kerja yang dilakukan, dan bagaimana hasilnya diperiksa.
 \end{itemize}
 
 \begin{idebox}{Prinsip kerja}
-Rumus aljabar linier tidak diganti oleh program. Program menerjemahkan rumus menjadi \textbf{struktur data, indeks, algoritma, dan pemeriksaan hasil}.
+Rumus aljabar linier tidak diganti oleh program. Program menerjemahkan rumus menjadi \textbf{struktur data, indeks, algoritma, fungsi kerja, dan pemeriksaan hasil}. Setelah fungsi manual bekerja, hasilnya dibandingkan dengan NumPy pada input yang sama.
 \end{idebox}
 
 \section{Vektor: indeks, operasi komponen, dan norma}
@@ -1707,18 +1705,24 @@ Misalkan
 \[
 x=(x_1,\ldots,x_n),\qquad y=(y_1,\ldots,y_n).
 \]
-Tiga operasi dasar yang akan dipakai berulang adalah
+Operasi yang digunakan berulang kali adalah
 \[
 x+y=(x_i+y_i)_{i=1}^n,\qquad
 x\cdot y=\sum_{i=1}^{n}x_i y_i,
 \]
-dan jarak Euclidean
+dan
 \[
 \|x-y\|_2=\sqrt{\sum_{i=1}^{n}(x_i-y_i)^2}.
 \]
 
-Kode berikut sengaja ditulis tanpa \kode{np.dot} atau \kode{np.linalg.norm} agar hubungan antara rumus dan indeks terlihat.
+Kode berikut menerjemahkan langsung rumus tersebut menjadi loop.
 \begin{lstlisting}
+def vector_add(x, y):
+    if len(x) != len(y):
+        raise ValueError("dimensi berbeda")
+    return [x[i] + y[i] for i in range(len(x))]
+
+
 def dot(x, y):
     if len(x) != len(y):
         raise ValueError("dimensi berbeda")
@@ -1740,21 +1744,48 @@ def norm_diff(x, y):
     return total ** 0.5
 \end{lstlisting}
 
-Jika panjang vektor adalah $n$, loop membaca setiap komponen satu kali. Karena itu
+Jika panjang vektor adalah $n$, setiap fungsi membaca komponen secara linear, sehingga
 \[
-T(n)=c_0+c_1n\qquad\Longrightarrow\qquad T(n)\in O(n).
+T(n)=c_0+c_1n
+\qquad\Longrightarrow\qquad
+T(n)\in O(n).
 \]
-Setelah prinsipnya dipahami, hasil dapat dibandingkan dengan NumPy.
+
+\subsection*{Membandingkan fungsi buatan sendiri dengan NumPy}
+Gunakan \textbf{input yang sama} untuk kedua implementasi.
 \begin{lstlisting}
 import numpy as np
 
-x = np.array([1., -2., 3.])
-y = np.array([4.,  0., -1.])
+x = [1., -2., 3.]
+y = [4.,  0., -1.]
 
-print(x + y)
-print(np.dot(x, y))
-print(np.linalg.norm(x - y))
+# hasil fungsi buatan sendiri
+add_manual = vector_add(x, y)
+dot_manual = dot(x, y)
+norm_manual = norm_diff(x, y)
+
+# hasil NumPy pada input yang sama
+xn = np.array(x)
+yn = np.array(y)
+
+add_numpy = xn + yn
+dot_numpy = np.dot(xn, yn)
+norm_numpy = np.linalg.norm(xn - yn)
+
+print("penjumlahan manual :", add_manual)
+print("penjumlahan NumPy  :", add_numpy)
+print("sama =", np.allclose(add_manual, add_numpy))
+
+print("dot manual :", dot_manual)
+print("dot NumPy  :", dot_numpy)
+print("sama =", np.isclose(dot_manual, dot_numpy))
+
+print("norm manual :", norm_manual)
+print("norm NumPy  :", norm_numpy)
+print("sama =", np.isclose(norm_manual, norm_numpy))
 \end{lstlisting}
+
+Perbandingan ini penting: NumPy bukan pengganti penalaran sebelumnya, melainkan \textbf{alat verifikasi} bahwa implementasi manual memberi hasil yang sama hingga toleransi numerik.
 
 \section{Operasi element-wise dan perkalian matriks}
 Untuk
@@ -1765,35 +1796,20 @@ B=\begin{pmatrix}2&0\\1&5\end{pmatrix},
 perkalian element-wise membaca posisi yang sama,
 \[
 A\odot B=
-\begin{pmatrix}
-1\cdot2&2\cdot0\\
-3\cdot1&4\cdot5
-\end{pmatrix}
-=
 \begin{pmatrix}2&0\\3&20\end{pmatrix},
 \]
 sedangkan perkalian matriks membaca \textbf{baris pada $A$ dan kolom pada $B$},
 \[
 AB=
-\begin{pmatrix}
-1\cdot2+2\cdot1&1\cdot0+2\cdot5\\
-3\cdot2+4\cdot1&3\cdot0+4\cdot5
-\end{pmatrix}
-=
 \begin{pmatrix}4&10\\10&20\end{pmatrix}.
 \]
-Dalam NumPy, kedua operasi tersebut berbeda.
-\begin{lstlisting}
-A * B   # element-wise
-A @ B   # matrix product
-\end{lstlisting}
 
-\subsection*{Algoritma perkalian matriks}
-Jika $A\in\mathbb{R}^{m\times p}$ dan $B\in\mathbb{R}^{p\times n}$, maka $C=AB\in\mathbb{R}^{m\times n}$ dengan
+Jika $A\in\mathbb{R}^{m\times p}$ dan $B\in\mathbb{R}^{p\times n}$, maka
 \[
-c_{ij}=\sum_{k=1}^{p} a_{ik}b_{kj}.
+c_{ij}=\sum_{k=1}^{p}a_{ik}b_{kj}.
 \]
-Pseudocode-nya adalah:
+
+\subsection*{Pseudocode}
 \begin{verbatim}
 INPUT : A berukuran m x p, B berukuran p x n
 OUTPUT: C = AB berukuran m x n
@@ -1809,7 +1825,6 @@ FOR i = 0 sampai m-1:
 RETURN C
 \end{verbatim}
 
-Implementasi langsung dari pseudocode:
 \begin{lstlisting}
 def matmul_manual(A, B):
     m = len(A)
@@ -1832,8 +1847,23 @@ def matmul_manual(A, B):
     return C
 \end{lstlisting}
 
-\subsection*{Fungsi kerja}
-Dari struktur kode di atas, kerja dominan berada pada loop terdalam. Salah satu model hitungan kerja sederhana adalah
+\subsection*{Membandingkan dengan operator \texttt{@}}
+\begin{lstlisting}
+A = [[1., 2., 0.],
+     [3., 1., 2.]]
+B = [[2., 1.],
+     [0., 3.],
+     [1., 4.]]
+
+C_manual = matmul_manual(A, B)
+C_numpy = np.array(A) @ np.array(B)
+
+print("manual =\n", np.array(C_manual))
+print("NumPy  =\n", C_numpy)
+print("sama =", np.allclose(C_manual, C_numpy))
+\end{lstlisting}
+
+Dari struktur tiga loop, salah satu model fungsi kerja adalah
 \[
 W(m,p,n)=5+3mn+2mnp.
 \]
@@ -1843,31 +1873,42 @@ T(n)=5+3n^2+2n^3
 \qquad\Longrightarrow\qquad
 T(n)\in O(n^3).
 \]
-Perhatikan bahwa orde tersebut diperoleh dari \textbf{struktur kode}, bukan dari nama operasinya.
 
 \section{Transpose sebagai pemindahan indeks}
-Untuk $A\in\mathbb{R}^{m\times n}$, transpose $A^T\in\mathbb{R}^{n\times m}$ memenuhi
+Untuk $A\in\mathbb{R}^{m\times n}$,
 \[
 (A^T)_{ji}=A_{ij}.
 \]
-Artinya, algoritma transpose cukup memindahkan setiap elemen dari posisi $(i,j)$ ke $(j,i)$.
+Implementasi manual:
 \begin{lstlisting}
 def transpose(A):
     m = len(A)
     n = len(A[0])
 
-    T = [[0 for i in range(m)] for j in range(n)]
+    T = [[0.0 for i in range(m)] for j in range(n)]
     for i in range(m):
         for j in range(n):
             T[j][i] = A[i][j]
-
     return T
 \end{lstlisting}
-Ada $mn$ elemen yang dipindahkan, sehingga biaya komputasinya sebanding dengan jumlah elemen:
+
+Bandingkan hasilnya dengan NumPy:
+\begin{lstlisting}
+A = [[1., 2., 3.],
+     [4., 5., 6.]]
+
+T_manual = transpose(A)
+T_numpy = np.array(A).T
+
+print("manual =\n", np.array(T_manual))
+print("NumPy  =\n", T_numpy)
+print("sama =", np.allclose(T_manual, T_numpy))
+\end{lstlisting}
+
+Ada $mn$ elemen yang dipindahkan, sehingga
 \[
 T(m,n)\in O(mn).
 \]
-Verifikasi dengan \kode{np.array(A).T} setelah implementasi manual bekerja.
 
 \section{Invers matriks $2\times2$: rumus, domain, dan verifikasi}
 Untuk
@@ -1883,7 +1924,7 @@ dan
 A^{-1}=\frac{1}{ad-bc}
 \begin{pmatrix}d&-b\\-c&a\end{pmatrix}.
 \]
-Program harus memeriksa syarat tersebut sebelum menghitung invers.
+
 \begin{lstlisting}
 def inv2(A):
     a, b = A[0]
@@ -1897,66 +1938,91 @@ def inv2(A):
             [-c/det,  a/det]]
 \end{lstlisting}
 
-Hasil numerik tidak cukup diperiksa dari bentuk matriksnya. Verifikasi identitas
-\[
-AA^{-1}\approx I.
-\]
-Pada komputer gunakan toleransi, bukan kesamaan desimal mentah.
+Bandingkan fungsi manual dengan NumPy dan periksa identitas $AA^{-1}\approx I$.
 \begin{lstlisting}
-A = np.array([[2., 1.], [1., 1.]])
-Ainv = np.array(inv2(A.tolist()))
+A = [[2., 1.],
+     [1., 1.]]
 
-print(A @ Ainv)
-print(np.allclose(A @ Ainv, np.eye(2)))
+Ainv_manual = np.array(inv2(A))
+Ainv_numpy = np.linalg.inv(np.array(A))
+
+print("manual =\n", Ainv_manual)
+print("NumPy  =\n", Ainv_numpy)
+print("invers sama =", np.allclose(Ainv_manual, Ainv_numpy))
+
+I_manual = matmul_manual(A, Ainv_manual.tolist())
+print("A A^-1 =\n", np.array(I_manual))
+print("identitas =", np.allclose(I_manual, np.eye(2)))
 \end{lstlisting}
 
 \section{Sistem persamaan linier dan residual}
-Untuk sistem
+Untuk
 \[
 Ax=b,
 \]
-solusi numerik $\hat{x}$ harus diperiksa melalui residual
+NumPy digunakan untuk memperoleh solusi $\hat{x}$, tetapi operasi pemeriksaannya tetap dapat memakai fungsi yang telah dibuat pada bagian sebelumnya.
+
+Karena $A$ dikalikan dengan vektor, buat fungsi matriks-vektor dengan memanfaatkan fungsi \kode{dot}.
+\begin{lstlisting}
+def matvec_manual(A, x):
+    if len(A[0]) != len(x):
+        raise ValueError("dimensi tidak cocok")
+
+    hasil = []
+    for baris in A:
+        hasil.append(dot(baris, x))
+    return hasil
+\end{lstlisting}
+
+Sekarang solusi dari \kode{np.linalg.solve} diperiksa melalui dua jalur yang ekuivalen.
+\begin{lstlisting}
+A = [[2., 1.],
+     [5., 3.]]
+b = [1., 4.]
+
+# solusi sistem
+x = np.linalg.solve(np.array(A), np.array(b))
+
+# pemeriksaan memakai fungsi yang telah dibuat
+Ax_manual = matvec_manual(A, x.tolist())
+r_manual = [b[i] - Ax_manual[i] for i in range(len(b))]
+err_manual = norm_diff(b, Ax_manual)
+
+# pemeriksaan NumPy pada input yang sama
+Ax_numpy = np.array(A) @ x
+r_numpy = np.array(b) - Ax_numpy
+err_numpy = np.linalg.norm(r_numpy)
+
+print("x =", x)
+print("Ax manual =", Ax_manual)
+print("Ax NumPy  =", Ax_numpy)
+print("Ax sama =", np.allclose(Ax_manual, Ax_numpy))
+
+print("residual manual =", r_manual)
+print("residual NumPy  =", r_numpy)
+print("residual sama =", np.allclose(r_manual, r_numpy))
+
+print("norma manual =", err_manual)
+print("norma NumPy  =", err_numpy)
+print("norma sama =", np.isclose(err_manual, err_numpy))
+\end{lstlisting}
+
+Dengan
 \[
 r=b-A\hat{x},
 \]
-kemudian ukur besar residual dengan norma
-\[
-\|r\|_2.
-\]
-Jika $\|r\|_2$ kecil, maka $A\hat{x}$ dekat dengan $b$ dan solusi konsisten dengan sistem yang diberikan.
-\begin{lstlisting}
-A = np.array([[2., 1.], [5., 3.]])
-b = np.array([1., 4.])
-
-x = np.linalg.solve(A, b)
-r = b - A @ x
-err = np.linalg.norm(r)
-
-print("x =", x)
-print("residual =", r)
-print("norma residual =", err)
-\end{lstlisting}
+solusi numerik dinilai melalui $\|r\|_2$. Jika norma residual kecil, $A\hat{x}$ dekat dengan $b$.
 
 \begin{catatanbox}
-Untuk menyelesaikan $Ax=b$, gunakan \kode{np.linalg.solve(A,b)}. Jangan membentuk $A^{-1}$ hanya untuk menghitung $A^{-1}b$. Pada matriks besar, pembentukan invers eksplisit menambah pekerjaan dan dapat memperburuk kestabilan numerik.
+Untuk menyelesaikan $Ax=b$, gunakan \kode{np.linalg.solve(A,b)}. Jangan membentuk $A^{-1}$ hanya untuk menghitung $A^{-1}b$. Implementasi manual pada bagian ini dipakai untuk memahami dan memeriksa operasi, bukan untuk mengganti algoritma numerik pustaka.
 \end{catatanbox}
-
-Sebagai gambaran biaya, invers matriks $n\times n$ dapat dipandang sebagai penyelesaian
-\[
-AX=I,
-\]
-yaitu banyak sistem linier. Algoritma langsung berbasis eliminasi Gaussian atau faktorisasi memiliki orde utama kubik,
-\[
-T(n)\in O(n^3),
-\]
-sedangkan penyimpanan matriks padat memerlukan orde $O(n^2)$ memori.
 
 \section{Nilai eigen: definisi, komputasi, dan verifikasi}
 Pasangan eigen $(\lambda,v)$ memenuhi
 \[
 Av=\lambda v,\qquad v\neq0.
 \]
-Untuk matriks kecil, nilai eigen dapat diperoleh dari persamaan karakteristik
+Untuk matriks kecil, nilai eigen dapat diperoleh dari
 \[
 \det(A-\lambda I)=0.
 \]
@@ -1964,13 +2030,8 @@ Sebagai contoh,
 \[
 A=\begin{pmatrix}2&1\\1&2\end{pmatrix}
 \]
-memberikan
-\[
-(2-\lambda)^2-1=0,
-\qquad \lambda=1,3.
-\]
+memiliki $\lambda=1,3$.
 
-Komputasi dan verifikasi numerik:
 \begin{lstlisting}
 A = np.array([[2., 1.], [1., 2.]])
 w, V = np.linalg.eig(A)
@@ -1978,51 +2039,53 @@ w, V = np.linalg.eig(A)
 for k in range(len(w)):
     lam = w[k]
     v = V[:, k]
-    cek = np.linalg.norm(A @ v - lam * v)
-    print(lam, v, cek)
+
+    # pemeriksaan dengan fungsi sebelumnya
+    Av_manual = matvec_manual(A.tolist(), v.tolist())
+    lv = (lam * v).tolist()
+    err_manual = norm_diff(Av_manual, lv)
+
+    # pemeriksaan NumPy
+    err_numpy = np.linalg.norm(A @ v - lam * v)
+
+    print(lam, err_manual, err_numpy)
 \end{lstlisting}
+
 Jika $\|Av-\lambda v\|_2$ kecil, pasangan $(\lambda,v)$ konsisten secara numerik.
 
 \section{Principal Component Analysis sebagai komputasi matriks}
-Misalkan satu dataset memiliki $m$ observasi dan $p$ fitur,
+Misalkan data memiliki $m$ observasi dan $p$ fitur,
 \[
 X\in\mathbb{R}^{m\times p}.
 \]
-Ketika $p$ besar, visualisasi dan komputasi menjadi lebih sulit. Selain itu, beberapa fitur dapat membawa informasi yang hampir sama. PCA membentuk fitur baru (\textit{principal components}) sebagai kombinasi linier fitur lama sehingga data dapat diringkas dari $p$ fitur menjadi $k$ komponen, dengan $k<p$.
+PCA membentuk kombinasi linier baru dari fitur-fitur lama agar data dapat diringkas menjadi $k$ komponen, $k<p$.
 
-\subsection*{Langkah matematis PCA}
+Langkah komputasinya:
 \begin{enumerate}
-  \item \textbf{Pusatkan data.} Untuk setiap fitur $j$,
+  \item pusatkan setiap kolom,
   \[
-  \bar{x}_j=\frac{1}{m}\sum_{i=1}^{m}X_{ij},
+  \bar{x}_j=\frac1m\sum_{i=1}^m X_{ij},
   \qquad
-  X_c=X-\mathbf{1}\bar{x}^{T}.
+  X_c=X-\mathbf{1}\bar{x}^{T};
   \]
-
-  \item \textbf{Hitung matriks kovariansi.}
+  \item bentuk matriks kovariansi,
   \[
-  S=\frac{1}{m-1}X_c^T X_c.
+  S=\frac{1}{m-1}X_c^TX_c;
   \]
-
-  \item \textbf{Cari eigenvalue dan eigenvector.}
+  \item cari pasangan eigen
   \[
-  Sv_i=\lambda_i v_i.
+  Sv_i=\lambda_i v_i;
   \]
-
-  \item \textbf{Ambil $k$ arah utama.} Susun eigenvector dengan eigenvalue terbesar menjadi
+  \item pilih $k$ eigenvector dengan eigenvalue terbesar dan susun
   \[
-  W=(v_1\ v_2\ \cdots\ v_k)\in\mathbb{R}^{p\times k}.
+  W=(v_1\ v_2\ \cdots\ v_k);
   \]
-
-  \item \textbf{Proyeksikan data.}
+  \item proyeksikan
   \[
-  Z=X_cW,\qquad Z\in\mathbb{R}^{m\times k}.
+  Z=X_cW.
   \]
 \end{enumerate}
 
-Dengan demikian, hubungan antara materi sebelumnya terlihat langsung: PCA menggunakan rata-rata kolom, transpose, perkalian matriks, matriks simetris, dan pasangan eigen.
-
-\subsection*{Implementasi langkah dasar}
 \begin{lstlisting}
 X = np.array([
     [1., 2., 0.],
@@ -2031,23 +2094,18 @@ X = np.array([
     [3., 4., 1.]
 ])
 
-# 1. centering
 xbar = X.mean(axis=0)
 Xc = X - xbar
 
-# 2. covariance matrix
 S = (Xc.T @ Xc) / (len(X) - 1)
 print("S simetris =", np.allclose(S, S.T))
 
-# 3. eigen
 w, V = np.linalg.eigh(S)
 
-# urutkan dari eigenvalue terbesar
 idx = np.argsort(w)[::-1]
 w = w[idx]
 V = V[:, idx]
 
-# 4-5. ambil dua komponen dan proyeksikan
 W = V[:, :2]
 Z = Xc @ W
 
@@ -2055,186 +2113,564 @@ print("eigenvalue =", w)
 print("Z =\n", Z)
 \end{lstlisting}
 
-Untuk $X_c$ berukuran $m\times p$, pembentukan $X_c^TX_c$ mengikuti pola perkalian matriks $p\times m$ dengan $m\times p$. Kerja dominannya berorde
+Untuk $X_c$ berukuran $m\times p$, pembentukan $X_c^TX_c$ berorde utama
 \[
 O(mp^2).
 \]
 
 \begin{latihanbox}{Latihan Praktikum 7}
-Kerjakan berurutan. Untuk setiap bagian, tampilkan hasil numerik dan penjelasan singkat mengenai operasi matematika yang sedang diterjemahkan ke dalam kode.
-
 \begin{enumerate}
-  \item \textbf{Vektor dan norma.} Untuk $x=(1,-2,3)$ dan $y=(4,0,-1)$:
-  \begin{enumerate}
-    \item hitung manual $x+y$, $x\cdot y$, dan $\|x-y\|_2$;
-    \item verifikasi menggunakan fungsi \kode{dot} dan \kode{norm_diff};
-    \item tuliskan $T(n)$ dan Big-O kedua fungsi tersebut.
-  \end{enumerate}
-
-  \item \textbf{Perkalian matriks.} Gunakan
+  \item Untuk $x=(1,-2,3)$ dan $y=(4,0,-1)$, jalankan \kode{vector_add}, \kode{dot}, dan \kode{norm_diff}. Bandingkan setiap hasil dengan NumPy menggunakan \kode{np.allclose} atau \kode{np.isclose}. Tuliskan Big-O masing-masing fungsi.
+  \item Gunakan
   \[
   A=\begin{pmatrix}1&2&0\\3&1&2\end{pmatrix},\qquad
   B=\begin{pmatrix}2&1\\0&3\\1&4\end{pmatrix}.
   \]
-  \begin{enumerate}
-    \item tentukan ukuran $AB$ sebelum menghitung;
-    \item hitung satu elemen, misalnya $c_{12}$, secara manual;
-    \item jalankan \kode{matmul_manual(A,B)} dan bandingkan dengan \kode{np.array(A) @ np.array(B)};
-    \item jelaskan dari tiga loop mengapa untuk matriks $n\times n$ kompleksitasnya $O(n^3)$.
-  \end{enumerate}
-
-  \item \textbf{Transpose.} Implementasikan transpose dengan loop, uji pada matriks $2\times3$, lalu verifikasi menggunakan \kode{.T}. Jelaskan mengapa biayanya $O(mn)$.
-
-  \item \textbf{Invers dan SPL.} Gunakan
+  Hitung satu elemen $AB$ secara manual, jalankan \kode{matmul_manual}, bandingkan dengan \kode{A @ B}, kemudian jelaskan asal $O(n^3)$ untuk matriks $n\times n$.
+  \item Implementasikan transpose dengan loop pada matriks $2\times3$ dan verifikasi dengan \kode{.T}. Jelaskan mengapa biaya komputasinya $O(mn)$.
+  \item Untuk matriks $2\times2$ yang invertibel, bandingkan \kode{inv2} dengan \kode{np.linalg.inv}, lalu gunakan \kode{matmul_manual} untuk memeriksa $AA^{-1}\approx I$.
+  \item Gunakan sistem
   \[
   A=\begin{pmatrix}2&1\\5&3\end{pmatrix},\qquad
   b=\begin{pmatrix}1\\4\end{pmatrix}.
   \]
-  \begin{enumerate}
-    \item hitung determinan dan invers $2\times2$ secara manual;
-    \item verifikasi $AA^{-1}\approx I$ dengan \kode{np.allclose};
-    \item selesaikan $Ax=b$ dengan \kode{np.linalg.solve};
-    \item hitung $r=b-A\hat{x}$ dan $\|r\|_2$;
-    \item ganggu satu komponen $\hat{x}$ sebesar $10^{-3}$ dan bandingkan norma residualnya.
-  \end{enumerate}
-
-  \item \textbf{Nilai eigen.} Untuk
+  Selesaikan dengan \kode{np.linalg.solve}, lalu hitung $A\hat{x}$ dengan \kode{matvec_manual} dan norma residual dengan \kode{norm_diff}. Bandingkan keduanya dengan hasil NumPy.
+  \item Untuk
   \[
   A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
   \]
-  hitung nilai eigen dari $\det(A-\lambda I)=0$, kemudian gunakan \kode{np.linalg.eig} dan verifikasi setiap pasangan eigen menggunakan $\|Av-\lambda v\|_2$.
-
-  \item \textbf{PCA langkah demi langkah.} Gunakan data
-  \[
-  X=\begin{pmatrix}
-  1&2&0\\
-  2&1&1\\
-  4&3&2\\
-  3&4&1
-  \end{pmatrix}.
-  \]
-  Kerjakan berurutan:
-  \begin{enumerate}
-    \item hitung rata-rata setiap kolom dan bentuk $X_c$;
-    \item hitung $S=\frac{1}{m-1}X_c^TX_c$;
-    \item buktikan secara numerik bahwa $S$ simetris;
-    \item hitung eigenvalue dan eigenvector $S$;
-    \item urutkan eigenvector dari eigenvalue terbesar;
-    \item bentuk $W$ dari dua eigenvector utama dan hitung $Z=X_cW$;
-    \item tuliskan dimensi $X$, $X_c$, $S$, $W$, dan $Z$.
-  \end{enumerate}
-
-  \item \textbf{Latihan terpadu.} Diberikan
-  \[
-  A=\begin{pmatrix}2&1&0\\1&3&1\\0&1&2\end{pmatrix},\qquad
-  b=\begin{pmatrix}1\\4\\2\end{pmatrix}.
-  \]
-  Tulis pseudocode perkalian matriks-vektor $Ax$, implementasikan tanpa NumPy, tentukan fungsi kerjanya untuk $A\in\mathbb{R}^{n\times n}$, selesaikan sistem dengan \kode{np.linalg.solve}, lalu hitung residual dan norma residual.
+  hitung nilai eigen dari persamaan karakteristik, lalu verifikasi setiap pasangan eigen menggunakan fungsi yang telah dibuat dan bandingkan dengan norma NumPy.
+  \item Jalankan PCA pada data $4\times3$ di atas: tampilkan $X_c$, $S$, eigenvalue, $W$, dan $Z$. Tuliskan dimensi setiap objek dan jelaskan hubungan langkah PCA dengan transpose, perkalian matriks, dan eigenvalue.
 \end{enumerate}
 \end{latihanbox}
 
-% ================= UTS =================
-\chapter{Latihan Terpadu Menjelang UTS}
-Bagian ini digunakan setelah Praktikum 1-7. Soal sengaja mencampur prediksi, tracing, debugging, penulisan program, analisis algoritma, dan komputasi matriks.
-
-\begin{latihanbox}{Latihan terpadu}
-\begin{enumerate}
-  \item Prediksi nilai dan tipe beberapa ekspresi yang mencampur \kode{int}, \kode{float}, \kode{bool}, dan \kode{str}. Sertakan satu contoh yang menghasilkan error.
-  \item Tulis program yang menerima koefisien persamaan kuadrat dan mengklasifikasikan jenis akar.
-  \item Trace loop yang menggunakan \kode{continue} untuk \kode{None} dan \kode{break} untuk nilai ekstrem.
-  \item Tulis nested loop yang menghasilkan pola segitiga dan hitung jumlah total iterasi dalam bentuk rumus.
-  \item Buat fungsi yang mengembalikan empat ringkasan statistik dan lakukan unpacking.
-  \item Diagnosa fungsi yang hanya melakukan \kode{print} tetapi hasilnya dipakai dalam ekspresi aritmetika.
-  \item Trace scope lokal dan global pada fungsi dengan nama variabel yang sama.
-  \item Gunakan fungsi sebagai argumen untuk menerapkan tiga transformasi pada satu nilai.
-  \item Tulis fungsi rekursif dari suatu relasi rekurensi dan tunjukkan base case.
-  \item Tulis pseudocode Euclid dan trace untuk satu pasangan bilangan.
-  \item Bentuk matriks sederhana dengan nested loop dan konversi ke NumPy.
-  \item Gunakan slicing untuk menghitung beda hingga dari dua array.
-  \item Temukan bug pada fungsi rata-rata yang memiliki \kode{return} di lokasi salah.
-  \item Tulis \kode{assert} untuk fungsi jarak yang mencakup kondisi batas.
-  \item Tentukan apakah tiga loop berbeda berhenti untuk semua input positif dan berikan alasan.
-  \item Turunkan iterasi Newton untuk $\sqrt{n}$ dari Newton-Raphson umum, lalu tulis implementasinya.
-  \item Tentukan Big-O dua loop bersarang, dua loop berurutan, dan loop yang membagi ukuran dengan dua.
-  \item Untuk dua model biaya polinomial, tentukan orde dan cari titik silang numerik.
-  \item Trace tiga pass selection sort pada list yang diberikan.
-  \item Trace binary search untuk key yang ditemukan dan key yang tidak ditemukan.
-  \item Gambar dua atau tiga level awal merge sort untuk list panjang 16.
-  \item Jelaskan perbedaan analisis kompleksitas dan benchmark empiris.
-  \item Hitung operasi vektor, norma, dan dot product secara manual lalu verifikasi dengan NumPy.
-  \item Bandingkan \kode{A*B} dan \kode{A@B} pada dua matriks $2\times2$.
-  \item Selesaikan SPL dan hitung norma residual.
-  \item Hitung nilai eigen matriks simetris $2\times2$ dan verifikasi pasangan eigen numerik.
-  \item Centering sebuah matriks data dan hitung $X_c^TX_c$; jelaskan mengapa hasilnya simetris.
-\end{enumerate}
-\end{latihanbox}
 
 % ================= POST UTS =================
-\chapter{Praktikum 8: Regresi Linear Berbasis Aljabar Linier}
+\chapter{Praktikum 8: Regresi Linier dan Least Squares}
 \begin{tujuanbox}
-Mahasiswa mampu membentuk matriks desain, menghitung parameter least squares sederhana, membuat prediksi, menghitung residual, dan memvisualisasikan hasil regresi.
+Mahasiswa mampu mengimplementasikan regresi linier sederhana dari rumus least squares, menggunakan Pandas untuk membaca dan memeriksa data, memisahkan data latih dan data uji, menyusun regresi linier berganda dalam bentuk matriks, serta menghitung prediksi, residual, MSE, dan kompleksitas algoritma tanpa pustaka pemodelan.
 \end{tujuanbox}
 
-Untuk model $y_i=\beta_0+\beta_1x_i+\varepsilon_i$, bentuk matriks
+\section{Regresi linier sederhana sebagai masalah least squares}
+Untuk satu prediktor $x$, model regresi linier sederhana adalah
 \[
-y=X\beta+\varepsilon,
+\hat y_i=\beta_0+\beta_1x_i.
 \]
-dan cari $\beta$ melalui persamaan normal $(X^TX)\beta=X^Ty$ untuk tujuan pembelajaran aljabar linier.
+Residual observasi ke-$i$:
+\[
+e_i=y_i-\hat y_i.
+\]
+Least squares memilih parameter yang meminimumkan
+\[
+S(\beta_0,\beta_1)
+=
+\sum_{i=1}^n
+\left[y_i-(\beta_0+\beta_1x_i)\right]^2.
+\]
+Dari kondisi minimum diperoleh
+\[
+\beta_1=
+\frac{\sum_{i=1}^n(x_i-\bar{x})(y_i-\bar{y})}
+{\sum_{i=1}^n(x_i-\bar{x})^2},
+\qquad
+\beta_0=\bar{y}-\beta_1\bar{x}.
+\]
+
+\section{Algoritma regresi linier sederhana}
+Urutan komputasinya mengikuti langsung rumus:
+\begin{enumerate}
+  \item hitung $\bar{x}$ dan $\bar{y}$;
+  \item hitung $s_{xy}=\sum(x_i-\bar{x})(y_i-\bar{y})$;
+  \item hitung $s_{xx}=\sum(x_i-\bar{x})^2$;
+  \item hitung $\beta_1=s_{xy}/s_{xx}$ dan $\beta_0=\bar{y}-\beta_1\bar{x}$;
+  \item hitung $\hat y_i$ dan residual.
+\end{enumerate}
 
 \begin{lstlisting}
 import numpy as np
 
-x = np.array([1., 2., 3., 4., 5.])
-y = np.array([2.1, 3.9, 6.2, 8.0, 10.1])
-X = np.column_stack([np.ones(len(x)), x])
-beta = np.linalg.solve(X.T @ X, X.T @ y)
-yhat = X @ beta
-residual = y - yhat
-print(beta)
-print(np.linalg.norm(residual))
+def regresi_sederhana(x, y):
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    xbar = np.mean(x)
+    ybar = np.mean(y)
+
+    sxy = np.sum((x - xbar) * (y - ybar))
+    sxx = np.sum((x - xbar) ** 2)
+
+    if np.isclose(sxx, 0.0):
+        raise ValueError("x tidak memiliki variasi")
+
+    b1 = sxy / sxx
+    b0 = ybar - b1 * xbar
+
+    yhat = b0 + b1 * x
+    resid = y - yhat
+
+    return b0, b1, yhat, resid
 \end{lstlisting}
+
+\section{Pengelolaan data dengan Pandas}
+Pandas digunakan untuk membaca, memeriksa, dan memilih kolom data. Parameter model tetap dihitung oleh fungsi yang dibuat dari rumus sebelumnya.
+\begin{lstlisting}
+import pandas as pd
+
+df = pd.DataFrame({
+    "jam_belajar": [2,3,4,5,6,7,8,4,6,9],
+    "jumlah_latihan": [3,5,4,6,8,7,9,7,10,11],
+    "nilai": [52,58,61,67,74,77,84,65,78,91]
+})
+
+print(df.head())
+print(df.shape)
+print(df.isna().sum())
+
+x = df["jam_belajar"].to_numpy()
+y = df["nilai"].to_numpy()
+
+b0, b1, yhat, resid = regresi_sederhana(x, y)
+print("beta0 =", b0)
+print("beta1 =", b1)
+\end{lstlisting}
+
+Visualisasi awal membantu memeriksa apakah pola linier masuk akal.
+\begin{lstlisting}
+ax = df.plot.scatter(
+    x="jam_belajar",
+    y="nilai",
+    title="Jam belajar dan nilai"
+)
+\end{lstlisting}
+
+\section{Data latih dan data uji}
+Parameter sebaiknya diestimasi pada data latih dan dievaluasi pada data yang tidak digunakan untuk estimasi.
+\begin{lstlisting}
+rng = np.random.default_rng(7)
+idx = rng.permutation(len(df))
+
+k = int(0.8 * len(df))
+train_idx = idx[:k]
+test_idx = idx[k:]
+
+train = df.iloc[train_idx]
+test = df.iloc[test_idx]
+
+b0, b1, _, _ = regresi_sederhana(
+    train["jam_belajar"].to_numpy(),
+    train["nilai"].to_numpy()
+)
+
+x_test = test["jam_belajar"].to_numpy()
+y_test = test["nilai"].to_numpy()
+
+yhat_test = b0 + b1 * x_test
+mse_test = np.mean((y_test - yhat_test) ** 2)
+
+print("MSE test =", mse_test)
+\end{lstlisting}
+
+\section{Regresi linier berganda dalam bentuk matriks}
+Untuk dua prediktor,
+\[
+\hat y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}.
+\]
+Dengan $n$ observasi:
+\[
+\underbrace{\hat y}_{n\times1}
+=
+\underbrace{X}_{n\times3}
+\underbrace{\beta}_{3\times1},
+\]
+dengan
+\[
+X=
+\begin{pmatrix}
+1&x_{11}&x_{12}\\
+1&x_{21}&x_{22}\\
+\vdots&\vdots&\vdots\\
+1&x_{n1}&x_{n2}
+\end{pmatrix}.
+\]
+Residual adalah
+\[
+r=y-X\beta.
+\]
+Least squares meminimumkan
+\[
+J(\beta)=\|y-X\beta\|_2^2.
+\]
+Kondisi minimum menghasilkan persamaan normal
+\[
+X^TX\beta=X^Ty.
+\]
+
+\section{Implementasi regresi linier berganda}
+Gunakan data yang sama dengan dua prediktor: jam belajar dan jumlah latihan.
+\begin{lstlisting}
+x1 = df["jam_belajar"].to_numpy()
+x2 = df["jumlah_latihan"].to_numpy()
+y = df["nilai"].to_numpy()
+
+n = len(df)
+X = np.column_stack((np.ones(n), x1, x2))
+
+A = X.T @ X
+b = X.T @ y
+beta = np.linalg.solve(A, b)
+
+yhat = X @ beta
+resid = y - yhat
+mse = np.mean(resid ** 2)
+
+print("X shape =", X.shape)
+print("beta =", beta)
+print("MSE =", mse)
+\end{lstlisting}
+
+Periksa dimensi:
+\[
+X:n\times3,\quad
+X^T:3\times n,\quad
+X^TX:3\times3,\quad
+X^Ty:3\times1,\quad
+\beta:3\times1.
+\]
+
+\section{Fungsi kerja terhadap banyak observasi}
+Jika jumlah prediktor tetap dua, pembentukan $X$ membaca $n$ observasi, pembentukan $X^TX$ dan $X^Ty$ juga bertambah sebanding dengan $n$, sedangkan sistem yang diselesaikan tetap $3\times3$. Karena itu, terhadap $n$:
+\[
+T(n)\in O(n).
+\]
+Jika jumlah prediktor ikut bertambah menjadi $p$, ukuran sistem menjadi $(p+1)\times(p+1)$ dan biaya penyelesaian sistem tidak lagi konstan.
 
 \begin{latihanbox}{Latihan Praktikum 8}
+Gunakan tepat 10 observasi berikut:
+\[
+\begin{array}{c|cccccccccc}
+i&1&2&3&4&5&6&7&8&9&10\\ \hline
+x_1&2&3&4&5&6&7&8&4&6&9\\
+x_2&3&5&4&6&8&7&9&7&10&11\\
+y&52&58&61&67&74&77&84&65&78&91
+\end{array}
+\]
+dengan $x_1=$ jam belajar dan $x_2=$ jumlah latihan.
+
 \begin{enumerate}
-  \item Bentuk matriks desain untuk regresi dengan intercept.
-  \item Hitung $X^TX$ dan $X^Ty$ secara manual untuk dataset kecil.
-  \item Selesaikan parameter dengan \kode{np.linalg.solve}.
-  \item Hitung prediksi dan residual.
-  \item Hitung SSE, RMSE, dan $R^2$.
-  \item Buat scatter plot data dan garis regresi.
-  \item Bandingkan hasil dengan \kode{numpy.polyfit}.
-  \item Ubah skala $x$ dan amati perubahan parameter.
-  \item Tambahkan satu outlier dan amati perubahan model.
-  \item Jelaskan hubungan residual dengan konsep jarak dari data ke model.
+  \item Gunakan hanya $x_1$ untuk menjalankan \kode{regresi_sederhana}. Tampilkan $\beta_0$, $\beta_1$, prediksi, residual, dan MSE.
+  \item Buat scatter plot $x_1$ terhadap $y$, kemudian gambar garis $\hat y=\beta_0+\beta_1x$ pada grafik yang sama.
+  \item Pisahkan data menjadi train dan test menggunakan permutasi indeks NumPy. Estimasikan parameter hanya dari train dan hitung MSE pada test.
+  \item Bentuk matriks desain $X$ untuk dua prediktor. Tuliskan ukuran $X$, $X^T$, $X^TX$, $X^Ty$, $\beta$, $\hat y$, dan $r$.
+  \item Hitung $X^TX$ dan $X^Ty$, lalu selesaikan $X^TX\beta=X^Ty$ dengan \kode{np.linalg.solve}. Hitung $\hat y$, residual, dan MSE.
+  \item Jelaskan mengapa bentuk perkaliannya $X\beta$, bukan $\beta X$, berdasarkan dimensi.
+  \item Untuk jumlah observasi umum $n$ dengan dua prediktor tetap, tuliskan bagian algoritma yang bergantung pada $n$ dan tentukan Big-O terhadap $n$.
 \end{enumerate}
 \end{latihanbox}
 
-\chapter[Praktikum 9: Klasifikasi k-Nearest Neighbor]{Praktikum 9: Klasifikasi\\k-Nearest Neighbor}
+
+\chapter[Praktikum 9: Klasifikasi KNN]{Praktikum 9: Klasifikasi dengan\\K-Nearest Neighbors}
 \begin{tujuanbox}
-Mahasiswa mampu menggunakan jarak Euclid untuk mencari tetangga terdekat, melakukan voting kelas sederhana, dan mengevaluasi prediksi pada dataset kecil.
+Mahasiswa mampu merepresentasikan observasi sebagai vektor fitur, menghitung jarak Euclidean, mengimplementasikan algoritma KNN tanpa pustaka pemodelan, menganalisis kompleksitas satu prediksi, melakukan min-max normalization, serta mengevaluasi klasifikasi biner melalui confusion matrix, accuracy, precision, recall, specificity, dan F1-score.
 \end{tujuanbox}
 
-\begin{lstlisting}
-import numpy as np
+\section{Masalah klasifikasi dan ruang fitur}
+Pada klasifikasi, input adalah vektor fitur
+\[
+x=(x_1,\ldots,x_d)\in\mathbb{R}^d,
+\]
+sedangkan keluaran adalah label kelas
+\[
+y\in\{C_1,C_2,\ldots,C_g\}.
+\]
+Jika terdapat $n$ observasi latih, data dapat ditulis sebagai
+\[
+X\in\mathbb{R}^{n\times d},
+\qquad
+y=(y_1,\ldots,y_n).
+\]
+Berbeda dari regresi linier yang menghasilkan target numerik, klasifikasi menghasilkan kategori.
 
-def jarak(x, y):
-    return np.linalg.norm(x - y)
+\section{Jarak Euclidean dan fungsi jarak}
+Untuk $x,z\in\mathbb{R}^d$,
+\[
+d_2(x,z)
+=
+\|x-z\|_2
+=
+\sqrt{\sum_{j=1}^{d}(x_j-z_j)^2}.
+\]
+Rumus ini sama dengan \kode{norm_diff} pada Praktikum 7. Kita gunakan kembali fungsi tersebut.
+\begin{lstlisting}
+def euclidean_distance(x, z):
+    return norm_diff(x, z)
 \end{lstlisting}
 
-\begin{latihanbox}{Latihan Praktikum 9}
+Bandingkan dengan NumPy:
+\begin{lstlisting}
+x = [1., 2.]
+z = [4., 6.]
+
+d_manual = euclidean_distance(x, z)
+d_numpy = np.linalg.norm(np.array(x) - np.array(z))
+
+print(d_manual, d_numpy)
+print("sama =", np.isclose(d_manual, d_numpy))
+\end{lstlisting}
+
+\section{Prinsip dan algoritma KNN}
+Untuk objek baru $x^*$ dan bilangan bulat positif $k$:
 \begin{enumerate}
-  \item Hitung jarak sebuah titik uji ke semua data latih.
-  \item Urutkan indeks berdasarkan jarak.
-  \item Implementasikan k-NN untuk $k=1$ dan $k=3$.
-  \item Uji pengaruh perubahan skala salah satu fitur.
-  \item Standardisasi fitur lalu ulangi klasifikasi.
-  \item Buat confusion matrix sederhana secara manual.
-  \item Hitung akurasi pada data uji kecil.
-  \item Uji beberapa nilai $k$ dan bandingkan hasilnya.
-  \item Jelaskan apa yang terjadi jika terdapat voting seri.
-  \item Bandingkan implementasi manual dengan pustaka yang tersedia jika diizinkan.
+  \item hitung jarak $x^*$ ke seluruh observasi latih;
+  \item urutkan indeks berdasarkan jarak;
+  \item ambil $k$ indeks pertama sebagai himpunan tetangga $N_k(x^*)$;
+  \item hitung banyak kemunculan setiap kelas di dalam $N_k(x^*)$;
+  \item pilih kelas dengan suara terbanyak.
+\end{enumerate}
+
+Jika suara untuk kelas $C_j$ adalah
+\[
+v_j=\#\{i\in N_k(x^*):y_i=C_j\},
+\]
+maka kelas prediksi adalah kelas dengan nilai $v_j$ terbesar.
+
+\section{Implementasi KNN tanpa pustaka pemodelan}
+\begin{lstlisting}
+def knn_predict(X_train, y_train, x_baru, k=3):
+    X_train = np.asarray(X_train, dtype=float)
+    x_baru = np.asarray(x_baru, dtype=float)
+    y_train = np.asarray(y_train)
+
+    if k < 1 or k > len(X_train):
+        raise ValueError("k tidak valid")
+
+    jarak = []
+    for i in range(len(X_train)):
+        d = euclidean_distance(
+            X_train[i].tolist(),
+            x_baru.tolist()
+        )
+        jarak.append(d)
+
+    idx = np.argsort(jarak)
+    tetangga = idx[:k]
+    label_tetangga = y_train[tetangga]
+
+    hitung = {}
+    for label in label_tetangga:
+        hitung[label] = hitung.get(label, 0) + 1
+
+    prediksi = max(hitung, key=hitung.get)
+
+    return prediksi, np.array(jarak), tetangga, hitung
+\end{lstlisting}
+
+Fungsi mengembalikan bukan hanya kelas, tetapi juga jarak, indeks tetangga, dan jumlah suara agar proses dapat ditelusuri.
+
+\section{Contoh perhitungan dan pengaruh nilai \texorpdfstring{$k$}{k}}
+Gunakan data:
+\[
+\begin{array}{c|cc|c}
+i&x_1&x_2&\text{kelas}\\ \hline
+1&1&1&A\\
+2&2&1&A\\
+3&2&2&A\\
+4&3&2&A\\
+5&3&3&A\\
+6&5&4&B\\
+7&5&5&B\\
+8&6&4&B\\
+9&6&5&B\\
+10&7&5&B
+\end{array}
+\]
+dan objek baru
+\[
+x^*=(4.2,3.2).
+\]
+
+\begin{lstlisting}
+X = np.array([
+    [1,1], [2,1], [2,2], [3,2], [3,3],
+    [5,4], [5,5], [6,4], [6,5], [7,5]
+], dtype=float)
+
+y = np.array([
+    "A","A","A","A","A",
+    "B","B","B","B","B"
+])
+
+x_baru = np.array([4.2, 3.2])
+
+for k in [3, 5]:
+    pred, jarak, idx, suara = knn_predict(
+        X, y, x_baru, k
+    )
+
+    print("k =", k)
+    print("tetangga =", idx)
+    print("label =", y[idx])
+    print("suara =", suara)
+    print("prediksi =", pred)
+\end{lstlisting}
+
+\section{Kompleksitas satu prediksi KNN}
+Untuk $n$ data latih dengan $d$ fitur:
+\begin{itemize}
+  \item menghitung semua jarak memerlukan $O(nd)$;
+  \item mengurutkan $n$ jarak dengan \kode{argsort} memerlukan sekitar $O(n\log n)$;
+  \item menghitung suara dari $k$ tetangga memerlukan $O(k)$.
+\end{itemize}
+Maka implementasi sederhana ini memiliki
+\[
+T(n,d,k)
+=
+O(nd+n\log n+k).
+\]
+Untuk $d$ tetap, bagian sorting sering menjadi dominan.
+
+\section{Min-max normalization sebelum KNN}
+Karena KNN bergantung pada jarak, fitur dengan skala besar dapat mendominasi perhitungan. Normalisasi min-max memetakan setiap fitur ke rentang yang sama:
+\[
+x'_{ij}
+=
+\frac{x_{ij}-m_j}{M_j-m_j},
+\]
+dengan $m_j$ dan $M_j$ adalah minimum dan maksimum fitur ke-$j$ pada \textbf{data latih}.
+
+\begin{lstlisting}
+def fit_minmax(X_train):
+    X_train = np.asarray(X_train, dtype=float)
+
+    xmin = X_train.min(axis=0)
+    xmax = X_train.max(axis=0)
+
+    if np.any(np.isclose(xmax - xmin, 0.0)):
+        raise ValueError("ada fitur konstan")
+
+    return xmin, xmax
+
+
+def transform_minmax(X, xmin, xmax):
+    X = np.asarray(X, dtype=float)
+    return (X - xmin) / (xmax - xmin)
+\end{lstlisting}
+
+Urutan yang benar:
+\begin{enumerate}
+  \item pisahkan train dan test;
+  \item hitung minimum dan maksimum dari train;
+  \item transformasikan train dan test memakai parameter train;
+  \item jalankan KNN;
+  \item evaluasi hasil pada test.
+\end{enumerate}
+
+\section{Confusion matrix dan ukuran kinerja}
+Untuk klasifikasi biner dengan satu kelas ditetapkan sebagai positif:
+\[
+\begin{array}{c|cc}
+ & \text{Prediksi +} & \text{Prediksi -}\\ \hline
+\text{Aktual +} & TP & FN\\
+\text{Aktual -} & FP & TN
+\end{array}
+\]
+
+Implementasi manual:
+\begin{lstlisting}
+def confusion_binary(y_true, y_pred, positive):
+    TP = TN = FP = FN = 0
+
+    for yt, yp in zip(y_true, y_pred):
+        if yt == positive and yp == positive:
+            TP += 1
+        elif yt != positive and yp != positive:
+            TN += 1
+        elif yt != positive and yp == positive:
+            FP += 1
+        else:
+            FN += 1
+
+    return TP, TN, FP, FN
+\end{lstlisting}
+
+Dari nilai tersebut:
+\[
+\text{Accuracy}
+=
+\frac{TP+TN}{TP+TN+FP+FN},
+\]
+\[
+\text{Precision}
+=
+\frac{TP}{TP+FP},
+\qquad
+\text{Recall}
+=
+\frac{TP}{TP+FN},
+\]
+\[
+\text{Specificity}
+=
+\frac{TN}{TN+FP},
+\qquad
+F_1
+=
+2\frac{\text{Precision}\cdot\text{Recall}}
+{\text{Precision}+\text{Recall}}.
+\]
+
+\begin{lstlisting}
+def classification_metrics(TP, TN, FP, FN):
+    total = TP + TN + FP + FN
+
+    accuracy = (TP + TN) / total
+    precision = TP / (TP + FP) if TP + FP else 0.0
+    recall = TP / (TP + FN) if TP + FN else 0.0
+    specificity = TN / (TN + FP) if TN + FP else 0.0
+
+    if precision + recall:
+        f1 = 2 * precision * recall / (precision + recall)
+    else:
+        f1 = 0.0
+
+    return accuracy, precision, recall, specificity, f1
+\end{lstlisting}
+
+\section{Metrik jarak lain dan posisi KNN}
+Euclidean bukan satu-satunya fungsi jarak. Beberapa pilihan lain:
+\[
+d_1(x,z)=\sum_j|x_j-z_j|
+\quad\text{(Manhattan)},
+\]
+\[
+d_\infty(x,z)=\max_j|x_j-z_j|
+\quad\text{(Chebyshev)},
+\]
+dan secara umum
+\[
+d_p(x,z)
+=
+\left(\sum_j|x_j-z_j|^p\right)^{1/p}
+\quad\text{(Minkowski)}.
+\]
+Pilihan metrik menentukan arti ``dekat''. Untuk koordinat geografis pada wilayah luas, jarak pada permukaan bumi lebih tepat daripada langsung memakai jarak Euclidean pada pasangan lintang-bujur.
+
+KNN juga berbeda dari model parametrik seperti logistic regression. KNN tidak mengestimasi satu set koefisien global $\beta$; prediksi ditentukan dari observasi latih yang berada di sekitar objek baru. Meskipun demikian, pengguna tetap harus memilih $k$, metrik jarak, dan penskalaan fitur.
+
+\begin{latihanbox}{Latihan Praktikum 9}
+Gunakan 10 data dua kelas pada bagian contoh dan objek baru $x^*=(4.2,3.2)$.
+
+\begin{enumerate}
+  \item Hitung jarak Euclidean $x^*$ ke seluruh data secara manual atau dengan fungsi \kode{euclidean_distance}. Urutkan jarak dan tentukan tiga tetangga terdekat.
+  \item Jalankan \kode{knn_predict} untuk $k=3$ dan $k=5$. Tampilkan indeks tetangga, label tetangga, jumlah suara, dan kelas prediksi.
+  \item Untuk satu prediksi dengan $n$ data dan $d$ fitur, jelaskan asal $O(nd+n\log n+k)$ dari struktur kode.
+  \item Buat versi data yang fitur keduanya dikalikan 100. Bandingkan hasil jarak dan prediksi sebelum normalisasi.
+  \item Terapkan \kode{fit_minmax} dan \kode{transform_minmax}, lalu ulangi KNN. Parameter min-max harus dihitung hanya dari train.
+  \item Buat pembagian train/test kecil. Prediksi setiap data test menggunakan KNN dan simpan hasilnya dalam list.
+  \item Dengan kelas B sebagai positif, hitung $TP$, $TN$, $FP$, dan $FN$ menggunakan \kode{confusion_binary}. Hitung accuracy, precision, recall, specificity, dan F1-score.
+  \item Jelaskan dengan bahasa matematis mengapa KNN disebut nonparametrik dan bandingkan secara singkat dengan logistic regression yang mengestimasi koefisien.
 \end{enumerate}
 \end{latihanbox}
+
 
 \chapter[Praktikum 10: k-Means dan Mini Proyek Data]{Praktikum 10: k-Means\\dan Mini Proyek Data}
 \begin{tujuanbox}
