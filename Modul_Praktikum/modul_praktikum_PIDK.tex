@@ -1686,77 +1686,450 @@ print(t)
 % ================= P7 =================
 \chapter{Praktikum 7: Aljabar Linier Komputasional}
 \begin{tujuanbox}
-Mahasiswa mampu merepresentasikan vektor dan matriks, membedakan operasi element-wise dan perkalian matriks, menghitung transpose dan invers, menyelesaikan SPL, memeriksa residual, menghitung norma dan nilai eigen, serta melihat data sebagai matriks.
+Setelah praktikum ini, mahasiswa mampu menerjemahkan operasi aljabar linier menjadi struktur data dan algoritma, menelusuri indeks yang digunakan, menganalisis fungsi kerja sederhana, serta memverifikasi hasil komputasi menggunakan residual dan norma. Topik meliputi vektor, perkalian matriks, transpose, invers, sistem persamaan linier, nilai eigen, dan PCA.
 \end{tujuanbox}
 
-\section{Vektor: list dan array}
-List Python adalah struktur umum. NumPy array dirancang untuk komputasi numerik dan mendukung operasi vektor secara langsung.
+\section{Aljabar linier dari sisi komputasi}
+Pada mata kuliah aljabar linier, objek yang dipelajari antara lain vektor, matriks, transformasi linier, sistem persamaan linier, dan pasangan eigen. Dalam pemrograman, pertanyaan yang muncul sedikit berbeda:
+\begin{itemize}
+  \item bagaimana objek matematika tersebut disimpan sebagai list atau array;
+  \item indeks mana yang dibaca pada setiap operasi;
+  \item berapa loop yang diperlukan dan bagaimana banyak kerjanya bertambah;
+  \item bagaimana memastikan hasil numerik konsisten dengan persamaan matematisnya.
+\end{itemize}
+
+\begin{idebox}{Prinsip kerja}
+Rumus aljabar linier tidak diganti oleh program. Program menerjemahkan rumus menjadi \textbf{struktur data, indeks, algoritma, dan pemeriksaan hasil}.
+\end{idebox}
+
+\section{Vektor: indeks, operasi komponen, dan norma}
+Misalkan
+\[
+x=(x_1,\ldots,x_n),\qquad y=(y_1,\ldots,y_n).
+\]
+Tiga operasi dasar yang akan dipakai berulang adalah
+\[
+x+y=(x_i+y_i)_{i=1}^n,\qquad
+x\cdot y=\sum_{i=1}^{n}x_i y_i,
+\]
+dan jarak Euclidean
+\[
+\|x-y\|_2=\sqrt{\sum_{i=1}^{n}(x_i-y_i)^2}.
+\]
+
+Kode berikut sengaja ditulis tanpa \kode{np.dot} atau \kode{np.linalg.norm} agar hubungan antara rumus dan indeks terlihat.
 \begin{lstlisting}
-import numpy as np
-x = np.array([1., -2., 3.])
-y = np.array([4., 0., -1.])
-print(x + y)
-print(np.dot(x, y))
-print(np.linalg.norm(x))
+def dot(x, y):
+    if len(x) != len(y):
+        raise ValueError("dimensi berbeda")
+
+    total = 0.0
+    for i in range(len(x)):
+        total += x[i] * y[i]
+    return total
+
+
+def norm_diff(x, y):
+    if len(x) != len(y):
+        raise ValueError("dimensi berbeda")
+
+    total = 0.0
+    for i in range(len(x)):
+        d = x[i] - y[i]
+        total += d * d
+    return total ** 0.5
 \end{lstlisting}
 
-\section{Element-wise dan matrix multiplication}
-Untuk array NumPy, \kode{A*B} berarti perkalian elemen yang bersesuaian, sedangkan \kode{A@B} berarti perkalian matriks.
-
-\section{Perkalian matriks manual}
-Untuk memahami definisi $C=AB$ dengan $c_{ij}=\sum_k a_{ik}b_{kj}$, implementasikan perkalian matriks dengan tiga loop sebelum memakai \kode{@}.
-
-\section{Transpose dan invers}
-Untuk $A\in\R^{m\times n}$, transpose memiliki ukuran $n\times m$. Untuk
+Jika panjang vektor adalah $n$, loop membaca setiap komponen satu kali. Karena itu
 \[
-A=\begin{pmatrix}a&b\\c&d\end{pmatrix},\qquad
-A^{-1}=\frac{1}{ad-bc}\begin{pmatrix}d&-b\\-c&a\end{pmatrix},
+T(n)=c_0+c_1n\qquad\Longrightarrow\qquad T(n)\in O(n).
 \]
-selama $ad-bc\neq0$.
+Setelah prinsipnya dipahami, hasil dapat dibandingkan dengan NumPy.
+\begin{lstlisting}
+import numpy as np
+
+x = np.array([1., -2., 3.])
+y = np.array([4.,  0., -1.])
+
+print(x + y)
+print(np.dot(x, y))
+print(np.linalg.norm(x - y))
+\end{lstlisting}
+
+\section{Operasi element-wise dan perkalian matriks}
+Untuk
+\[
+A=\begin{pmatrix}1&2\\3&4\end{pmatrix},\qquad
+B=\begin{pmatrix}2&0\\1&5\end{pmatrix},
+\]
+perkalian element-wise membaca posisi yang sama,
+\[
+A\odot B=
+\begin{pmatrix}
+1\cdot2&2\cdot0\\
+3\cdot1&4\cdot5
+\end{pmatrix}
+=
+\begin{pmatrix}2&0\\3&20\end{pmatrix},
+\]
+sedangkan perkalian matriks membaca \textbf{baris pada $A$ dan kolom pada $B$},
+\[
+AB=
+\begin{pmatrix}
+1\cdot2+2\cdot1&1\cdot0+2\cdot5\\
+3\cdot2+4\cdot1&3\cdot0+4\cdot5
+\end{pmatrix}
+=
+\begin{pmatrix}4&10\\10&20\end{pmatrix}.
+\]
+Dalam NumPy, kedua operasi tersebut berbeda.
+\begin{lstlisting}
+A * B   # element-wise
+A @ B   # matrix product
+\end{lstlisting}
+
+\subsection*{Algoritma perkalian matriks}
+Jika $A\in\mathbb{R}^{m\times p}$ dan $B\in\mathbb{R}^{p\times n}$, maka $C=AB\in\mathbb{R}^{m\times n}$ dengan
+\[
+c_{ij}=\sum_{k=1}^{p} a_{ik}b_{kj}.
+\]
+Pseudocode-nya adalah:
+\begin{verbatim}
+INPUT : A berukuran m x p, B berukuran p x n
+OUTPUT: C = AB berukuran m x n
+
+cek banyak kolom A = banyak baris B
+buat C berisi nol, ukuran m x n
+FOR i = 0 sampai m-1:
+    FOR j = 0 sampai n-1:
+        s = 0
+        FOR k = 0 sampai p-1:
+            s = s + A[i][k] * B[k][j]
+        C[i][j] = s
+RETURN C
+\end{verbatim}
+
+Implementasi langsung dari pseudocode:
+\begin{lstlisting}
+def matmul_manual(A, B):
+    m = len(A)
+    p = len(A[0])
+    p2 = len(B)
+    n = len(B[0])
+
+    if p != p2:
+        raise ValueError("dimensi tidak cocok")
+
+    C = [[0.0 for j in range(n)] for i in range(m)]
+
+    for i in range(m):
+        for j in range(n):
+            s = 0.0
+            for k in range(p):
+                s += A[i][k] * B[k][j]
+            C[i][j] = s
+
+    return C
+\end{lstlisting}
+
+\subsection*{Fungsi kerja}
+Dari struktur kode di atas, kerja dominan berada pada loop terdalam. Salah satu model hitungan kerja sederhana adalah
+\[
+W(m,p,n)=5+3mn+2mnp.
+\]
+Untuk matriks bujur sangkar $n\times n$,
+\[
+T(n)=5+3n^2+2n^3
+\qquad\Longrightarrow\qquad
+T(n)\in O(n^3).
+\]
+Perhatikan bahwa orde tersebut diperoleh dari \textbf{struktur kode}, bukan dari nama operasinya.
+
+\section{Transpose sebagai pemindahan indeks}
+Untuk $A\in\mathbb{R}^{m\times n}$, transpose $A^T\in\mathbb{R}^{n\times m}$ memenuhi
+\[
+(A^T)_{ji}=A_{ij}.
+\]
+Artinya, algoritma transpose cukup memindahkan setiap elemen dari posisi $(i,j)$ ke $(j,i)$.
+\begin{lstlisting}
+def transpose(A):
+    m = len(A)
+    n = len(A[0])
+
+    T = [[0 for i in range(m)] for j in range(n)]
+    for i in range(m):
+        for j in range(n):
+            T[j][i] = A[i][j]
+
+    return T
+\end{lstlisting}
+Ada $mn$ elemen yang dipindahkan, sehingga biaya komputasinya sebanding dengan jumlah elemen:
+\[
+T(m,n)\in O(mn).
+\]
+Verifikasi dengan \kode{np.array(A).T} setelah implementasi manual bekerja.
+
+\section{Invers matriks $2\times2$: rumus, domain, dan verifikasi}
+Untuk
+\[
+A=\begin{pmatrix}a&b\\c&d\end{pmatrix},
+\]
+invers hanya ada jika
+\[
+\det(A)=ad-bc\neq0,
+\]
+dan
+\[
+A^{-1}=\frac{1}{ad-bc}
+\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.
+\]
+Program harus memeriksa syarat tersebut sebelum menghitung invers.
+\begin{lstlisting}
+def inv2(A):
+    a, b = A[0]
+    c, d = A[1]
+
+    det = a*d - b*c
+    if det == 0:
+        raise ValueError("matriks singular")
+
+    return [[ d/det, -b/det],
+            [-c/det,  a/det]]
+\end{lstlisting}
+
+Hasil numerik tidak cukup diperiksa dari bentuk matriksnya. Verifikasi identitas
+\[
+AA^{-1}\approx I.
+\]
+Pada komputer gunakan toleransi, bukan kesamaan desimal mentah.
+\begin{lstlisting}
+A = np.array([[2., 1.], [1., 1.]])
+Ainv = np.array(inv2(A.tolist()))
+
+print(A @ Ainv)
+print(np.allclose(A @ Ainv, np.eye(2)))
+\end{lstlisting}
 
 \section{Sistem persamaan linier dan residual}
-Untuk $Ax=b$, solusi numerik $\hat{x}$ perlu diperiksa melalui residual
+Untuk sistem
 \[
-r=b-A\hat{x},\qquad \|r\|_2.
+Ax=b,
 \]
+solusi numerik $\hat{x}$ harus diperiksa melalui residual
+\[
+r=b-A\hat{x},
+\]
+kemudian ukur besar residual dengan norma
+\[
+\|r\|_2.
+\]
+Jika $\|r\|_2$ kecil, maka $A\hat{x}$ dekat dengan $b$ dan solusi konsisten dengan sistem yang diberikan.
 \begin{lstlisting}
 A = np.array([[2., 1.], [5., 3.]])
 b = np.array([1., 4.])
+
 x = np.linalg.solve(A, b)
 r = b - A @ x
-print(x, np.linalg.norm(r))
+err = np.linalg.norm(r)
+
+print("x =", x)
+print("residual =", r)
+print("norma residual =", err)
 \end{lstlisting}
 
-\section{Nilai eigen}
-Pasangan $(\lambda,v)$ memenuhi $Av=\lambda v$. Setelah memperoleh hasil dari \kode{np.linalg.eig}, verifikasi numerik dengan norma $\|Av-\lambda v\|_2$.
+\begin{catatanbox}
+Untuk menyelesaikan $Ax=b$, gunakan \kode{np.linalg.solve(A,b)}. Jangan membentuk $A^{-1}$ hanya untuk menghitung $A^{-1}b$. Pada matriks besar, pembentukan invers eksplisit menambah pekerjaan dan dapat memperburuk kestabilan numerik.
+\end{catatanbox}
 
-\section{Data sebagai matriks}
-Jika baris mewakili observasi dan kolom mewakili fitur, data dapat ditulis sebagai matriks $X$. Centering dilakukan dengan mengurangi rata-rata setiap kolom. Matriks $X_c^T X_c$ merangkum hasil kali silang antarfitur dan selalu simetris.
+Sebagai gambaran biaya, invers matriks $n\times n$ dapat dipandang sebagai penyelesaian
+\[
+AX=I,
+\]
+yaitu banyak sistem linier. Algoritma langsung berbasis eliminasi Gaussian atau faktorisasi memiliki orde utama kubik,
+\[
+T(n)\in O(n^3),
+\]
+sedangkan penyimpanan matriks padat memerlukan orde $O(n^2)$ memori.
+
+\section{Nilai eigen: definisi, komputasi, dan verifikasi}
+Pasangan eigen $(\lambda,v)$ memenuhi
+\[
+Av=\lambda v,\qquad v\neq0.
+\]
+Untuk matriks kecil, nilai eigen dapat diperoleh dari persamaan karakteristik
+\[
+\det(A-\lambda I)=0.
+\]
+Sebagai contoh,
+\[
+A=\begin{pmatrix}2&1\\1&2\end{pmatrix}
+\]
+memberikan
+\[
+(2-\lambda)^2-1=0,
+\qquad \lambda=1,3.
+\]
+
+Komputasi dan verifikasi numerik:
+\begin{lstlisting}
+A = np.array([[2., 1.], [1., 2.]])
+w, V = np.linalg.eig(A)
+
+for k in range(len(w)):
+    lam = w[k]
+    v = V[:, k]
+    cek = np.linalg.norm(A @ v - lam * v)
+    print(lam, v, cek)
+\end{lstlisting}
+Jika $\|Av-\lambda v\|_2$ kecil, pasangan $(\lambda,v)$ konsisten secara numerik.
+
+\section{Principal Component Analysis sebagai komputasi matriks}
+Misalkan satu dataset memiliki $m$ observasi dan $p$ fitur,
+\[
+X\in\mathbb{R}^{m\times p}.
+\]
+Ketika $p$ besar, visualisasi dan komputasi menjadi lebih sulit. Selain itu, beberapa fitur dapat membawa informasi yang hampir sama. PCA membentuk fitur baru (\textit{principal components}) sebagai kombinasi linier fitur lama sehingga data dapat diringkas dari $p$ fitur menjadi $k$ komponen, dengan $k<p$.
+
+\subsection*{Langkah matematis PCA}
+\begin{enumerate}
+  \item \textbf{Pusatkan data.} Untuk setiap fitur $j$,
+  \[
+  \bar{x}_j=\frac{1}{m}\sum_{i=1}^{m}X_{ij},
+  \qquad
+  X_c=X-\mathbf{1}\bar{x}^{T}.
+  \]
+
+  \item \textbf{Hitung matriks kovariansi.}
+  \[
+  S=\frac{1}{m-1}X_c^T X_c.
+  \]
+
+  \item \textbf{Cari eigenvalue dan eigenvector.}
+  \[
+  Sv_i=\lambda_i v_i.
+  \]
+
+  \item \textbf{Ambil $k$ arah utama.} Susun eigenvector dengan eigenvalue terbesar menjadi
+  \[
+  W=(v_1\ v_2\ \cdots\ v_k)\in\mathbb{R}^{p\times k}.
+  \]
+
+  \item \textbf{Proyeksikan data.}
+  \[
+  Z=X_cW,\qquad Z\in\mathbb{R}^{m\times k}.
+  \]
+\end{enumerate}
+
+Dengan demikian, hubungan antara materi sebelumnya terlihat langsung: PCA menggunakan rata-rata kolom, transpose, perkalian matriks, matriks simetris, dan pasangan eigen.
+
+\subsection*{Implementasi langkah dasar}
+\begin{lstlisting}
+X = np.array([
+    [1., 2., 0.],
+    [2., 1., 1.],
+    [4., 3., 2.],
+    [3., 4., 1.]
+])
+
+# 1. centering
+xbar = X.mean(axis=0)
+Xc = X - xbar
+
+# 2. covariance matrix
+S = (Xc.T @ Xc) / (len(X) - 1)
+print("S simetris =", np.allclose(S, S.T))
+
+# 3. eigen
+w, V = np.linalg.eigh(S)
+
+# urutkan dari eigenvalue terbesar
+idx = np.argsort(w)[::-1]
+w = w[idx]
+V = V[:, idx]
+
+# 4-5. ambil dua komponen dan proyeksikan
+W = V[:, :2]
+Z = Xc @ W
+
+print("eigenvalue =", w)
+print("Z =\n", Z)
+\end{lstlisting}
+
+Untuk $X_c$ berukuran $m\times p$, pembentukan $X_c^TX_c$ mengikuti pola perkalian matriks $p\times m$ dengan $m\times p$. Kerja dominannya berorde
+\[
+O(mp^2).
+\]
 
 \begin{latihanbox}{Latihan Praktikum 7}
+Kerjakan berurutan. Untuk setiap bagian, tampilkan hasil numerik dan penjelasan singkat mengenai operasi matematika yang sedang diterjemahkan ke dalam kode.
+
 \begin{enumerate}
-  \item Untuk $x=(1,-2,3)$ dan $y=(4,0,-1)$, hitung manual $x+y$, $2x-y$, $x\cdot y$, $\|x\|_2$, dan $\|x-y\|_2$.
-  \item Implementasikan operasi nomor 1 dengan list dan NumPy array. Catat perbedaan perilaku operator.
-  \item Untuk dua matriks $2\times2$, hitung manual $A\odot B$ dan $AB$, lalu bandingkan \kode{A*B} dan \kode{A@B}.
-  \item Tulis \kode{matmul_manual(A,B)} dengan tiga loop dan pemeriksaan dimensi.
-  \item Uji perkalian matriks $2\times3$ dengan $3\times2$ dan bandingkan dengan NumPy.
-  \item Buat transpose matriks dengan loop bersarang.
-  \item Buat transpose dengan list comprehension dan dengan \kode{np.array(A).T}.
-  \item Implementasikan invers matriks $2\times2$ dari rumus manual. Tolak matriks singular.
-  \item Bandingkan invers manual dengan \kode{np.linalg.inv} dan verifikasi $AA^{-1}\approx I$.
-  \item Selesaikan SPL $2\times2$ dengan invers manual dan \kode{np.linalg.solve}.
-  \item Hitung determinan sebelum menyelesaikan SPL. Jelaskan arti determinan nol terhadap keunikan solusi pada konteks ini.
-  \item Untuk solusi $\hat{x}$, hitung residual $r=b-A\hat{x}$ dan $\|r\|_2$.
-  \item Ganggu satu komponen solusi sebesar $10^{-3}$ dan bandingkan norma residual.
-  \item Selesaikan sistem $3\times3$ dari LKM dan verifikasi hasil melalui residual.
-  \item Bandingkan secara konseptual \kode{np.linalg.solve(A,b)} dengan \kode{np.linalg.inv(A) @ b}.
-  \item Untuk $A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$, hitung nilai eigen manual dari $\det(A-\lambda I)=0$.
-  \item Gunakan \kode{np.linalg.eig} dan verifikasi $Av\approx\lambda v$ dengan norma selisih.
-  \item Untuk $X=\begin{pmatrix}1&2\\2&1\\4&3\end{pmatrix}$, hitung rata-rata kolom, centered matrix, dan $X_c^TX_c$.
-  \item Kerjakan nomor 18 sekali dengan loop/list dan sekali dengan NumPy.
-  \item Buat data empat observasi dengan tiga fitur. Hitung Gram matrix $G=X_c^TX_c$ dan periksa bahwa $G$ simetris.
-  \item Tulis fungsi yang menerima $A,b$ dan mengembalikan solusi serta norma residual.
-  \item Buat tiga test case untuk fungsi pada nomor 21: identitas, sistem nontrivial, dan matriks singular.
+  \item \textbf{Vektor dan norma.} Untuk $x=(1,-2,3)$ dan $y=(4,0,-1)$:
+  \begin{enumerate}
+    \item hitung manual $x+y$, $x\cdot y$, dan $\|x-y\|_2$;
+    \item verifikasi menggunakan fungsi \kode{dot} dan \kode{norm_diff};
+    \item tuliskan $T(n)$ dan Big-O kedua fungsi tersebut.
+  \end{enumerate}
+
+  \item \textbf{Perkalian matriks.} Gunakan
+  \[
+  A=\begin{pmatrix}1&2&0\\3&1&2\end{pmatrix},\qquad
+  B=\begin{pmatrix}2&1\\0&3\\1&4\end{pmatrix}.
+  \]
+  \begin{enumerate}
+    \item tentukan ukuran $AB$ sebelum menghitung;
+    \item hitung satu elemen, misalnya $c_{12}$, secara manual;
+    \item jalankan \kode{matmul_manual(A,B)} dan bandingkan dengan \kode{np.array(A) @ np.array(B)};
+    \item jelaskan dari tiga loop mengapa untuk matriks $n\times n$ kompleksitasnya $O(n^3)$.
+  \end{enumerate}
+
+  \item \textbf{Transpose.} Implementasikan transpose dengan loop, uji pada matriks $2\times3$, lalu verifikasi menggunakan \kode{.T}. Jelaskan mengapa biayanya $O(mn)$.
+
+  \item \textbf{Invers dan SPL.} Gunakan
+  \[
+  A=\begin{pmatrix}2&1\\5&3\end{pmatrix},\qquad
+  b=\begin{pmatrix}1\\4\end{pmatrix}.
+  \]
+  \begin{enumerate}
+    \item hitung determinan dan invers $2\times2$ secara manual;
+    \item verifikasi $AA^{-1}\approx I$ dengan \kode{np.allclose};
+    \item selesaikan $Ax=b$ dengan \kode{np.linalg.solve};
+    \item hitung $r=b-A\hat{x}$ dan $\|r\|_2$;
+    \item ganggu satu komponen $\hat{x}$ sebesar $10^{-3}$ dan bandingkan norma residualnya.
+  \end{enumerate}
+
+  \item \textbf{Nilai eigen.} Untuk
+  \[
+  A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
+  \]
+  hitung nilai eigen dari $\det(A-\lambda I)=0$, kemudian gunakan \kode{np.linalg.eig} dan verifikasi setiap pasangan eigen menggunakan $\|Av-\lambda v\|_2$.
+
+  \item \textbf{PCA langkah demi langkah.} Gunakan data
+  \[
+  X=\begin{pmatrix}
+  1&2&0\\
+  2&1&1\\
+  4&3&2\\
+  3&4&1
+  \end{pmatrix}.
+  \]
+  Kerjakan berurutan:
+  \begin{enumerate}
+    \item hitung rata-rata setiap kolom dan bentuk $X_c$;
+    \item hitung $S=\frac{1}{m-1}X_c^TX_c$;
+    \item buktikan secara numerik bahwa $S$ simetris;
+    \item hitung eigenvalue dan eigenvector $S$;
+    \item urutkan eigenvector dari eigenvalue terbesar;
+    \item bentuk $W$ dari dua eigenvector utama dan hitung $Z=X_cW$;
+    \item tuliskan dimensi $X$, $X_c$, $S$, $W$, dan $Z$.
+  \end{enumerate}
+
+  \item \textbf{Latihan terpadu.} Diberikan
+  \[
+  A=\begin{pmatrix}2&1&0\\1&3&1\\0&1&2\end{pmatrix},\qquad
+  b=\begin{pmatrix}1\\4\\2\end{pmatrix}.
+  \]
+  Tulis pseudocode perkalian matriks-vektor $Ax$, implementasikan tanpa NumPy, tentukan fungsi kerjanya untuk $A\in\mathbb{R}^{n\times n}$, selesaikan sistem dengan \kode{np.linalg.solve}, lalu hitung residual dan norma residual.
 \end{enumerate}
 \end{latihanbox}
 
