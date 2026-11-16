@@ -1,0 +1,965 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[indonesian]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,matrix,decorations.pathreplacing}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+\graphicspath{{assets/}{../M05/assets/}{../M01/assets/}}
+
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{Purple}{HTML}{6F42C1}
+\definecolor{RedSoft}{HTML}{FDECEC}
+\definecolor{GreenSoft}{HTML}{E9F7EF}
+
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Gold}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{Blue}\bfseries,
+  commentstyle=\color{Teal},
+  stringstyle=\color{Gold!70!black},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{Navy!35},
+  backgroundcolor=\color{CodeBg},
+  tabsize=4,
+  columns=fullflexible
+}
+\lstset{style=py}
+
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  warnbox/.style={rounded corners=3pt, draw=Gold!80!black, fill=Gold!12, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  greenbox/.style={rounded corners=3pt, draw=Teal!70!black, fill=LightTeal, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  redbox/.style={rounded corners=3pt, draw=red!60!black, fill=RedSoft, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  arr/.style={-{Latex[length=2.3mm]}, thick, draw=DarkText}
+}
+
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\title[\mkfooter]{Pertemuan 11: Pengelompokan Data dengan k-Means}
+\subtitle{Centroid, fungsi objektif, algoritma assignment-update, dan interpretasi cluster}
+\author{\textbf{Triyana Muliawati, S.Si., M.Si.} dan Rifky Fauzi}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+\IfFileExists{../M05/assets/tech_bg.png}{%
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M05/assets/tech_bg.png}};%
+}{\IfFileExists{../M01/assets/tech_bg.png}{\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M01/assets/tech_bg.png}};}{\fill[DeepNavy!7] (current page.south west) rectangle (current page.north east);}}
+\fill[DeepNavy,opacity=.84] (current page.south west) rectangle ([xshift=8.15cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=7.0cm] at ([xshift=.65cm,yshift=-.55cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{20}{22.5}\selectfont\bfseries Pertemuan 11\\Pengelompokan Data\\dengan k-Means}\\[3mm]
+{\fontsize{14.5}{17}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10}{11.5}\selectfont \textbf{Triyana Muliawati, S.Si., M.Si.}\\Rifky Fauzi}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.95,text opacity=1,rounded corners=3pt,inner sep=4.0mm,text width=6.95cm] at ([xshift=-.35cm,yshift=-.78cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Pokok bahasan}\\[2mm]
+\begin{itemize}\small
+  \item Masalah pengelompokan data tanpa label.
+  \item Centroid sebagai rata-rata dan representasi pusat cluster.
+  \item Fungsi objektif k-Means.
+  \item Tahap assignment dan update centroid.
+  \item Implementasi algoritma menggunakan NumPy.
+  \item Normalisasi, pemilihan $k$, dan interpretasi hasil.
+\end{itemize}
+};
+\end{tikzpicture}
+\end{frame}
+
+% 2
+\begin{frame}{Masalah Pengelompokan Data}
+\begin{columns}[T]
+\column{.51\textwidth}
+\small
+Pada KNN sebelumnya, setiap observasi memiliki \textbf{label kelas}. Pada pengelompokan, label tersebut tidak tersedia.
+
+\vspace{2mm}
+\begin{block}{Masalah komputasi}
+Diberikan sekumpulan observasi
+\[
+x_1,x_2,\ldots,x_n\in\mathbb{R}^d,
+\]
+bagilah observasi ke beberapa kelompok sehingga objek dalam kelompok yang sama relatif lebih mirip.
+\end{block}
+
+\begin{alertblock}{Perbedaan utama}
+\footnotesize
+Algoritma tidak diberi jawaban ``kelas A'' atau ``kelas B''. Struktur kelompok dicari dari posisi dan kedekatan data itu sendiri.
+\end{alertblock}
+
+\column{.45\textwidth}
+\centering
+\begin{tikzpicture}[x=.62cm,y=.55cm]
+  \draw[->,thick] (0,0) -- (7.3,0) node[right]{\scriptsize $x_1$};
+  \draw[->,thick] (0,0) -- (0,6.6) node[above]{\scriptsize $x_2$};
+  \foreach \p in {(1.0,1.3),(1.4,1.8),(1.8,1.2),(2.2,2.0),(2.5,1.5)}
+    \fill[Blue] \p circle (2.3pt);
+  \foreach \p in {(4.5,4.7),(5.0,5.2),(5.3,4.5),(5.7,5.5),(6.1,4.9)}
+    \fill[Teal!80!black] \p circle (2.3pt);
+  \foreach \p in {(5.0,1.4),(5.5,1.9),(6.0,1.2),(6.4,2.1)}
+    \fill[Gold!80!black] \p circle (2.3pt);
+  \node[align=center] at (3.7,6.0){\scriptsize Tidak ada label kelas\\\scriptsize yang diberikan};
+\end{tikzpicture}
+\end{columns}
+\end{frame}
+
+% 3
+\begin{frame}{Representasi Matematis Pengelompokan}
+\small
+Untuk $n$ observasi dan $d$ fitur,
+\[
+X=
+\begin{pmatrix}
+x_1^T\\
+x_2^T\\
+\vdots\\
+x_n^T
+\end{pmatrix}
+\in\mathbb{R}^{n\times d}.
+\]
+
+Kita ingin membentuk $k$ himpunan cluster
+\[
+C_1,C_2,\ldots,C_k
+\]
+dengan
+\[
+C_r\cap C_s=\varnothing\quad(r\neq s),
+\qquad
+C_1\cup C_2\cup\cdots\cup C_k=\{1,\ldots,n\}.
+\]
+
+\begin{block}{Makna indeks}
+\footnotesize
+Jika $i\in C_j$, observasi $x_i$ ditempatkan pada cluster ke-$j$. Nomor cluster hanyalah penanda; ``cluster 1'' tidak otomatis lebih baik atau lebih tinggi daripada ``cluster 2''.
+\end{block}
+\end{frame}
+
+% 4
+\begin{frame}{Klasifikasi KNN dan Pengelompokan k-Means}
+\small
+\begin{center}
+\begin{tabular}{p{3.0cm} p{5.0cm} p{5.0cm}}
+\toprule
+ & KNN & k-Means \\
+\midrule
+Jenis masalah & klasifikasi & pengelompokan \\
+Data awal & memiliki label $y_i$ & tidak memiliki label kelas \\
+Tujuan & memprediksi kelas objek baru & membentuk kelompok dari data \\
+Peran jarak & mencari tetangga terdekat & menentukan centroid terdekat \\
+Arti $k$ & banyak tetangga & banyak cluster \\
+Hasil utama & label prediksi & anggota cluster dan centroid \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Notasi yang sama, makna berbeda}
+\small
+Huruf $k$ pada KNN dan k-Means tidak menyatakan hal yang sama. Pada k-Means, $k$ harus ditentukan sebelum algoritma berjalan.
+\end{alertblock}
+\end{frame}
+
+% 5
+\begin{frame}{Centroid sebagai Pusat Cluster}
+\begin{columns}[T]
+\column{.50\textwidth}
+\small
+Misalkan cluster $C_j$ memiliki $n_j$ observasi. Centroid cluster tersebut adalah rata-rata vektor:
+\[
+\mu_j
+=
+\frac{1}{n_j}
+\sum_{i\in C_j}x_i.
+\]
+
+Untuk data dua dimensi,
+\[
+\mu_j=
+\begin{pmatrix}
+\bar x_1\\
+\bar x_2
+\end{pmatrix},
+\]
+jadi koordinat centroid adalah rata-rata pada setiap fitur.
+
+\begin{block}{Hubungan dengan aljabar linear}
+\footnotesize
+Centroid tetap merupakan vektor di $\mathbb{R}^d$. Operasi rata-rata dilakukan komponen demi komponen.
+\end{block}
+
+\column{.46\textwidth}
+\centering
+\begin{tikzpicture}[x=.72cm,y=.62cm]
+  \draw[->,thick] (0,0) -- (6.2,0) node[right]{\scriptsize $x_1$};
+  \draw[->,thick] (0,0) -- (0,5.5) node[above]{\scriptsize $x_2$};
+  \foreach \p in {(1.1,1.1),(1.5,2.0),(2.2,1.3),(2.5,2.3),(3.0,1.7)}
+    \fill[Blue] \p circle (2.4pt);
+  \fill[Gold!80!black] (2.06,1.68) circle (4pt);
+  \node[anchor=west] at (2.2,1.68){\scriptsize centroid $\mu$};
+\end{tikzpicture}
+\end{columns}
+\end{frame}
+
+% 6
+\begin{frame}{Mengapa Centroid Berupa Rata-Rata?}
+\small
+Untuk satu dimensi, misalkan kita mencari satu titik $m$ yang meminimumkan jumlah kuadrat jarak:
+\[
+f(m)=\sum_{i=1}^{n}(x_i-m)^2.
+\]
+
+Dengan kalkulus,
+\[
+f'(m)
+=
+-2\sum_{i=1}^{n}(x_i-m).
+\]
+Syarat titik stasioner $f'(m)=0$ memberi
+\[
+\sum_{i=1}^{n}x_i-nm=0
+\quad\Longrightarrow\quad
+m=\frac{1}{n}\sum_{i=1}^{n}x_i=\bar x.
+\]
+
+\begin{block}{Generalisasi}
+\small
+Pada $\mathbb{R}^d$, argumen yang sama berlaku untuk setiap koordinat. Karena itu pusat yang meminimumkan jumlah \textbf{kuadrat jarak Euclidean} adalah rata-rata vektor.
+\end{block}
+\end{frame}
+
+% 7
+\begin{frame}{Fungsi Objektif k-Means}
+\small
+Diberikan centroid $\mu_1,\ldots,\mu_k$. k-Means meminimumkan
+\[
+J
+=
+\sum_{j=1}^{k}
+\sum_{i\in C_j}
+\|x_i-\mu_j\|_2^2.
+\]
+
+\begin{center}
+\begin{tabular}{p{2.2cm} p{10.5cm}}
+\toprule
+Notasi & Makna \\
+\midrule
+$x_i$ & observasi ke-$i$ \\
+$C_j$ & himpunan indeks observasi dalam cluster ke-$j$ \\
+$\mu_j$ & centroid cluster ke-$j$ \\
+$\|x_i-\mu_j\|_2^2$ & kuadrat jarak observasi ke centroidnya \\
+$J$ & total variasi di dalam cluster, sering disebut \textit{within-cluster sum of squares} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Tujuan}
+\small
+Cluster yang baik menurut k-Means memiliki nilai $J$ kecil: observasi dekat dengan centroid kelompoknya.
+\end{alertblock}
+\end{frame}
+
+% 8
+\begin{frame}{Tahap Assignment}
+\small
+Dengan centroid sementara $\mu_1,\ldots,\mu_k$, setiap observasi ditempatkan pada centroid terdekat.
+
+Untuk observasi $x_i$, hitung
+\[
+d_{ij}=\|x_i-\mu_j\|_2,
+\qquad j=1,\ldots,k.
+\]
+
+Kemudian pilih indeks cluster
+\[
+c_i
+=
+\operatorname*{arg\,min}_{1\le j\le k} d_{ij}.
+\]
+
+\begin{block}{Makna \texorpdfstring{$\arg\min$}{argmin}}
+\small
+Jika jarak ke tiga centroid adalah
+\[
+(d_{i1},d_{i2},d_{i3})=(4.2,\ 1.7,\ 3.1),
+\]
+maka nilai minimum adalah $1.7$, sedangkan $\arg\min$ adalah indeks $2$. Jadi $x_i$ masuk cluster 2.
+\end{block}
+\end{frame}
+
+% 9
+\begin{frame}{Tahap Update Centroid}
+\small
+Setelah semua observasi mempunyai cluster, hitung ulang centroid setiap cluster:
+\[
+\mu_j^{\text{baru}}
+=
+\frac{1}{|C_j|}
+\sum_{i\in C_j}x_i.
+\]
+
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Contoh}
+\footnotesize
+Jika
+\[
+C_1=\{(1,1),(2,1),(2,2)\},
+\]
+maka
+\[
+\mu_1
+=
+\left(
+\frac{1+2+2}{3},
+\frac{1+1+2}{3}
+\right)
+=
+\left(\frac53,\frac43\right).
+\]
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Interpretasi}
+\footnotesize
+Tahap assignment mengubah \textbf{anggota cluster}. Tahap update mengubah \textbf{posisi centroid}. Kedua langkah diulang sampai tidak terjadi perubahan berarti.
+\end{block}
+\end{columns}
+\end{frame}
+
+% 10
+\begin{frame}{Algoritma Lloyd untuk k-Means}
+\small
+\begin{block}{Input}
+Data $X\in\mathbb{R}^{n\times d}$ dan banyak cluster $k$.
+\end{block}
+
+\begin{enumerate}
+\item Pilih $k$ centroid awal $\mu_1,\ldots,\mu_k$.
+\item \textbf{Assignment:} tempatkan setiap $x_i$ pada centroid terdekat.
+\item \textbf{Update:} hitung ulang centroid sebagai rata-rata anggota setiap cluster.
+\item Hitung perubahan centroid atau periksa apakah assignment berubah.
+\item Ulangi langkah 2--4 sampai konvergen atau mencapai batas iterasi.
+\end{enumerate}
+
+\begin{alertblock}{Sifat penting}
+\footnotesize
+Pada setiap tahap assignment dan update, nilai fungsi objektif $J$ tidak meningkat. Algoritma berhenti pada solusi lokal, sehingga hasil dapat bergantung pada centroid awal.
+\end{alertblock}
+\end{frame}
+
+% 11
+\begin{frame}{Contoh Numerik: Data dan Centroid Awal}
+\begin{columns}[T]
+\column{.43\textwidth}
+\small
+Gunakan delapan titik:
+\[
+\begin{array}{c|c}
+i & x_i\\\hline
+1&(1,1)\\
+2&(1,2)\\
+3&(2,1)\\
+4&(2,2)\\
+5&(7,5)\\
+6&(8,5)\\
+7&(7,6)\\
+8&(8,6)
+\end{array}
+\]
+
+Ambil $k=2$ dengan centroid awal
+\[
+\mu_1^{(0)}=(1,1),
+\qquad
+\mu_2^{(0)}=(8,6).
+\]
+
+\column{.53\textwidth}
+\centering
+\begin{tikzpicture}[x=.60cm,y=.55cm]
+  \draw[->,thick] (0,0) -- (9.2,0) node[right]{\scriptsize $x_1$};
+  \draw[->,thick] (0,0) -- (0,7.2) node[above]{\scriptsize $x_2$};
+  \foreach \p in {(1,1),(1,2),(2,1),(2,2),(7,5),(8,5),(7,6),(8,6)}
+    \fill[DarkText] \p circle (2.3pt);
+  \draw[very thick,Blue] (1,1) circle (5pt);
+  \draw[very thick,Teal!80!black] (8,6) circle (5pt);
+  \node[Blue,anchor=west] at (1.2,.7){\scriptsize $\mu_1^{(0)}$};
+  \node[Teal!80!black,anchor=east] at (7.8,6.5){\scriptsize $\mu_2^{(0)}$};
+\end{tikzpicture}
+\end{columns}
+\end{frame}
+
+% 12
+\begin{frame}{Contoh Numerik: Assignment Iterasi Pertama}
+\footnotesize
+Beberapa perhitungan jarak:
+\[
+d((2,2),\mu_1^{(0)})=\sqrt{(2-1)^2+(2-1)^2}=\sqrt2,
+\]
+\[
+d((2,2),\mu_2^{(0)})=\sqrt{(2-8)^2+(2-6)^2}=\sqrt{52}.
+\]
+
+Karena $\sqrt2<\sqrt{52}$, titik $(2,2)$ masuk cluster 1.
+
+\vspace{1mm}
+\begin{center}
+\begin{tabular}{c c c c}
+\toprule
+Titik & $d(\cdot,\mu_1^{(0)})$ & $d(\cdot,\mu_2^{(0)})$ & Cluster \\
+\midrule
+$(1,1)$ & $0$ & $\sqrt{74}$ & 1\\
+$(1,2)$ & $1$ & $\sqrt{65}$ & 1\\
+$(2,1)$ & $1$ & $\sqrt{61}$ & 1\\
+$(2,2)$ & $\sqrt2$ & $\sqrt{52}$ & 1\\
+$(7,5)$ & $\sqrt{52}$ & $\sqrt2$ & 2\\
+$(8,5)$ & $\sqrt{65}$ & $1$ & 2\\
+$(7,6)$ & $\sqrt{61}$ & $1$ & 2\\
+$(8,6)$ & $\sqrt{74}$ & $0$ & 2\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+% 13
+\begin{frame}{Contoh Numerik: Update Centroid}
+\small
+Hasil assignment pertama:
+\[
+C_1=\{(1,1),(1,2),(2,1),(2,2)\},
+\]
+\[
+C_2=\{(7,5),(8,5),(7,6),(8,6)\}.
+\]
+
+Centroid baru:
+\[
+\mu_1^{(1)}
+=
+\left(
+\frac{1+1+2+2}{4},
+\frac{1+2+1+2}{4}
+\right)
+=
+(1.5,1.5),
+\]
+\[
+\mu_2^{(1)}
+=
+\left(
+\frac{7+8+7+8}{4},
+\frac{5+5+6+6}{4}
+\right)
+=
+(7.5,5.5).
+\]
+
+\begin{block}{Iterasi berikutnya}
+\small
+Dengan dua centroid baru ini, assignment tidak berubah. Maka algoritma telah konvergen untuk inisialisasi tersebut.
+\end{block}
+\end{frame}
+
+% 14
+\begin{frame}{Pengaruh Inisialisasi Centroid}
+\small
+k-Means tidak selalu menghasilkan solusi akhir yang sama untuk centroid awal yang berbeda.
+
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Masalah}
+\footnotesize
+Fungsi objektif k-Means tidak selalu memiliki satu minimum yang mudah ditemukan. Algoritma Lloyd dapat berhenti pada \textbf{minimum lokal}.
+\end{block}
+
+\begin{block}{Praktik komputasi}
+\footnotesize
+Jalankan algoritma beberapa kali dengan centroid awal berbeda, lalu pilih hasil dengan nilai $J$ terkecil.
+\end{block}
+
+\column{.48\textwidth}
+\centering
+\begin{tikzpicture}[x=.54cm,y=.48cm]
+  \draw[->,thick] (0,0) -- (7.4,0);
+  \draw[->,thick] (0,0) -- (0,6.7);
+  \foreach \p in {(1,1),(1.4,1.7),(2,1.3),(4.2,3.0),(4.8,3.5),(6.0,5.2),(6.5,5.8)}
+    \fill[DarkText] \p circle (2.1pt);
+  \draw[very thick,Gold!85!black] (1.1,1.2) circle (4pt);
+  \draw[very thick,Gold!85!black] (4.4,3.1) circle (4pt);
+  \node[align=center] at (4.0,6.25){\scriptsize centroid awal dapat\\\scriptsize mengubah lintasan iterasi};
+\end{tikzpicture}
+\end{columns}
+
+{\footnotesize Salah satu strategi inisialisasi yang umum adalah \textit{k-means++}, yang memilih centroid awal agar lebih tersebar.}
+\end{frame}
+
+% 15
+\begin{frame}{Normalisasi Fitur sebelum k-Means}
+\small
+Karena k-Means berbasis jarak, fitur dengan skala besar dapat mendominasi perhitungan.
+
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{block}{Contoh}
+\footnotesize
+Misalkan dua fitur mempunyai rentang yang sangat berbeda:
+\[
+x_1\in[18,60]\quad\text{(usia)},
+\]
+\[
+x_2\in[2000,20000]\quad\text{(pendapatan)}.
+\]
+Perbedaan pada pendapatan dapat jauh lebih besar secara numerik daripada perbedaan usia.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Min-max normalization}
+\footnotesize
+Untuk setiap fitur,
+\[
+z
+=
+\frac{x-x_{\min}}
+{x_{\max}-x_{\min}},
+\]
+sehingga nilai fitur berada pada rentang $[0,1]$.
+\end{block}
+\end{columns}
+
+\begin{alertblock}{Prinsip}
+\footnotesize
+Gunakan normalisasi ketika skala fitur berbeda dan perbedaan skala tersebut bukan bagian dari makna yang ingin dipertahankan.
+\end{alertblock}
+\end{frame}
+
+% 16
+\begin{frame}[fragile]{Implementasi Fungsi Dasar dengan NumPy}
+\begin{columns}[T]
+\column{.52\textwidth}
+\begin{lstlisting}
+import numpy as np
+
+def jarak_euclidean(x, mu):
+    selisih = x - mu
+    return np.sqrt(np.sum(selisih**2))
+
+def centroid(X_cluster):
+    return np.mean(X_cluster, axis=0)
+\end{lstlisting}
+
+\column{.44\textwidth}
+\small
+\begin{block}{Yang dihitung}
+\footnotesize
+Untuk $x,\mu\in\mathbb{R}^d$,
+\[
+\|x-\mu\|_2
+=
+\sqrt{\sum_{\ell=1}^{d}(x_\ell-\mu_\ell)^2}.
+\]
+
+Untuk $X_{\text{cluster}}\in\mathbb{R}^{m\times d}$,
+\[
+\mu
+=
+\frac1m\sum_{i=1}^{m}x_i.
+\]
+\end{block}
+\end{columns}
+
+\begin{alertblock}{Konsistensi dengan materi sebelumnya}
+\footnotesize
+Fungsi jarak sama dengan norma Euclidean yang telah digunakan pada KNN dan aljabar linear komputasional.
+\end{alertblock}
+\end{frame}
+
+% 17
+\begin{frame}[fragile]{Implementasi Tahap Assignment}
+\begin{lstlisting}
+def assignment(X, centroids):
+    labels = []
+
+    for x in X:
+        distances = []
+
+        for mu in centroids:
+            d = jarak_euclidean(x, mu)
+            distances.append(d)
+
+        label = np.argmin(distances)
+        labels.append(label)
+
+    return np.array(labels)
+\end{lstlisting}
+
+\begin{block}{Interpretasi indeks}
+\small
+`np.argmin(distances)` mengembalikan posisi centroid dengan jarak terkecil. Jika hasilnya `0`, observasi ditempatkan pada cluster pertama.
+\end{block}
+\end{frame}
+
+% 18
+\begin{frame}[fragile]{Implementasi Tahap Update Centroid}
+\begin{lstlisting}
+def update_centroids(X, labels, k):
+    centroids = []
+
+    for j in range(k):
+        Xj = X[labels == j]
+        mu_j = np.mean(Xj, axis=0)
+        centroids.append(mu_j)
+
+    return np.array(centroids)
+\end{lstlisting}
+
+\begin{block}{Struktur data}
+\small
+Ekspresi \texttt{X[labels == j]} mengambil seluruh observasi yang saat ini berada pada cluster ke-$j$. Rata-rata kolom menghasilkan centroid baru di $\mathbb{R}^d$.
+\end{block}
+\end{frame}
+
+% 19
+\begin{frame}[fragile]{Implementasi Iterasi k-Means}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+def kmeans(X, k, centroids, max_iter=100, tol=1e-6):
+    for it in range(max_iter):
+        labels = assignment(X, centroids)
+        new_centroids = update_centroids(X, labels, k)
+
+        perubahan = np.linalg.norm(
+            new_centroids - centroids
+        )
+
+        centroids = new_centroids
+
+        if perubahan < tol:
+            break
+
+    return labels, centroids
+\end{lstlisting}
+
+\begin{block}{Kriteria berhenti}
+\small
+Algoritma berhenti ketika perubahan seluruh centroid cukup kecil,
+\[
+\|\mu^{\mathrm{baru}}-\mu^{\mathrm{lama}}\|_2<\texttt{tol},
+\]
+atau jumlah iterasi mencapai \texttt{max\_iter}.
+\end{block}
+\end{frame}
+
+% 20
+\begin{frame}[fragile]{Penelusuran Iterasi pada Program}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
+X = np.array([
+    [1.,1.], [1.,2.], [2.,1.], [2.,2.],
+    [7.,5.], [8.,5.], [7.,6.], [8.,6.]
+])
+
+centroids0 = np.array([[1.,1.], [8.,6.]])
+labels, centroids = kmeans(X, 2, centroids0)
+
+print(labels)
+print(centroids)
+\end{lstlisting}
+
+\begin{columns}[T]
+\column{.51\textwidth}
+\footnotesize
+Hasil:
+\[
+\text{labels}=(0,0,0,0,1,1,1,1),
+\]
+\[
+\text{centroids}=
+\begin{pmatrix}
+1.5&1.5\\
+7.5&5.5
+\end{pmatrix}.
+\]
+\column{.45\textwidth}
+\begin{alertblock}{Code defense}
+\footnotesize
+Jelaskan mengapa label dimulai dari 0, kapan centroid berubah, dan kondisi apa yang menghentikan iterasi.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 20
+\begin{frame}[fragile]{Fungsi Objektif pada Implementasi}
+\begin{columns}[T]
+\column{.55\textwidth}
+\begin{lstlisting}
+def objective(X, labels, centroids):
+    J = 0.0
+
+    for i in range(len(X)):
+        j = labels[i]
+        diff = X[i] - centroids[j]
+        J += np.dot(diff, diff)
+
+    return J
+\end{lstlisting}
+
+\column{.41\textwidth}
+\small
+Kode tersebut menghitung
+\[
+J
+=
+\sum_{i=1}^{n}
+\|x_i-\mu_{c_i}\|_2^2.
+\]
+
+\begin{block}{Penggunaan}
+\footnotesize
+Nilai $J$ berguna untuk:
+\begin{itemize}
+\item membandingkan beberapa inisialisasi;
+\item memantau apakah iterasi membaik;
+\item membantu menilai kandidat banyak cluster $k$.
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 21
+\begin{frame}{Fungsi Kerja dan Kompleksitas Algoritma}
+\small
+Misalkan:
+\[
+n=\text{banyak observasi},\quad
+d=\text{banyak fitur},\quad
+k=\text{banyak cluster}.
+\]
+
+Pada tahap assignment, setiap observasi dibandingkan dengan setiap centroid:
+\[
+n\times k
+\]
+perhitungan jarak, dan setiap jarak membaca $d$ komponen.
+
+Maka satu iterasi mempunyai kerja utama
+\[
+T(n,k,d)\in O(nkd).
+\]
+
+Jika algoritma memerlukan $I$ iterasi,
+\[
+T(n,k,d,I)\in O(Inkd).
+\]
+
+\begin{block}{Hubungan dengan kode}
+\footnotesize
+Struktur loop `for x in X` dan `for mu in centroids` menjelaskan faktor $n$ dan $k$; operasi pada seluruh komponen vektor menjelaskan faktor $d$.
+\end{block}
+\end{frame}
+
+% 22
+\begin{frame}{Pemilihan Banyak Cluster \texorpdfstring{$k$}{k}}
+\small
+k-Means memerlukan nilai $k$ sebelum algoritma dijalankan.
+
+Salah satu cara eksploratif adalah menghitung fungsi objektif untuk beberapa nilai $k$:
+\[
+J(1),J(2),J(3),\ldots
+\]
+
+\begin{columns}[T]
+\column{.50\textwidth}
+\centering
+\begin{tikzpicture}[x=1.05cm,y=.013cm]
+  \draw[->,thick] (0,0) -- (6.4,0) node[right]{\scriptsize $k$};
+  \draw[->,thick] (0,0) -- (0,330) node[above]{\scriptsize $J(k)$};
+  \foreach \x/\y in {1/300,2/180,3/110,4/82,5/70,6/64}
+    \fill[Blue] (\x,\y) circle (2.4pt);
+  \draw[Blue,thick] plot coordinates {(1,300)(2,180)(3,110)(4,82)(5,70)(6,64)};
+  \draw[dashed,Gold!85!black,thick] (3,0) -- (3,110);
+  \node[Gold!70!black] at (3.8,145){\scriptsize perubahan mulai melandai};
+\end{tikzpicture}
+
+\column{.46\textwidth}
+\begin{block}{Elbow method}
+\footnotesize
+Cari titik ketika penurunan $J(k)$ mulai melandai. Nilai tersebut dapat menjadi kandidat $k$.
+\end{block}
+
+\begin{alertblock}{Bukan aturan mutlak}
+\footnotesize
+Grafik tidak selalu memiliki ``siku'' yang jelas. Pemilihan $k$ tetap perlu mempertimbangkan konteks dan interpretasi data.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% 23
+\begin{frame}{Interpretasi Hasil Pengelompokan}
+\small
+Output k-Means bukan sekadar nomor cluster. Setiap cluster perlu dijelaskan menggunakan data aslinya.
+
+\begin{center}
+\begin{tabular}{c c c c c}
+\toprule
+Cluster & Banyak data & $\bar x_1$ & $\bar x_2$ & Interpretasi \\
+\midrule
+1 & 42 & 0.22 & 0.71 & $x_1$ rendah, $x_2$ tinggi \\
+2 & 35 & 0.75 & 0.68 & kedua fitur relatif tinggi \\
+3 & 28 & 0.58 & 0.21 & $x_2$ relatif rendah \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Prinsip interpretasi}
+\small
+Nomor cluster tidak mempunyai arti substantif sebelum kita melihat centroid, ukuran kelompok, distribusi fitur, dan konteks masalah.
+\end{block}
+
+\begin{alertblock}{Hindari}
+\footnotesize
+Jangan langsung menyebut cluster sebagai ``baik'', ``buruk'', ``tinggi'', atau ``rendah'' tanpa melihat variabel yang membentuk kelompok tersebut.
+\end{alertblock}
+\end{frame}
+
+% 24
+\begin{frame}{Beberapa Metode Pengelompokan Data}
+\footnotesize
+\begin{center}
+\begin{tabular}{p{3.0cm} p{4.2cm} p{5.5cm}}
+\toprule
+Metode & Gagasan utama & Karakteristik \\
+\midrule
+k-Means & centroid dan jarak Euclidean & sederhana, cepat, perlu menentukan $k$ \\
+Hierarchical clustering & menggabungkan atau memisahkan cluster bertahap & menghasilkan struktur dendrogram \\
+DBSCAN & kepadatan titik di sekitar observasi & dapat menemukan bentuk cluster tak beraturan dan mendeteksi noise \\
+Gaussian mixture & campuran distribusi probabilitas & keanggotaan dapat dinyatakan secara probabilistik \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Posisi k-Means}
+\small
+k-Means merupakan salah satu metode \textbf{unsupervised learning}: data tidak diberi label target untuk diprediksi.
+\end{block}
+\end{frame}
+
+% 25
+\begin{frame}{Batasan dan Pemeriksaan Hasil k-Means}
+\small
+\begin{itemize}
+\item Hasil bergantung pada \textbf{skala fitur}; normalisasi sering diperlukan.
+\item Hasil dapat bergantung pada \textbf{centroid awal}; lakukan beberapa inisialisasi.
+\item k-Means menggunakan rata-rata, sehingga \textbf{outlier} dapat menarik centroid.
+\item Pembagian berdasarkan centroid cenderung cocok untuk kelompok yang relatif kompak dalam metrik Euclidean.
+\item Nilai $k$ harus dipilih; tidak selalu ada satu pilihan yang jelas.
+\end{itemize}
+
+\vspace{2mm}
+\begin{block}{Yang perlu diperiksa}
+\small
+Visualisasi data bila dimensi memungkinkan, nilai fungsi objektif, ukuran tiap cluster, centroid, dan apakah interpretasi cluster masuk akal terhadap konteks masalah.
+\end{block}
+\end{frame}
+
+% 26
+\begin{frame}{Latihan: Dua Iterasi k-Means}
+\small
+Diberikan 10 observasi dua dimensi:
+\[
+X=
+\{(1,1),(1,2),(2,1),(2,2),(3,2),
+(7,5),(8,5),(7,6),(8,6),(9,6)\}.
+\]
+
+Gunakan $k=2$ dengan centroid awal
+\[
+\mu_1^{(0)}=(1,1),
+\qquad
+\mu_2^{(0)}=(9,6).
+\]
+
+Kerjakan:
+\begin{enumerate}
+\item Hitung jarak setiap observasi ke dua centroid dan tentukan assignment pertama.
+\item Hitung $\mu_1^{(1)}$ dan $\mu_2^{(1)}$.
+\item Lakukan assignment kedua dan tentukan apakah cluster berubah.
+\item Implementasikan proses tersebut menggunakan fungsi \texttt{assignment} dan \texttt{update\_centroids}.
+\item Hitung $J$ pada setiap iterasi.
+\item Untuk data umum berukuran $n\times d$ dan $k$ cluster, jelaskan mengapa satu iterasi berorde $O(nkd)$.
+\end{enumerate}
+\end{frame}
+
+% 27
+\begin{frame}{Ringkasan}
+\small
+\begin{enumerate}
+\item Pengelompokan bekerja tanpa label kelas; data direpresentasikan sebagai titik atau vektor di ruang fitur.
+\item k-Means mencari $k$ centroid dan membagi observasi berdasarkan centroid terdekat.
+\item Centroid adalah rata-rata vektor karena rata-rata meminimumkan jumlah kuadrat jarak pada satu cluster.
+\item Algoritma Lloyd mengulang tahap \textbf{assignment} dan \textbf{update centroid}.
+\item Fungsi objektif
+\[
+J=\sum_{j=1}^{k}\sum_{i\in C_j}\|x_i-\mu_j\|_2^2
+\]
+digunakan untuk mengukur kekompakan cluster.
+\item Skala fitur, inisialisasi, pemilihan $k$, dan interpretasi centroid menentukan kualitas analisis.
+\end{enumerate}
+
+\vspace{2mm}
+{\footnotesize
+Rujukan pengayaan: James, Witten, Hastie, Tibshirani, \& Taylor, \textit{An Introduction to Statistical Learning}; Hastie, Tibshirani, \& Friedman, \textit{The Elements of Statistical Learning}; McKinney, \textit{Python for Data Analysis}.}
+\end{frame}
+
+\end{document}
