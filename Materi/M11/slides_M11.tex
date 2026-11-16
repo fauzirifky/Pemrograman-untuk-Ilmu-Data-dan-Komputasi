@@ -76,6 +76,9 @@
 
 \newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
 \newcommand{\prodi}{Program Studi Matematika ITERA}
+\newcommand{\sumber}[1]{%
+  \par\vspace{.6mm}{\tiny\color{DarkText!75} Sumber: #1}
+}
 \setbeamertemplate{footline}{%
 \leavevmode%
 \hbox{%
@@ -86,7 +89,7 @@
 }
 
 \title[\mkfooter]{Pertemuan 11: Pengelompokan Data dengan k-Means}
-\subtitle{Centroid, fungsi objektif, algoritma assignment-update, dan interpretasi cluster}
+\subtitle{Centroid, fungsi objektif, algoritma k-Means, dan interpretasi cluster}
 \author{\textbf{Triyana Muliawati, S.Si., M.Si.} dan Rifky Fauzi}
 \institute{Program Studi Matematika, Institut Teknologi Sumatera}
 \date{Ganjil 2026/2027}
@@ -114,6 +117,7 @@
   \item Centroid sebagai rata-rata dan representasi pusat cluster.
   \item Fungsi objektif k-Means.
   \item Tahap assignment dan update centroid.
+  \item Algoritma k-Means (Lloyd) dan beberapa varian.
   \item Implementasi algoritma menggunakan NumPy.
   \item Normalisasi, pemilihan $k$, dan interpretasi hasil.
 \end{itemize}
@@ -156,6 +160,7 @@ Algoritma tidak diberi jawaban ``kelas A'' atau ``kelas B''. Struktur kelompok d
   \node[align=center] at (3.7,6.0){\scriptsize Tidak ada label kelas\\\scriptsize yang diberikan};
 \end{tikzpicture}
 \end{columns}
+\sumber{James et al., \textit{An Introduction to Statistical Learning}, 2nd ed., \S12.4; Hastie et al., \textit{The Elements of Statistical Learning}, 2nd ed., \S14.3.}
 \end{frame}
 
 % 3
@@ -253,11 +258,12 @@ Centroid tetap merupakan vektor di $\mathbb{R}^d$. Operasi rata-rata dilakukan k
   \node[anchor=west] at (2.2,1.68){\scriptsize centroid $\mu$};
 \end{tikzpicture}
 \end{columns}
+\sumber{MacQueen (1967); Hastie, Tibshirani, \& Friedman (2009), \S14.3.6.}
 \end{frame}
 
 % 6
 \begin{frame}{Mengapa Centroid Berupa Rata-Rata?}
-\small
+\footnotesize
 Untuk satu dimensi, misalkan kita mencari satu titik $m$ yang meminimumkan jumlah kuadrat jarak:
 \[
 f(m)=\sum_{i=1}^{n}(x_i-m)^2.
@@ -277,14 +283,15 @@ m=\frac{1}{n}\sum_{i=1}^{n}x_i=\bar x.
 \]
 
 \begin{block}{Generalisasi}
-\small
+\scriptsize
 Pada $\mathbb{R}^d$, argumen yang sama berlaku untuk setiap koordinat. Karena itu pusat yang meminimumkan jumlah \textbf{kuadrat jarak Euclidean} adalah rata-rata vektor.
 \end{block}
+\sumber{Lloyd (1982), \textit{IEEE Transactions on Information Theory}, 28(2), 129--137.}
 \end{frame}
 
 % 7
 \begin{frame}{Fungsi Objektif k-Means}
-\small
+\footnotesize
 Diberikan centroid $\mu_1,\ldots,\mu_k$. k-Means meminimumkan
 \[
 J
@@ -309,37 +316,48 @@ $J$ & total variasi di dalam cluster, sering disebut \textit{within-cluster sum 
 \end{center}
 
 \begin{alertblock}{Tujuan}
-\small
+\scriptsize
 Cluster yang baik menurut k-Means memiliki nilai $J$ kecil: observasi dekat dengan centroid kelompoknya.
 \end{alertblock}
+\sumber{Lloyd (1982); Hastie, Tibshirani, \& Friedman (2009), \S14.3.6.}
 \end{frame}
 
 % 8
-\begin{frame}{Tahap Assignment}
+\begin{frame}{Tahap Penetapan Keanggotaan Cluster (\textit{Assignment})}
 \small
-Dengan centroid sementara $\mu_1,\ldots,\mu_k$, setiap observasi ditempatkan pada centroid terdekat.
+Pada tahap ini \textbf{centroid belum diubah}. Tugasnya hanya menentukan:
+\[
+\text{setiap observasi }x_i\text{ menjadi anggota cluster yang mana?}
+\]
 
-Untuk observasi $x_i$, hitung
+Dengan centroid sementara $\mu_1,\ldots,\mu_k$, hitung jarak
 \[
 d_{ij}=\|x_i-\mu_j\|_2,
 \qquad j=1,\ldots,k.
 \]
-
-Kemudian pilih indeks cluster
+Kemudian pilih centroid yang paling dekat:
 \[
-c_i
-=
-\operatorname*{arg\,min}_{1\le j\le k} d_{ij}.
+c_i=\operatorname*{arg\,min}_{1\le j\le k} d_{ij}.
 \]
 
-\begin{block}{Makna \texorpdfstring{$\arg\min$}{argmin}}
-\small
-Jika jarak ke tiga centroid adalah
+\begin{columns}[T]
+\column{.49\textwidth}
+\begin{block}{Contoh}
+\footnotesize
+Jika
 \[
-(d_{i1},d_{i2},d_{i3})=(4.2,\ 1.7,\ 3.1),
+(d_{i1},d_{i2},d_{i3})=(4.2,1.7,3.1),
 \]
-maka nilai minimum adalah $1.7$, sedangkan $\arg\min$ adalah indeks $2$. Jadi $x_i$ masuk cluster 2.
+maka jarak terkecil adalah $1.7$ dan indeksnya $2$. Karena itu $x_i$ ditetapkan sebagai anggota cluster 2.
 \end{block}
+\column{.47\textwidth}
+\begin{alertblock}{Yang berubah pada tahap ini}
+\footnotesize
+\textbf{Keanggotaan cluster berubah.}\\
+Posisi centroid $\mu_j$ tetap. Centroid baru baru dihitung pada tahap \textit{update}.
+\end{alertblock}
+\end{columns}
+\sumber{Lloyd (1982), kondisi nearest-centroid; Hastie et al. (2009), \S14.3.6.}
 \end{frame}
 
 % 9
@@ -376,62 +394,85 @@ maka
 \column{.48\textwidth}
 \begin{block}{Interpretasi}
 \footnotesize
-Tahap assignment mengubah \textbf{anggota cluster}. Tahap update mengubah \textbf{posisi centroid}. Kedua langkah diulang sampai tidak terjadi perubahan berarti.
+Tahap \textit{assignment} menentukan \textbf{anggota cluster}. Tahap \textit{update} menghitung \textbf{centroid baru} dari anggota tersebut. Kedua tahap diulang sampai tidak terjadi perubahan berarti.
 \end{block}
 \end{columns}
+\sumber{Lloyd (1982); MacQueen (1967).}
 \end{frame}
 
 % 10
-\begin{frame}{Algoritma Lloyd untuk k-Means}
+\begin{frame}{Algoritma k-Means dengan Skema Lloyd}
 \small
 \begin{block}{Input}
-Data $X\in\mathbb{R}^{n\times d}$ dan banyak cluster $k$.
+Data $X\in\mathbb{R}^{n\times d}$, banyak cluster $k$, serta $k$ centroid awal
+$\mu_1^{(0)},\ldots,\mu_k^{(0)}$.
 \end{block}
 
 \begin{enumerate}
-\item Pilih $k$ centroid awal $\mu_1,\ldots,\mu_k$.
-\item \textbf{Assignment:} tempatkan setiap $x_i$ pada centroid terdekat.
-\item \textbf{Update:} hitung ulang centroid sebagai rata-rata anggota setiap cluster.
-\item Hitung perubahan centroid atau periksa apakah assignment berubah.
+\item \textbf{Inisialisasi:} tentukan $k$ centroid awal.
+\item \textbf{Assignment:} untuk setiap $x_i$, pilih centroid terdekat dan tetapkan keanggotaan cluster.
+\item \textbf{Update:} untuk setiap cluster, hitung centroid baru sebagai rata-rata anggotanya.
+\item Hitung perubahan centroid atau periksa apakah keanggotaan cluster berubah.
 \item Ulangi langkah 2--4 sampai konvergen atau mencapai batas iterasi.
 \end{enumerate}
 
 \begin{alertblock}{Sifat penting}
 \footnotesize
-Pada setiap tahap assignment dan update, nilai fungsi objektif $J$ tidak meningkat. Algoritma berhenti pada solusi lokal, sehingga hasil dapat bergantung pada centroid awal.
+Setiap siklus assignment--update tidak menaikkan fungsi objektif $J$. Namun solusi akhir dapat berupa minimum lokal dan bergantung pada inisialisasi.
 \end{alertblock}
+\sumber{Lloyd, S. (1982), \textit{Least squares quantization in PCM}, IEEE TIT 28(2), 129--137.}
 \end{frame}
 
 % 11
-\begin{frame}{Contoh Numerik: Data dan Centroid Awal}
+\begin{frame}{Beberapa Algoritma k-Means dan Strategi Inisialisasi}
+\footnotesize
+\begin{center}
+\begin{tabular}{p{2.6cm} p{5.1cm} p{5.4cm}}
+\toprule
+Metode & Gagasan utama & Perbedaan singkat \\
+\midrule
+Lloyd & assignment seluruh data, lalu update seluruh centroid & pendekatan \textit{batch}; paling umum untuk pengantar \\
+MacQueen & observasi diproses berurutan dan centroid dapat diperbarui segera & bersifat \textit{online}/sekuensial \\
+Hartigan--Wong & mencoba memindahkan observasi antarcluster jika menurunkan within-cluster sum of squares & relokasi lokal lebih eksplisit \\
+k-means++ & memilih centroid awal secara probabilistik agar tersebar & \textbf{inisialisasi}, bukan pengganti tahap assignment--update \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Pada perkuliahan ini}
+\small
+Perhitungan manual dan implementasi utama menggunakan \textbf{skema Lloyd}. Metode lain dikenalkan untuk menunjukkan bahwa ``k-Means'' memiliki beberapa prosedur optimasi dan strategi inisialisasi.
+\end{block}
+\sumber{MacQueen (1967); Hartigan \& Wong (1979); Arthur \& Vassilvitskii (2007).}
+\end{frame}
+
+% 11
+\begin{frame}{Contoh Numerik: Inisialisasi dan Centroid Awal}
 \begin{columns}[T]
 \column{.43\textwidth}
-\small
-Gunakan delapan titik:
+\footnotesize
+Gunakan delapan titik
 \[
-\begin{array}{c|c}
-i & x_i\\\hline
-1&(1,1)\\
-2&(1,2)\\
-3&(2,1)\\
-4&(2,2)\\
-5&(7,5)\\
-6&(8,5)\\
-7&(7,6)\\
-8&(8,6)
+\begin{array}{c|c@{\qquad}c|c}
+i & x_i & i & x_i\\\hline
+1&(1,1)&5&(7,5)\\
+2&(1,2)&6&(8,5)\\
+3&(2,1)&7&(7,6)\\
+4&(2,2)&8&(8,6)
 \end{array}
 \]
 
-Ambil $k=2$ dengan centroid awal
+Ambil $k=2$ dan centroid awal
 \[
-\mu_1^{(0)}=(1,1),
-\qquad
+\mu_1^{(0)}=(1,1),\qquad
 \mu_2^{(0)}=(8,6).
 \]
 
+{\scriptsize\textbf{Penting:} pada tahap ini belum ada cluster awal. Keanggotaan cluster baru muncul setelah assignment pertama.}
+
 \column{.53\textwidth}
 \centering
-\begin{tikzpicture}[x=.60cm,y=.55cm]
+\begin{tikzpicture}[x=.52cm,y=.45cm]
   \draw[->,thick] (0,0) -- (9.2,0) node[right]{\scriptsize $x_1$};
   \draw[->,thick] (0,0) -- (0,7.2) node[above]{\scriptsize $x_2$};
   \foreach \p in {(1,1),(1,2),(2,1),(2,2),(7,5),(8,5),(7,6),(8,6)}
@@ -442,22 +483,21 @@ Ambil $k=2$ dengan centroid awal
   \node[Teal!80!black,anchor=east] at (7.8,6.5){\scriptsize $\mu_2^{(0)}$};
 \end{tikzpicture}
 \end{columns}
+\sumber{Lloyd (1982); Arthur \& Vassilvitskii (2007) untuk strategi inisialisasi k-means++.}
 \end{frame}
 
 % 12
-\begin{frame}{Contoh Numerik: Assignment Iterasi Pertama}
-\footnotesize
-Beberapa perhitungan jarak:
-\[
-d((2,2),\mu_1^{(0)})=\sqrt{(2-1)^2+(2-1)^2}=\sqrt2,
-\]
-\[
-d((2,2),\mu_2^{(0)})=\sqrt{(2-8)^2+(2-6)^2}=\sqrt{52}.
-\]
+\begin{frame}{Cluster Awal: Hasil Assignment Pertama}
+\scriptsize
+Dengan centroid awal $\mu_1^{(0)}=(1,1)$ dan $\mu_2^{(0)}=(8,6)$, setiap observasi ditempatkan pada centroid terdekat.
 
-Karena $\sqrt2<\sqrt{52}$, titik $(2,2)$ masuk cluster 1.
+\[
+d((2,2),\mu_1^{(0)})=\sqrt2
+<
+d((2,2),\mu_2^{(0)})=\sqrt{52},
+\]
+maka $(2,2)$ menjadi anggota cluster 1.
 
-\vspace{1mm}
 \begin{center}
 \begin{tabular}{c c c c}
 \toprule
@@ -474,10 +514,17 @@ $(8,6)$ & $\sqrt{74}$ & $0$ & 2\\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\[
+\boxed{C_1^{(0)}=\{1,2,3,4\}},
+\qquad
+\boxed{C_2^{(0)}=\{5,6,7,8\}}.
+\]
+\sumber{Perhitungan mengikuti tahap nearest-centroid pada algoritma Lloyd (1982).}
 \end{frame}
 
 % 13
-\begin{frame}{Contoh Numerik: Update Centroid}
+\begin{frame}{Update Centroid dan Iterasi Berikutnya}
 \small
 Hasil assignment pertama:
 \[
@@ -513,6 +560,7 @@ Centroid baru:
 \small
 Dengan dua centroid baru ini, assignment tidak berubah. Maka algoritma telah konvergen untuk inisialisasi tersebut.
 \end{block}
+\sumber{Lloyd (1982).}
 \end{frame}
 
 % 14
@@ -545,7 +593,8 @@ Jalankan algoritma beberapa kali dengan centroid awal berbeda, lalu pilih hasil 
 \end{tikzpicture}
 \end{columns}
 
-{\footnotesize Salah satu strategi inisialisasi yang umum adalah \textit{k-means++}, yang memilih centroid awal agar lebih tersebar.}
+{\footnotesize Salah satu strategi inisialisasi yang umum adalah \textit{k-means++}, yang memilih centroid awal secara probabilistik agar lebih tersebar.}
+\sumber{Arthur, D. \& Vassilvitskii, S. (2007), \textit{k-means++: The Advantages of Careful Seeding}, SODA, 1027--1035.}
 \end{frame}
 
 % 15
@@ -612,11 +661,13 @@ Untuk $x,\mu\in\mathbb{R}^d$,
 \sqrt{\sum_{\ell=1}^{d}(x_\ell-\mu_\ell)^2}.
 \]
 
-Untuk $X_{\text{cluster}}\in\mathbb{R}^{m\times d}$,
+Untuk satu cluster dengan $n_j$ anggota,
 \[
-\mu
+X_{C_j}\in\mathbb{R}^{n_j\times d},
+\qquad
+\mu_j
 =
-\frac1m\sum_{i=1}^{m}x_i.
+\frac1{n_j}\sum_{i\in C_j}x_i.
 \]
 \end{block}
 \end{columns}
@@ -732,9 +783,14 @@ Hasil:
 \end{pmatrix}.
 \]
 \column{.45\textwidth}
-\begin{alertblock}{Code defense}
+\begin{alertblock}{Pertanyaan code defense}
 \footnotesize
-Jelaskan mengapa label dimulai dari 0, kapan centroid berubah, dan kondisi apa yang menghentikan iterasi.
+\begin{enumerate}
+\item Mengapa label cluster pada program dimulai dari 0?
+\item Pada baris mana centroid mulai berubah, dan data apa yang digunakan untuk menghitungnya?
+\item Apa arti \texttt{perubahan} secara matematis?
+\item Kondisi apa yang menghentikan iterasi?
+\end{enumerate}
 \end{alertblock}
 \end{columns}
 \end{frame}
@@ -784,7 +840,8 @@ Misalkan:
 \[
 n=\text{banyak observasi},\quad
 d=\text{banyak fitur},\quad
-k=\text{banyak cluster}.
+k=\text{banyak cluster},\quad
+m=\text{banyak iterasi}.
 \]
 
 Pada tahap assignment, setiap observasi dibandingkan dengan setiap centroid:
@@ -798,9 +855,9 @@ Maka satu iterasi mempunyai kerja utama
 T(n,k,d)\in O(nkd).
 \]
 
-Jika algoritma memerlukan $I$ iterasi,
+Jika algoritma memerlukan $m$ iterasi,
 \[
-T(n,k,d,I)\in O(Inkd).
+T(n,k,d,m)\in O(mnkd).
 \]
 
 \begin{block}{Hubungan dengan kode}
@@ -810,39 +867,67 @@ Struktur loop `for x in X` dan `for mu in centroids` menjelaskan faktor $n$ dan 
 \end{frame}
 
 % 22
-\begin{frame}{Pemilihan Banyak Cluster \texorpdfstring{$k$}{k}}
-\small
-k-Means memerlukan nilai $k$ sebelum algoritma dijalankan.
-
-Salah satu cara eksploratif adalah menghitung fungsi objektif untuk beberapa nilai $k$:
+\begin{frame}{Fungsi Objektif untuk Berbagai Banyak Cluster}
+\footnotesize
+Untuk setiap kandidat $k$, hasil k-Means dinilai dengan
 \[
-J(1),J(2),J(3),\ldots
+J(k)
+=
+\sum_{j=1}^{k}\sum_{i\in C_j}
+\|x_i-\mu_j\|_2^2.
 \]
 
+Khusus $k=1$, seluruh observasi berada dalam satu cluster. Centroidnya adalah
+\[
+\bar x=\frac1n\sum_{i=1}^{n}x_i,
+\]
+sehingga
+\[
+\boxed{
+J(1)=\sum_{i=1}^{n}\|x_i-\bar x\|_2^2
+}.
+\]
+
+Untuk solusi optimal pada setiap $k$,
+\[
+J(k+1)\le J(k).
+\]
+
+{\scriptsize Jadi penambahan cluster selalu dapat mempertahankan atau menurunkan within-cluster sum of squares. Elbow method digunakan untuk menilai kapan penurunan tersebut mulai tidak terlalu besar.}
+\sumber{James et al. (2021), \S12.4; Hastie et al. (2009), \S14.3.}
+\end{frame}
+
+% 23
+\begin{frame}{Elbow Method}
 \begin{columns}[T]
-\column{.50\textwidth}
+\column{.56\textwidth}
 \centering
-\begin{tikzpicture}[x=1.05cm,y=.013cm]
+\begin{tikzpicture}[x=1.0cm,y=.013cm]
   \draw[->,thick] (0,0) -- (6.4,0) node[right]{\scriptsize $k$};
   \draw[->,thick] (0,0) -- (0,330) node[above]{\scriptsize $J(k)$};
   \foreach \x/\y in {1/300,2/180,3/110,4/82,5/70,6/64}
-    \fill[Blue] (\x,\y) circle (2.4pt);
+    \fill[Blue] (\x,\y) circle (2.5pt);
   \draw[Blue,thick] plot coordinates {(1,300)(2,180)(3,110)(4,82)(5,70)(6,64)};
   \draw[dashed,Gold!85!black,thick] (3,0) -- (3,110);
-  \node[Gold!70!black] at (3.8,145){\scriptsize perubahan mulai melandai};
+  \node[Gold!60!black,align=center] at (4.35,150){\scriptsize penurunan mulai\\[-1mm]\scriptsize melandai};
 \end{tikzpicture}
 
-\column{.46\textwidth}
-\begin{block}{Elbow method}
-\footnotesize
-Cari titik ketika penurunan $J(k)$ mulai melandai. Nilai tersebut dapat menjadi kandidat $k$.
+\column{.40\textwidth}
+\small
+\begin{block}{Gagasan}
+Hitung
+\[
+J(1),J(2),J(3),\ldots
+\]
+kemudian cari daerah ketika penurunan $J(k)$ mulai melandai.
 \end{block}
 
-\begin{alertblock}{Bukan aturan mutlak}
+\begin{alertblock}{Interpretasi}
 \footnotesize
-Grafik tidak selalu memiliki ``siku'' yang jelas. Pemilihan $k$ tetap perlu mempertimbangkan konteks dan interpretasi data.
+``Siku'' merupakan kandidat $k$, bukan aturan matematis yang selalu menghasilkan satu jawaban. Interpretasi cluster dan konteks data tetap diperlukan.
 \end{alertblock}
 \end{columns}
+\sumber{James et al. (2021), \S12.4.}
 \end{frame}
 
 % 23
@@ -893,6 +978,7 @@ Gaussian mixture & campuran distribusi probabilitas & keanggotaan dapat dinyatak
 \small
 k-Means merupakan salah satu metode \textbf{unsupervised learning}: data tidak diberi label target untuk diprediksi.
 \end{block}
+\sumber{Hastie et al. (2009), Ch. 14; James et al. (2021), Ch. 12.}
 \end{frame}
 
 % 25
@@ -913,16 +999,15 @@ Visualisasi data bila dimensi memungkinkan, nilai fungsi objektif, ukuran tiap c
 \end{block}
 \end{frame}
 
-% 26
-\begin{frame}{Latihan: Dua Iterasi k-Means}
+% 27
+\begin{frame}{Latihan (1/2): Assignment dan Cluster Awal}
 \small
-Diberikan 10 observasi dua dimensi:
+Diberikan 10 observasi:
 \[
 X=
 \{(1,1),(1,2),(2,1),(2,2),(3,2),
 (7,5),(8,5),(7,6),(8,6),(9,6)\}.
 \]
-
 Gunakan $k=2$ dengan centroid awal
 \[
 \mu_1^{(0)}=(1,1),
@@ -930,36 +1015,91 @@ Gunakan $k=2$ dengan centroid awal
 \mu_2^{(0)}=(9,6).
 \]
 
-Kerjakan:
+\begin{block}{Kerjakan secara manual}
 \begin{enumerate}
-\item Hitung jarak setiap observasi ke dua centroid dan tentukan assignment pertama.
-\item Hitung $\mu_1^{(1)}$ dan $\mu_2^{(1)}$.
-\item Lakukan assignment kedua dan tentukan apakah cluster berubah.
-\item Implementasikan proses tersebut menggunakan fungsi \texttt{assignment} dan \texttt{update\_centroids}.
-\item Hitung $J$ pada setiap iterasi.
-\item Untuk data umum berukuran $n\times d$ dan $k$ cluster, jelaskan mengapa satu iterasi berorde $O(nkd)$.
+\item Hitung jarak setiap observasi ke $\mu_1^{(0)}$ dan $\mu_2^{(0)}$.
+\item Sajikan hasilnya dalam tabel jarak.
+\item Tentukan cluster awal $C_1^{(0)}$ dan $C_2^{(0)}$ dari centroid terdekat.
 \end{enumerate}
+\end{block}
+
+\begin{alertblock}{Catatan}
+\footnotesize
+Pemrograman boleh digunakan jika diperlukan untuk \textbf{memeriksa} hasil, tetapi langkah perhitungan utama tetap ditulis tangan.
+\end{alertblock}
 \end{frame}
 
-% 27
+% 28
+\begin{frame}{Latihan (2/2): Update, Fungsi Objektif, dan Kompleksitas}
+\small
+Lanjutkan hasil pada slide sebelumnya.
+
+\begin{block}{Kerjakan secara manual}
+\begin{enumerate}
+\item Hitung centroid baru $\mu_1^{(1)}$ dan $\mu_2^{(1)}$.
+\item Lakukan assignment kedua dan tentukan apakah keanggotaan cluster berubah.
+\item Hitung nilai
+\[
+J=\sum_{j=1}^{2}\sum_{i\in C_j}\|x_i-\mu_j\|_2^2
+\]
+setelah update centroid.
+\item Untuk data umum $X\in\mathbb{R}^{n\times d}$ dengan $k$ cluster, jelaskan mengapa satu iterasi berorde $O(nkd)$.
+\end{enumerate}
+\end{block}
+
+\begin{alertblock}{Pengumpulan}
+\footnotesize
+Jawaban \textbf{ditulis tangan} dan dikumpulkan sebagai \textbf{satu file PDF}. Cantumkan nama, NIM, dan kelas.
+\end{alertblock}
+\end{frame}
+
+% 29
 \begin{frame}{Ringkasan}
 \small
 \begin{enumerate}
 \item Pengelompokan bekerja tanpa label kelas; data direpresentasikan sebagai titik atau vektor di ruang fitur.
 \item k-Means mencari $k$ centroid dan membagi observasi berdasarkan centroid terdekat.
-\item Centroid adalah rata-rata vektor karena rata-rata meminimumkan jumlah kuadrat jarak pada satu cluster.
-\item Algoritma Lloyd mengulang tahap \textbf{assignment} dan \textbf{update centroid}.
+\item Pada skema Lloyd, \textit{assignment} menetapkan keanggotaan cluster dan \textit{update} menghitung centroid baru.
+\item Centroid adalah rata-rata vektor karena rata-rata meminimumkan jumlah kuadrat jarak Euclidean dalam satu cluster.
 \item Fungsi objektif
 \[
 J=\sum_{j=1}^{k}\sum_{i\in C_j}\|x_i-\mu_j\|_2^2
 \]
-digunakan untuk mengukur kekompakan cluster.
-\item Skala fitur, inisialisasi, pemilihan $k$, dan interpretasi centroid menentukan kualitas analisis.
+mengukur kekompakan cluster.
+\item Skala fitur, inisialisasi, pemilihan $k$, dan interpretasi centroid perlu diperiksa bersama.
 \end{enumerate}
+\end{frame}
 
-\vspace{2mm}
-{\footnotesize
-Rujukan pengayaan: James, Witten, Hastie, Tibshirani, \& Taylor, \textit{An Introduction to Statistical Learning}; Hastie, Tibshirani, \& Friedman, \textit{The Elements of Statistical Learning}; McKinney, \textit{Python for Data Analysis}.}
+% 29
+\begin{frame}{Referensi Utama}
+\footnotesize
+\begin{thebibliography}{9}
+
+\bibitem{macqueen}
+MacQueen, J. (1967).
+\newblock Some Methods for Classification and Analysis of Multivariate Observations.
+\newblock \textit{Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability}, Vol. 1.
+
+\bibitem{lloyd}
+Lloyd, S. (1982).
+\newblock Least Squares Quantization in PCM.
+\newblock \textit{IEEE Transactions on Information Theory}, 28(2), 129--137.
+
+\bibitem{hartigan}
+Hartigan, J. A. \& Wong, M. A. (1979).
+\newblock Algorithm AS 136: A K-Means Clustering Algorithm.
+\newblock \textit{Applied Statistics}, 28(1), 100--108.
+
+\bibitem{kmeanspp}
+Arthur, D. \& Vassilvitskii, S. (2007).
+\newblock k-means++: The Advantages of Careful Seeding.
+\newblock \textit{Proceedings of SODA 2007}, 1027--1035.
+
+\bibitem{islr}
+James, G., Witten, D., Hastie, T., Tibshirani, R., \& Taylor, J. (2021).
+\newblock \textit{An Introduction to Statistical Learning}, 2nd ed., Ch. 12.
+
+\end{thebibliography}
 \end{frame}
 
 \end{document}
