@@ -1,0 +1,784 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[indonesian]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,calc,matrix}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{adjustbox}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{multicol}
+
+\graphicspath{{assets/}{../M05/assets/}{../M01/assets/}}
+
+\definecolor{DeepNavy}{HTML}{0B1220}
+\definecolor{Navy}{HTML}{12355B}
+\definecolor{Blue}{HTML}{1F77B4}
+\definecolor{Teal}{HTML}{00A6A6}
+\definecolor{Gold}{HTML}{F2B705}
+\definecolor{LightBlue}{HTML}{EAF4FF}
+\definecolor{LightTeal}{HTML}{E7FAF8}
+\definecolor{SoftGray}{HTML}{F4F6F8}
+\definecolor{DarkText}{HTML}{15202B}
+\definecolor{RedSoft}{HTML}{FDECEC}
+\definecolor{GreenSoft}{HTML}{E9F7EF}
+
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{fg=white,bg=Navy}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{normal text}{fg=DarkText,bg=white}
+\setbeamercolor{block title}{fg=white,bg=Navy}
+\setbeamercolor{block body}{fg=DarkText,bg=LightBlue}
+\setbeamercolor{alerted text}{fg=Gold}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{7.2}{8}\selectfont}
+\setbeamertemplate{itemize items}[circle]
+
+\tikzset{
+  box/.style={rounded corners=3pt, draw=Navy!70, fill=LightBlue, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  darkbox/.style={rounded corners=3pt, draw=Navy, fill=Navy, text=white, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  warnbox/.style={rounded corners=3pt, draw=Gold!80!black, fill=Gold!12, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  greenbox/.style={rounded corners=3pt, draw=Teal!70!black, fill=LightTeal, thick, minimum height=9mm, inner sep=2.5mm, align=center},
+  redbox/.style={rounded corners=3pt, draw=red!60!black, fill=RedSoft, thick, minimum height=9mm, inner sep=2.5mm, align=center}
+}
+
+\newcommand{\mkfooter}{Pemrograman untuk Ilmu Data dan Komputasi}
+\newcommand{\prodi}{Program Studi Matematika ITERA}
+\newcommand{\sumber}[1]{\par\vspace{.6mm}{\tiny\color{DarkText!75} Sumber: #1}}
+\setbeamertemplate{footline}{%
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.45\paperwidth,ht=2.35ex,dp=.95ex,leftskip=1.0ex]{author in head/foot}\mkfooter\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.37\paperwidth,ht=2.35ex,dp=.95ex,center]{author in head/foot}\prodi\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.18\paperwidth,ht=2.35ex,dp=.95ex,rightskip=1.0ex plus1fil]{author in head/foot}\hfill\insertframenumber/\inserttotalframenumber\end{beamercolorbox}%
+}%
+}
+
+\title[\mkfooter]{Pertemuan 12: Perumusan Masalah, Kebutuhan Data, dan Orientasi PKM}
+\subtitle{Dari masalah nyata menuju pertanyaan komputasi dan pilihan skema Program Kreativitas Mahasiswa}
+\author{\textbf{Rifky Fauzi}}
+\institute{Program Studi Matematika, Institut Teknologi Sumatera}
+\date{Ganjil 2026/2027}
+
+\begin{document}
+
+% 1
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture,overlay]
+\IfFileExists{../M05/assets/tech_bg.png}{%
+\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M05/assets/tech_bg.png}};%
+}{\IfFileExists{../M01/assets/tech_bg.png}{\node[anchor=center] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{../M01/assets/tech_bg.png}};}{\fill[DeepNavy!7] (current page.south west) rectangle (current page.north east);}}
+\fill[DeepNavy,opacity=.86] (current page.south west) rectangle ([xshift=8.25cm]current page.north west);
+\node[anchor=north west,text=white,align=left,text width=7.15cm] at ([xshift=.65cm,yshift=-.58cm]current page.north west){%
+{\hyphenpenalty=10000\exhyphenpenalty=10000\fontsize{18.5}{21}\selectfont\bfseries Pertemuan 12\\Perumusan Masalah,\\Kebutuhan Data, dan\\Orientasi PKM}\\[3.5mm]
+{\fontsize{13.5}{16}\selectfont Pemrograman untuk Ilmu Data\\dan Komputasi}\\[2.5mm]
+{\fontsize{10.5}{12}\selectfont MA25-21008 \quad Kelas RA dan RB}\\[5mm]
+{\fontsize{10.5}{12}\selectfont \textbf{Rifky Fauzi}}\\[3mm]
+{\fontsize{9.3}{10.8}\selectfont Program Studi Matematika\\Institut Teknologi Sumatera\\Semester Ganjil 2026/2027}
+};
+\node[anchor=north east,fill=white,fill opacity=.96,text opacity=1,rounded corners=3pt,inner sep=4.0mm,text width=6.85cm] at ([xshift=-.35cm,yshift=-.82cm]current page.north east){%
+{\fontsize{13}{15}\selectfont\bfseries Fokus pertemuan}\\[2mm]
+\begin{itemize}\small
+  \item Membedakan topik, masalah, pertanyaan, dan tugas komputasi.
+  \item Menentukan bukti awal dan kebutuhan data.
+  \item Memeriksa kelayakan masalah untuk diselesaikan secara komputasional.
+  \item Mengenali skema PKM dan karakter utamanya.
+  \item Menyusun \textit{concept note} proyek sebagai Milestone 1.
+\end{itemize}
+};
+\end{tikzpicture}
+\end{frame}
+
+% 2
+\begin{frame}{Posisi Pertemuan 12 dalam Proyek Mata Kuliah}
+\small
+\begin{center}
+\begin{tabular}{p{1.4cm} p{3.7cm} p{7.9cm}}
+\toprule
+\textbf{Minggu} & \textbf{Tahap} & \textbf{Hasil kerja utama} \\
+\midrule
+12 & Problem framing dan data & Masalah, bukti awal, kebutuhan data, pertanyaan komputasi, kandidat skema PKM \\
+13 & Literatur dan metode & Alternatif metode, justifikasi metode, rancangan proposal \\
+14 & Pengembangan program & Program Python versi awal, pengujian, dokumentasi, hasil sementara \\
+15 & Integrasi proposal & Draft proposal PKM dan program hampir final \\
+16 & Final project & Program final, draft proposal, demo dan pertanggungjawaban \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Prinsip kerja}
+\small
+Hari ini \textbf{belum memilih metode karena ``ingin memakai metode tertentu''}. Kita memastikan lebih dulu bahwa masalah, data, dan keputusan yang hendak didukung memang jelas.
+\end{alertblock}
+\end{frame}
+
+% 3
+\begin{frame}{Kemampuan yang Ditargetkan Hari Ini}
+\small
+Pada akhir pertemuan, setiap kelompok diharapkan mampu:
+\begin{enumerate}
+  \item merumuskan masalah nyata secara spesifik dan menunjukkan \textbf{bukti awal} bahwa masalah tersebut memang ada;
+  \item menentukan siapa objek, pengguna, atau mitra yang terdampak dan keputusan apa yang perlu dibantu;
+  \item mengidentifikasi \textbf{data yang tersedia, data yang masih diperlukan, unit analisis, dan variabel penting};
+  \item mengubah masalah menjadi pertanyaan komputasi yang keluaran dan kriteria keberhasilannya dapat diperiksa;
+  \item memilih paling banyak dua kandidat skema PKM dan menjelaskan alasan pemilihannya.
+\end{enumerate}
+
+\begin{block}{Bukti ketercapaian}
+\footnotesize
+Satu \textit{concept note} kelompok yang memuat problem frame, audit data awal, formulasi komputasi, kandidat skema PKM, dan kesenjangan informasi yang masih harus dicari.
+\end{block}
+\end{frame}
+
+% 4
+\begin{frame}{Topik Bukan Masalah}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{alertblock}{Masih berupa topik}\end{alertblock}
+\vspace{2mm}
+\small
+\begin{itemize}
+  \item ``Sampah di kampus''
+  \item ``Prediksi harga''
+  \item ``Kesehatan mental mahasiswa''
+  \item ``UMKM di Lampung''
+  \item ``Machine learning untuk pendidikan''
+\end{itemize}
+
+\column{.48\textwidth}
+\begin{block}{Mulai menjadi masalah}\end{block}
+\vspace{2mm}
+\small
+\begin{itemize}
+  \item kondisi yang tidak diinginkan jelas;
+  \item siapa yang terdampak jelas;
+  \item ada bukti bahwa kondisi itu terjadi;
+  \item ada keputusan/tindakan yang sulit dilakukan saat ini;
+  \item ruang lingkup tempat dan waktunya jelas.
+\end{itemize}
+\end{columns}
+
+\begin{alertblock}{Tes cepat}
+\footnotesize
+Jika satu judul dapat dipakai untuk puluhan masalah yang sangat berbeda, kemungkinan yang Anda punya masih \textbf{topik}, bukan problem frame.
+\end{alertblock}
+\end{frame}
+
+% 5
+\begin{frame}{Empat Lapisan yang Jangan Dicampur}
+\small
+\begin{center}
+\begin{tabular}{p{2.7cm} p{5.1cm} p{5.7cm}}
+\toprule
+\textbf{Lapisan} & \textbf{Pertanyaan} & \textbf{Contoh} \\
+\midrule
+Topik & Bidang apa yang dibahas? & Persediaan bahan baku UMKM \\
+Masalah & Kondisi apa yang perlu diperbaiki? & Stok sering berlebih atau habis karena pemesanan tidak berbasis pola permintaan \\
+Pertanyaan analisis & Informasi apa yang perlu diketahui? & Faktor apa yang berhubungan dengan kebutuhan bahan baku mingguan? \\
+Tugas komputasi & Apa yang dihitung oleh program? & Estimasi kebutuhan minggu berikutnya dan galat prediksinya \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\sumber{Diadaptasi dari prinsip \textit{business/problem understanding} pada CRISP-DM dan Provost \& Fawcett (2013).}
+\end{frame}
+
+% 6
+\begin{frame}{Problem Frame Minimum}
+\small
+Satu problem frame yang layak untuk proyek komputasi setidaknya menjawab enam unsur berikut.
+
+\vspace{2mm}
+\begin{center}
+\begin{tabular}{p{3.0cm} p{10.0cm}}
+\toprule
+\textbf{Unsur} & \textbf{Pertanyaan kerja} \\
+\midrule
+Konteks & Di mana dan pada situasi apa masalah muncul? \\
+Pemangku kepentingan & Siapa yang terdampak atau akan menggunakan hasil? \\
+Kondisi faktual & Apa yang terjadi sekarang dan apa buktinya? \\
+Kondisi yang diinginkan & Apa yang seharusnya terjadi? \\
+Keputusan/tindakan & Keputusan apa yang sulit dilakukan dengan informasi saat ini? \\
+Kendala & Batas data, waktu, akses, biaya, etika, dan kemampuan tim apa yang nyata? \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Rumusan singkat}
+\footnotesize
+\textbf{Siapa} mengalami \textbf{masalah apa}, dibuktikan oleh \textbf{evidence apa}, sehingga membutuhkan \textbf{informasi/keputusan apa}, dalam \textbf{batasan apa}.
+\end{block}
+\end{frame}
+
+% 7
+\begin{frame}{Mulai dari Keputusan, Bukan dari Algoritma}
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{alertblock}{Framing lemah}\end{alertblock}
+\vspace{1mm}
+\footnotesize
+``Kami akan menggunakan k-Means untuk data UMKM.''
+
+\vspace{4mm}
+Masalahnya:
+\begin{itemize}
+  \item k-Means sudah dipilih sebelum masalah jelas;
+  \item tidak jelas siapa pengguna hasilnya;
+  \item tidak jelas apakah pengelompokan dibutuhkan;
+  \item tidak ada kriteria keberhasilan.
+\end{itemize}
+
+\column{.48\textwidth}
+\begin{block}{Framing lebih kuat}\end{block}
+\vspace{1mm}
+\footnotesize
+``Pengelola program pendampingan memiliki 120 UMKM dengan karakteristik berbeda, tetapi seluruh peserta menerima materi yang sama. Kelompok perlu menentukan apakah terdapat profil UMKM yang cukup berbeda untuk mendukung segmentasi program pendampingan.''
+
+\vspace{2mm}
+Baru setelah itu ditanyakan: \textbf{apakah clustering merupakan metode yang tepat?}
+\end{columns}
+\end{frame}
+
+% 8
+\begin{frame}{Fakta, Dugaan, dan Hipotesis Kerja}
+\small
+\begin{center}
+\begin{tabular}{p{3.1cm} p{4.8cm} p{5.4cm}}
+\toprule
+ & \textbf{Contoh} & \textbf{Perlakuan} \\
+\midrule
+Fakta awal & Data transaksi menunjukkan 23\% pesanan terlambat tiga bulan terakhir & Dapat digunakan sebagai evidence awal; cek definisi dan sumber \\
+Dugaan & ``Pelanggan terlambat karena aplikasi sulit digunakan'' & Belum boleh ditulis sebagai fakta; perlu data/observasi tambahan \\
+Hipotesis kerja & Waktu respons dan jumlah langkah pemesanan diduga berkaitan dengan pembatalan transaksi & Dapat diuji jika variabel tersedia dan desain analisis masuk akal \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Disiplin akademik}
+\footnotesize
+Jangan menulis penyebab sebelum ada bukti. Problem framing yang baik membedakan \textbf{apa yang diketahui}, \textbf{apa yang diduga}, dan \textbf{apa yang masih harus diuji}.
+\end{alertblock}
+\end{frame}
+
+% 9
+\begin{frame}{Apa yang Dapat Menjadi Bukti Awal?}
+\small
+\begin{columns}[T]
+\column{.48\textwidth}
+\textbf{Bukti langsung}
+\begin{itemize}
+  \item observasi lapangan;
+  \item wawancara awal;
+  \item catatan transaksi/operasional;
+  \item log sistem;
+  \item hasil pengukuran;
+  \item dokumen internal yang dapat diverifikasi.
+\end{itemize}
+
+\column{.48\textwidth}
+\textbf{Bukti sekunder}
+\begin{itemize}
+  \item data pemerintah/open data;
+  \item laporan institusi;
+  \item publikasi ilmiah;
+  \item statistik resmi;
+  \item dataset publik dengan sumber dan definisi yang jelas.
+\end{itemize}
+\end{columns}
+
+\begin{block}{Yang tidak cukup}
+\footnotesize
+``Menurut kami masalah ini penting'', tangkapan layar tanpa sumber, angka dari AI tanpa rujukan, atau dataset yang dipilih hanya karena mudah diunduh.
+\end{block}
+\end{frame}
+
+% 10
+\begin{frame}{Audit Data: Sebelum Menulis Kode}
+\scriptsize
+\begin{center}
+\begin{tabular}{p{3.0cm} p{10.1cm}}
+\toprule
+\textbf{Komponen} & \textbf{Yang harus diketahui} \\
+\midrule
+Unit analisis & satu baris mewakili apa: orang, transaksi, hari, wilayah, produk, sensor? \\
+Populasi/cakupan & siapa/apa yang tercakup dan siapa yang tidak? \\
+Periode dan lokasi & kapan dan di mana data dikumpulkan? \\
+Variabel & nama, definisi, satuan, tipe data, peran sebagai input/target/identifier \\
+Sumber dan akses & pemilik data, cara memperoleh, lisensi/izin, format file/API \\
+Kualitas & missing value, duplikasi, outlier, kesalahan pencatatan, ketidakseimbangan kelas \\
+Ukuran data & jumlah observasi dan jumlah fitur yang benar-benar tersedia \\
+Etika/privasi & apakah ada data personal/sensitif dan bagaimana perlindungannya? \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+% 11
+\begin{frame}{Tiga Status Ketersediaan Data}
+\begin{columns}[T]
+\column{.31\textwidth}
+\begin{block}{Sudah tersedia}\end{block}
+\footnotesize
+Data dapat diakses sekarang, sumber jelas, definisi variabel diketahui.
+
+\vspace{2mm}
+\textbf{Tindakan:} audit kualitas dan kecukupan.
+
+\column{.31\textwidth}
+\begin{block}{Dapat diperoleh}\end{block}
+\footnotesize
+Data belum ada di tangan, tetapi prosedur pengumpulan/izin realistis.
+
+\vspace{2mm}
+\textbf{Tindakan:} tulis siapa, bagaimana, kapan, dan risikonya.
+
+\column{.31\textwidth}
+\begin{alertblock}{Belum realistis}\end{alertblock}
+\footnotesize
+Data utama tidak tersedia, akses tidak jelas, atau pengumpulan melampaui waktu proyek.
+
+\vspace{2mm}
+\textbf{Tindakan:} ubah ruang lingkup atau ubah pertanyaan.
+\end{columns}
+
+\vspace{4mm}
+\begin{alertblock}{Aturan proyek}
+\footnotesize
+Data sintetis atau data yang dibuat sendiri tidak boleh dipakai untuk menutupi ketiadaan evidence masalah nyata, kecuali simulasi memang merupakan bagian metode dan asumsi dinyatakan secara eksplisit.
+\end{alertblock}
+\end{frame}
+
+% 12
+\begin{frame}{Dari Masalah ke Formulasi Komputasi}
+\small
+\begin{center}
+\begin{tabular}{p{3.6cm} p{4.5cm} p{4.9cm}}
+\toprule
+\textbf{Pertanyaan nyata} & \textbf{Formulasi komputasi} & \textbf{Bukti keberhasilan} \\
+\midrule
+Berapa kebutuhan minggu depan? & Regresi/prediksi numerik & galat prediksi pada data uji \\
+Masuk kategori risiko apa? & Klasifikasi & confusion matrix, akurasi, precision/recall/F1 sesuai konteks \\
+Apakah ada profil yang berbeda? & Clustering & struktur cluster, fungsi objektif, interpretabilitas \\
+Bagaimana mencari item cepat? & Searching/indexing & kebenaran hasil dan kompleksitas waktu \\
+Metode mana lebih efisien? & Perbandingan algoritma & $T(n)$, Big-O, benchmark terkontrol \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Keluaran harus dapat diperiksa}
+\footnotesize
+Program bukan hanya ``berjalan''. Harus ada cara untuk menentukan apakah keluaran masuk akal, benar, atau cukup baik untuk tujuan yang dirumuskan.
+\end{block}
+\end{frame}
+
+% 13
+\begin{frame}{Kelayakan Proyek: Empat Pemeriksaan}
+\small
+\begin{center}
+\begin{tabular}{p{3.0cm} p{9.8cm}}
+\toprule
+\textbf{Pemeriksaan} & \textbf{Pertanyaan} \\
+\midrule
+Masalah & Apakah kondisi faktual dan pihak yang terdampak dapat ditunjukkan? \\
+Data & Apakah data inti tersedia/dapat diperoleh dalam waktu semester? \\
+Komputasi & Apakah ada komponen program yang bermakna, bukan sekadar visualisasi atau pemanggilan fungsi sekali? \\
+Validasi & Apakah keberhasilan solusi dapat diperiksa dengan data, prinsip matematis, atau pengujian yang jelas? \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Jika satu unsur gagal}
+\footnotesize
+Jangan menambah kompleksitas metode. Perbaiki problem frame terlebih dahulu: sempitkan objek, ubah keputusan, cari data lain, atau ganti fokus proyek.
+\end{alertblock}
+\end{frame}
+
+% 14
+\begin{frame}{Orientasi PKM: Apa yang Perlu Dipahami?}
+\small
+PKM bukan satu jenis proposal. Pada PKM 2026 terdapat \textbf{10 bidang}: delapan skema pendanaan dan dua skema insentif.
+
+\vspace{2mm}
+\begin{center}
+\begin{tabular}{p{5.8cm} p{6.7cm}}
+\toprule
+\textbf{Pendanaan} & \textbf{Insentif} \\
+\midrule
+PKM-RE, PKM-RSH, PKM-PM, PKM-PI, PKM-K, PKM-KC, PKM-KI, PKM-VGK & PKM-AI, PKM-GFT \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Untuk tugas mata kuliah}
+\footnotesize
+Panduan PKM 2026 digunakan sebagai \textbf{acuan kerja}. Jika panduan tahun pengusulan berikutnya terbit, proposal yang benar-benar akan diajukan wajib disesuaikan dengan panduan terbaru.
+\end{block}
+
+\sumber{Direktorat Pembelajaran dan Kemahasiswaan, Simbelmawa: Panduan dan Tawaran PKM 2026.}
+\end{frame}
+
+% 15
+\begin{frame}{Kelompok Kuliah dan Tim PKM Tidak Harus Sama}
+\small
+\begin{columns}[T]
+\column{.46\textwidth}
+\begin{block}{Kelompok proyek mata kuliah}
+Kelompok RA/RB telah dibentuk untuk pengerjaan proyek perkuliahan dan dapat beranggotakan 5--6 mahasiswa.
+\end{block}
+
+\column{.49\textwidth}
+\begin{block}{Tim PKM 2026}
+Panduan/tawaran PKM 2026 menetapkan proposal disusun oleh \textbf{3--5 mahasiswa} dalam satu tim.
+\end{block}
+\end{columns}
+
+\vspace{3mm}
+\begin{alertblock}{Konsekuensi}
+\footnotesize
+Kelompok mata kuliah digunakan untuk belajar dan menyelesaikan final project. Ketika proposal benar-benar diarahkan untuk pengusulan PKM, komposisi tim dapat disesuaikan atau dipecah mengikuti aturan tahun pengusulan.
+\end{alertblock}
+
+\sumber{Simbelmawa, Tawaran PKM 2026: tim pengusul 3--5 mahasiswa.}
+\end{frame}
+
+% 16
+\begin{frame}{Peta Cepat Bidang PKM 2026: Riset, Mitra, dan Usaha}
+\footnotesize
+\begin{center}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{1.6cm} p{3.7cm} p{7.5cm}}
+\toprule
+\textbf{Skema} & \textbf{Orientasi utama} & \textbf{Pertanyaan pembeda} \\
+\midrule
+PKM-RE & Riset eksakta & Apakah tujuan utamanya menghasilkan pengetahuan/temuan melalui riset eksakta? \\
+PKM-RSH & Riset sosial humaniora & Apakah fokusnya fenomena sosial/humaniora dan dijawab melalui proses riset? \\
+PKM-PM & Pengabdian & Apakah IPTEK diterapkan untuk menjawab kebutuhan mitra masyarakat yang tidak berorientasi laba? \\
+PKM-PI & Penerapan IPTEK & Apakah IPTEK diterapkan untuk menyelesaikan masalah prioritas mitra produktif atau berorientasi laba? \\
+PKM-K & Kewirausahaan & Apakah mahasiswa sendiri mengembangkan dan menjalankan usaha produk/jasa? \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\begin{block}{Kunci membaca}
+\footnotesize
+Yang membedakan bukan nama algoritma, tetapi \textbf{tujuan kegiatan, pihak yang dilayani, bentuk intervensi, dan luaran}.
+\end{block}
+\sumber{Direktorat Pembelajaran dan Kemahasiswaan, Panduan PKM 2026, karakteristik umum bidang PKM.}
+\end{frame}
+
+% 17
+\begin{frame}{Peta Cepat Bidang PKM 2026: Ciptaan dan Gagasan}
+\footnotesize
+\begin{center}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{p{1.6cm} p{3.7cm} p{7.5cm}}
+\toprule
+\textbf{Skema} & \textbf{Orientasi utama} & \textbf{Pertanyaan pembeda} \\
+\midrule
+PKM-KC & Karsa Cipta & Apakah target utamanya membangun dan menguji prototipe/sistem baru? \\
+PKM-KI & Karya Inovatif & Apakah targetnya produk fungsional skala penuh yang dapat digunakan target pengguna? \\
+PKM-VGK & Video Gagasan Konstruktif & Apakah gagasan konstruktif atas masalah kekinian dikomunikasikan melalui video? \\
+PKM-AI & Artikel Ilmiah & Apakah hasil kegiatan ilmiah sudah tersedia dan akan ditulis menjadi artikel ilmiah? \\
+PKM-GFT & Gagasan Futuristik Tertulis & Apakah gagasannya futuristik, sistemik, dan berorientasi masa depan? \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\begin{alertblock}{Status skema 2026}
+\footnotesize
+PKM-RE, RSH, PM, PI, K, KC, KI, dan VGK termasuk \textbf{skema pendanaan}; PKM-AI dan GFT termasuk \textbf{skema insentif}.
+\end{alertblock}
+\sumber{Direktorat Pembelajaran dan Kemahasiswaan, Panduan PKM 2026.}
+\end{frame}
+
+% 17
+\begin{frame}{Riset, Pengabdian, atau Penerapan IPTEK?}
+\scriptsize
+\begin{center}
+\begin{tabular}{p{2.0cm} p{3.7cm} p{3.7cm} p{3.7cm}}
+\toprule
+ & \textbf{PKM-RE/RSH} & \textbf{PKM-PM} & \textbf{PKM-PI} \\
+\midrule
+Tujuan utama & menjawab pertanyaan riset & meningkatkan kualitas/kapasitas mitra nirlaba & menyelesaikan masalah prioritas mitra produktif/profit dengan IPTEK \\
+Objek utama & fenomena/data/eksperimen & masyarakat mitra non-profit & mitra usaha/masyarakat produktif \\
+Peran program Python & instrumen analisis/eksperimen & bagian alat/metode pemberdayaan bila relevan & bagian solusi teknologi yang diterapkan \\
+Bukti awal & gap/masalah ilmiah + data & kondisi riil dan kebutuhan mitra & masalah prioritas yang disepakati bersama mitra \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Jangan memilih berdasarkan nama metode}
+\footnotesize
+Regresi, KNN, k-Means, atau aplikasi Python dapat muncul pada lebih dari satu skema. Skema dipilih dari \textbf{tujuan kegiatan, objek/mitra, bentuk solusi, dan luaran}, bukan dari algoritmanya.
+\end{alertblock}
+\sumber{Panduan PKM-RE, PKM-RSH, PKM-PM, dan PKM-PI 2026.}
+\end{frame}
+
+% 19
+\begin{frame}{KC dan KI: Prototipe atau Produk Fungsional?}
+\footnotesize
+\begin{center}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{p{2.5cm} p{5.15cm} p{5.15cm}}
+\toprule
+ & \textbf{PKM-KC} & \textbf{PKM-KI} \\
+\midrule
+Fokus & mewujudkan dan menguji karsa cipta/prototipe & menghasilkan karya inovatif yang fungsional \\
+Kematangan & produk/sistem masih dinilai sebagai prototipe yang dibangun dan diuji & produk sudah berfungsi pada skala penuh dan dapat digunakan target pengguna \\
+Luaran khas & prototipe & produk fungsional + dokumen teknis \\
+Pertanyaan & ``dapatkah ide ini diwujudkan dan diuji?'' & ``apakah produk sudah berfungsi dan layak digunakan?'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Untuk proyek digital}
+\scriptsize
+Aplikasi/software tidak otomatis PKM-KC. Tentukan lebih dulu \textbf{tingkat kematangan karya dan tujuan kegiatan}; pada PKM-KI, produk digital harus benar-benar fungsional bagi target pengguna.
+\end{block}
+\sumber{Panduan PKM-KC dan PKM-KI 2026.}
+\end{frame}
+
+% 20
+\begin{frame}{Program Python Bukan Skema PKM}
+\footnotesize
+\begin{center}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{p{2.3cm} p{10.4cm}}
+\toprule
+\textbf{Framing} & \textbf{Posisi program Python} \\
+\midrule
+PKM-RE & instrumen untuk menguji hipotesis, melakukan analisis, atau menghasilkan temuan ilmiah \\
+PKM-PI & solusi IPTEK yang diterapkan pada masalah prioritas mitra produktif \\
+PKM-PM & bagian alat/metode pemberdayaan pada mitra masyarakat nirlaba \\
+PKM-KC & komponen utama prototipe sistem yang dibangun dan diuji \\
+PKM-KI & produk digital fungsional yang dapat digunakan target pengguna \\
+PKM-K & produk/jasa digital yang dijalankan sebagai usaha mahasiswa \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1mm}
+\begin{alertblock}{Urutan berpikir}
+\scriptsize
+\textbf{Masalah dan tujuan menentukan posisi program, bukan sebaliknya.} Regresi, KNN, k-Means, dashboard, atau aplikasi tidak menentukan skema secara otomatis.
+\end{alertblock}
+\end{frame}
+
+% 20
+\begin{frame}{Contoh: Satu Tema, Beberapa Framing}
+\scriptsize
+\textbf{Tema umum:} kebutuhan pencatatan dan prediksi stok pada UMKM pangan.
+
+\vspace{2mm}
+\begin{center}
+\begin{tabular}{p{2.0cm} p{11.0cm}}
+\toprule
+\textbf{Skema} & \textbf{Framing yang berbeda} \\
+\midrule
+PKM-RE & menguji faktor yang memengaruhi kebutuhan bahan baku dan membandingkan model prediksi \\
+PKM-PI & menerapkan sistem pencatatan dan prediksi pada UMKM mitra untuk mengurangi stok kosong/berlebih \\
+PKM-KC & merancang prototipe sistem baru dengan fitur/arsitektur yang memiliki kebaruan teknis \\
+PKM-KI & menghasilkan produk digital final yang stabil, terdokumentasi, dan siap dipakai target pengguna \\
+PKM-K & menawarkan layanan/software sebagai produk usaha mahasiswa dengan model pasar yang jelas \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{block}{Pelajaran}
+\footnotesize
+Judul dan teknologi dapat mirip, tetapi \textbf{tujuan, evidence, metode pelaksanaan, pihak yang terlibat, dan luaran} mengubah skemanya.
+\end{block}
+\end{frame}
+
+% 21
+\begin{frame}{Tema Prioritas PKM 2026}
+\scriptsize
+Panduan PKM 2026 menggunakan 10 tema yang mengarahkan ide pada persoalan masyarakat dan prioritas nasional.
+
+\begin{columns}[T]
+\column{.48\textwidth}
+\begin{enumerate}
+  \item Kemandirian pangan, energi, dan air
+  \item Kesehatan dan gizi masyarakat
+  \item Pencegahan dan pemberantasan korupsi
+  \item Pemberantasan kemiskinan
+  \item Pencegahan dan pemberantasan narkoba
+\end{enumerate}
+
+\column{.48\textwidth}
+\begin{enumerate}\setcounter{enumi}{5}
+  \item Penguatan pendidikan, sains, dan teknologi
+  \item Kesetaraan gender dan perlindungan hak perempuan, anak, dan penyandang disabilitas
+  \item Pelestarian lingkungan dan mitigasi bencana
+  \item Pemerataan ekonomi, penguatan UMKM, dan pembangunan IKN
+  \item Pelestarian seni budaya dan peningkatan ekonomi kreatif
+\end{enumerate}
+\end{columns}
+
+\begin{alertblock}{Tema bukan masalah}
+\footnotesize
+Memilih satu tema baru langkah awal. Tim tetap harus menunjukkan masalah spesifik, evidence, target, data, dan bentuk solusi.
+\end{alertblock}
+\sumber{Panduan bidang PKM 2026.}
+\end{frame}
+
+% 23
+\begin{frame}{Filter Awal Pemilihan Skema}
+\footnotesize
+Jawab berdasarkan \textbf{tujuan kegiatan dan bukti yang tersedia}; jangan memaksa semua kelompok ke skema yang sama.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{p{9.8cm} p{2.8cm}}
+\toprule
+\textbf{Pertanyaan} & \textbf{Arah awal} \\
+\midrule
+Tujuan utamanya menghasilkan temuan ilmiah melalui penelitian? & RE / RSH \\
+Ada mitra masyarakat nirlaba yang membutuhkan pemberdayaan/penerapan IPTEK? & PM \\
+Ada mitra produktif/profit dengan masalah prioritas yang akan diselesaikan melalui IPTEK? & PI \\
+Target utamanya membangun dan menguji prototipe baru? & KC \\
+Targetnya produk fungsional skala penuh yang siap digunakan? & KI \\
+Mahasiswa menjalankan usaha produk/jasa? & K \\
+Luaran utamanya gagasan dalam video, gagasan futuristik tertulis, atau artikel ilmiah? & VGK / GFT / AI \\
+\bottomrule
+\end{tabular}
+\end{center}
+\sumber{Panduan PKM 2026; gunakan panduan tahun pengusulan untuk pengajuan resmi.}
+\end{frame}
+
+% 23
+\begin{frame}{Kesalahan Framing yang Sering Terjadi}
+\small
+\begin{enumerate}
+  \item \textbf{Metode lebih dulu:} ``Kami ingin memakai random forest/k-Means/AI.''
+  \item \textbf{Masalah tanpa evidence:} urgensi hanya berupa opini tim.
+  \item \textbf{Dataset lebih dulu:} memilih dataset yang mudah lalu mencari cerita masalah sesudahnya.
+  \item \textbf{Mitra simbolik:} nama mitra ada, tetapi kebutuhan prioritas belum pernah digali.
+  \item \textbf{Output = solusi:} dashboard/model dianggap otomatis menyelesaikan masalah.
+  \item \textbf{Skema dipaksakan:} memilih skema dari judul teknologi, bukan dari tujuan dan luaran.
+\end{enumerate}
+
+\begin{block}{Koreksi sederhana}
+\footnotesize
+Untuk setiap ide, paksa tim menjawab: \textbf{masalah apa, untuk siapa, buktinya apa, keputusan apa, data apa, program menghasilkan apa, dan bagaimana tahu hasilnya berguna/benar?}
+\end{block}
+\end{frame}
+
+% 24
+\begin{frame}{Milestone 1: Concept Note Kelompok}
+\small
+\begin{center}
+\begin{tabular}{p{4.0cm} p{9.0cm}}
+\toprule
+\textbf{Bagian} & \textbf{Isi minimum} \\
+\midrule
+1. Problem frame & objek/mitra, kondisi faktual, bukti awal, kondisi yang diinginkan \\
+2. Pertanyaan komputasi & keputusan/informasi yang dibutuhkan dan keluaran program \\
+3. Audit data & sumber, unit analisis, variabel, ukuran/cakupan, akses, kualitas awal \\
+4. Validasi & bagaimana hasil program akan diperiksa secara matematis/data \\
+5. Kandidat PKM & maksimum dua skema + alasan singkat \\
+6. Gap/kendala & data/izin/literatur/mitra/teknis yang belum selesai \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertblock}{Yang dinilai pada tahap ini}
+\footnotesize
+Ketajaman masalah dan evidence, kelayakan data, konsistensi pertanyaan komputasi, serta alasan awal pemilihan skema. \textbf{Bukan kecanggihan algoritma.}
+\end{alertblock}
+\end{frame}
+
+% 26
+\begin{frame}{Lembar Kerja di Kelas I: Masalah dan Data}
+\footnotesize
+Isi dengan jawaban singkat dan spesifik. Jangan menulis metode sebelum masalah dan datanya jelas.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{5.2cm} p{7.7cm}}
+\toprule
+\textbf{Pertanyaan} & \textbf{Jawaban kelompok} \\
+\midrule
+Siapa/apa objek atau mitra utama? & \\
+Masalah spesifik apa yang benar-benar terjadi? & \\
+Apa dua bukti awal terkuat? & \\
+Keputusan/informasi apa yang dibutuhkan? & \\
+Data apa yang sudah tersedia? & \\
+Data apa yang masih harus diperoleh? & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+% 27
+\begin{frame}{Lembar Kerja di Kelas II: Komputasi dan PKM}
+\footnotesize
+Setelah masalah dan data lolos pemeriksaan awal, lanjutkan pada rancangan solusi.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{p{5.2cm} p{7.7cm}}
+\toprule
+\textbf{Pertanyaan} & \textbf{Jawaban kelompok} \\
+\midrule
+Apa pertanyaan komputasinya? & \\
+Apa keluaran program Python? & \\
+Bagaimana kebenaran/kinerja keluaran akan dinilai? & \\
+Apa dua kandidat skema PKM? & \\
+Mengapa kedua skema itu relevan? & \\
+Apa risiko terbesar ide ini saat ini? & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+% 26
+\begin{frame}{Pemeriksaan Sebelum Kelompok Presentasi}
+\small
+Gunakan lima pemeriksaan berikut sebagai \textit{exit check}.
+
+\begin{enumerate}
+  \item \textbf{Spesifik:} problem frame menyebut objek, kondisi, konteks, dan pihak yang terdampak.
+  \item \textbf{Terbukti:} paling sedikit ada evidence awal yang dapat ditelusuri sumbernya.
+  \item \textbf{Terdata:} data inti sudah tersedia atau rencana memperolehnya realistis.
+  \item \textbf{Terkomputasi:} keluaran program dapat ditulis secara jelas dan bukan sekadar ``membuat aplikasi''.
+  \item \textbf{Terukur:} ada cara memeriksa kebenaran, galat, kinerja, atau dampak hasil.
+\end{enumerate}
+
+\begin{alertblock}{Jika belum lolos}
+\footnotesize
+Presentasikan juga apa yang belum diketahui. Menemukan gap sejak awal lebih baik daripada menulis proposal panjang dengan asumsi yang tidak dapat dibuktikan.
+\end{alertblock}
+\end{frame}
+
+% 27
+\begin{frame}{Acuan dan Referensi}
+\scriptsize
+\begin{thebibliography}{99}
+\bibitem{PKM2026} Direktorat Pembelajaran dan Kemahasiswaan. \textit{Panduan Program Kreativitas Mahasiswa (PKM) 2026} dan panduan masing-masing bidang PKM. Simbelmawa, 2026.
+\bibitem{KPT2024} Direktorat Pembelajaran dan Kemahasiswaan. \textit{Panduan Penyusunan Kurikulum Pendidikan Tinggi Mendukung MBKM Menuju Indonesia Emas}, Edisi V. 2024.
+\bibitem{Provost} Provost, F. dan Fawcett, T. \textit{Data Science for Business}. O'Reilly Media, 2013.
+\bibitem{CRISPDM} Chapman, P. et al. \textit{CRISP-DM 1.0: Step-by-step Data Mining Guide}. 2000.
+\bibitem{McKinney} McKinney, W. \textit{Python for Data Analysis}, 3rd ed. O'Reilly Media, 2022.
+\end{thebibliography}
+
+\vspace{2mm}
+\begin{block}{Catatan penggunaan panduan}
+\footnotesize
+Materi orientasi skema menggunakan Panduan PKM 2026. Untuk pengusulan resmi pada tahun berikutnya, selalu gunakan panduan dan template pada tahun pengusulan.
+\end{block}
+\end{frame}
+
+\end{document}
